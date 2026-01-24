@@ -1,0 +1,10 @@
+# Requirements for Routing Optimization - Stage 1
+# Python 3.10+
+
+# Core Libraries
+ortools>=9.7.0
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Optional: Testing
+# pytest>=7.0.0
