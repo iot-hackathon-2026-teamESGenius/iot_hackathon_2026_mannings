@@ -1,0 +1,19 @@
+# .condarc - 项目级Conda配置
+channels:
+  - conda-forge
+  - defaults
+  
+channel_priority: strict  # 避免通道冲突
+auto_activate_base: false  # 不自动激活base环境
+envs_dirs:
+  - ./envs  # 将环境创建在项目目录内
+  - ~/.conda/envs
+  
+pkgs_dirs:
+  - ./pkgs  # 包缓存也在项目内
+  - ~/.conda/pkgs
+  
+create_default_packages:
+  - pip
+  - ipython
+  - ipykernel

@@ -1,0 +1,67 @@
+# 模块配置
+modules:
+  # 数据获取模块
+  data_fetcher:
+    class: "src.modules.data.implementations.simulated_data_fetcher.SimulatedDataFetcher"
+    config:
+      data_path: "data/synthetic/"
+      cache_enabled: true
+    enabled: true
+    singleton: true
+  
+  # 距离计算器
+  distance_calculator:
+    class: "src.modules.distance.implementations.euclidean_calculator.EuclideanDistanceCalculator"
+    config:
+      cache_enabled: true
+    enabled: true
+    singleton: true
+  
+  # 需求预测器
+  demand_forecaster:
+    class: "src.modules.forecasting.implementations.prophet_forecaster.ProphetForecaster"
+    config:
+      seasonality_mode: "multiplicative"
+      changepoint_prior_scale: 0.05
+    enabled: true
+    singleton: true
+  
+  # 路径优化器
+  routing_optimizer:
+    class: "src.modules.routing.implementations.ortools_optimizer.ORToolsRoutingOptimizer"
+    config:
+      time_limit_seconds: 60
+      robustness_level: 0.9
+    enabled: true
+    singleton: true
+  
+  # 可视化
+  visualization:
+    class: "src.modules.visualization.implementations.streamlit_dashboard.StreamlitDashboard"
+    config:
+      theme: "light"
+      page_title: "Mannings SLA Optimization"
+    enabled: true
+    singleton: true
+
+# 环境变量
+environment:
+  GOOGLE_MAPS_API_KEY: "${GOOGLE_MAPS_API_KEY}"
+  HKO_API_KEY: "${HKO_API_KEY}"
+
+  # 库存优化器
+  inventory_optimizer:
+    class: "src.modules.inventory.implementations.safety_stock_optimizer.SafetyStockOptimizer"
+    config:
+      default_service_level: 0.95
+    enabled: true
+    singleton: true
+  
+  # SLA预测器
+  sla_predictor:
+    class: "src.modules.sla.implementations.probabilistic_sla_predictor.ProbabilisticSLAPredictor"
+    config:
+      confidence_level: 0.95
+      include_weather_impact: true
+    enabled: true
+    singleton: true

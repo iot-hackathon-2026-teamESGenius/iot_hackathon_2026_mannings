@@ -1,0 +1,41 @@
+# 自动检测文本文件
+* text=auto
+
+# 确保特定文件类型被视为文本
+*.py text
+*.md text
+*.yml text
+*.yaml text
+*.json text
+*.txt text
+*.csv text
+*.toml text
+*.ini text
+*.cfg text
+*.conf text
+
+# 二进制文件
+*.png binary
+*.jpg binary
+*.gif binary
+*.pdf binary
+*.pkl binary
+*.h5 binary
+*.joblib binary
+*.so binary
+*.pyd binary
+
+# 大型文件使用 Git LFS（如果需要）
+# *.pkl filter=lfs diff=lfs merge=lfs -text
+# *.h5 filter=lfs diff=lfs merge=lfs -text
+
+# 特定文件的换行符处理
+*.sh text eol=lf
+*.py text eol=lf
+*.md text eol=lf
+
+# 导出时忽略某些文件
+export-ignore .github/
+export-ignore .gitignore
+export-ignore .gitattributes
+export-ignore .pre-commit-config.yaml

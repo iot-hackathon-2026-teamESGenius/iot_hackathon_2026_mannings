@@ -1,0 +1,21 @@
+# 环境配置
+project:
+  name: "Mannings SLA Optimization"
+  version: "0.1.0"
+  description: "End-to-end store pickup SLA optimization system"
+
+paths:
+  data_raw: "data/official/"
+  data_processed: "data/processed/"
+  data_synthetic: "data/synthetic/"
+  outputs: "outputs/"
+  models: "outputs/models/"
+
+api_keys:
+  google_maps: "${GOOGLE_MAPS_API_KEY}"
+  hko_weather: "${HKO_API_KEY}"
+
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/app.log"
