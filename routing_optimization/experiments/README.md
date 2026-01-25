@@ -143,9 +143,18 @@ ENABLE_PREDICTIVE_SCENARIOS = True          # 若存在分位数/特征则自动
 
 ```python
 # 鲁棒优化参数
-DEMAND_RATIOS = [0.9, 1.0, 1.1]            # 需求波动比例
+DEMAND_RATIOS = [0.9, 1.0, 1.1]              # 需求波动比例
+SCENARIO_WEIGHTS = None                      # 可选，与 DEMAND_RATIOS 一一对应的权重
+MONTE_CARLO_SAMPLES = 0                      # 额外蒙特卡洛场景数（0=关闭）
+MONTE_CARLO_MAX_SAMPLES = 20                 # 安全上限，防止场景爆炸
+MONTE_CARLO_STD = 0.05                       # 正态扰动标准差（围绕1.0，剪裁到[0.8,1.2]）
 ROBUST_SELECTION_CRITERION = 'min_max_distance'  # 鲁棒方案选择标准
 ```
+
+**说明**：
+- 若提供 `SCENARIO_WEIGHTS`，比例场景将携带权重并参与比较；未提供则等权。
+- `MONTE_CARLO_SAMPLES`>0 时，会在比例/分位数场景之外再采样若干随机扰动场景；数量被 `MONTE_CARLO_MAX_SAMPLES` 限制。
+- 学习特征缩放已做剪裁（0.8–1.2），避免需求被极端放大/缩小。
 
 ### 调整方法
 
@@ -164,6 +173,12 @@ ROBUST_SELECTION_CRITERION = 'min_max_distance'  # 鲁棒方案选择标准
    ```python
    DEMAND_RATIOS = [0.8, 0.9, 1.0, 1.1, 1.2]  # 更宽的波动范围
    ```
+
+4. **启用加权/蒙特卡洛场景**：
+    ```python
+    SCENARIO_WEIGHTS = [0.2, 0.5, 0.3]  # 与 DEMAND_RATIOS 对应
+    MONTE_CARLO_SAMPLES = 5             # 生成5个扰动场景（受 MAX_SAMPLES 限制）
+    ```
 
 ## 算法说明 | Algorithms
 

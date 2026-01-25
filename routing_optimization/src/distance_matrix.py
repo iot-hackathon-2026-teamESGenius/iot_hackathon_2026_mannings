@@ -99,6 +99,8 @@ def create_time_matrix(
     """
     # Time = Distance / Speed * 60 (convert to minutes)
     time_matrix = (distance_matrix / average_speed) * 60
+    # Use ceil to avoid zero-minute edges; keep diagonal at 0
+    time_matrix = np.where(np.eye(time_matrix.shape[0], dtype=bool), 0, np.ceil(time_matrix))
     return time_matrix.astype(int)
 
 

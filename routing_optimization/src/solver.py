@@ -10,6 +10,7 @@ from distance_matrix import compute_matrices_from_vrp_input
 from modules.routing.implementations.ortools_optimizer import VRPModel
 from modules.routing.implementations.robust_optimizer import RobustOptimizer
 from modules.routing.implementations.scenario_generator import ScenarioGenerator
+from optimization_result import OptimizationResult, convert_solution_to_github_format
 import config
 
 
@@ -43,13 +44,17 @@ def solve_vrp(
     
     # Robust optimization
     if use_robust:
-        # 若启用预测场景，创建自定义场景生成器（支持分位数和学习特征）
+        # 若启用预测场景或配置了蒙特卡洛/权重，创建自定义场景生成器
         scenario_gen = None
-        if config.ENABLE_PREDICTIVE_SCENARIOS:
+        if config.ENABLE_PREDICTIVE_SCENARIOS or config.MONTE_CARLO_SAMPLES > 0 or config.SCENARIO_WEIGHTS:
             scenario_gen = ScenarioGenerator(
                 quantile_keys=config.DEMAND_QUANTILE_COLS,
                 feature_key=config.LEARNING_FEATURE_COL,
                 feature_weight=config.LEARNING_FEATURE_WEIGHT,
+                scenario_weights=config.SCENARIO_WEIGHTS,
+                monte_carlo_samples=config.MONTE_CARLO_SAMPLES,
+                monte_carlo_std=config.MONTE_CARLO_STD,
+                monte_carlo_max_samples=config.MONTE_CARLO_MAX_SAMPLES,
             )
 
         robust_optimizer = RobustOptimizer(

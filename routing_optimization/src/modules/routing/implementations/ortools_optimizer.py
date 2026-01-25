@@ -140,6 +140,15 @@ class VRPModel:
         search_parameters.local_search_metaheuristic = _META_MAP.get(mh_key, _META_MAP['GUIDED_LOCAL_SEARCH'])
 
         search_parameters.time_limit.seconds = time_limit_seconds
+        search_parameters.log_search = bool(getattr(config, 'LOG_SEARCH', False))
+
+        num_workers = int(getattr(config, 'NUM_SEARCH_WORKERS', 0))
+        if num_workers > 0:
+            search_parameters.number_of_search_workers = num_workers
+
+        solution_limit = int(getattr(config, 'SOLUTION_LIMIT', 0))
+        if solution_limit > 0:
+            search_parameters.solution_limit = solution_limit
         self.solution = self.routing.SolveWithParameters(search_parameters)
         return self.solution
 
