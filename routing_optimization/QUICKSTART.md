@@ -92,11 +92,11 @@ print(format_solution_output(solution))
 - SLA违反情况
 - 场景对比 (鲁棒优化)
 
-### 导出数据 (供其他组使用)
+### 导出数据
 ```python
 from src.solver import export_solution_to_dict
 export_data = export_solution_to_dict(solution)
-# export_data 可直接传递给可视化组
+# export_data 可直接传递给可视化
 ```
 
 ## 配置参数 | Configuration
@@ -125,6 +125,3 @@ pip install ortools
 - 使用更快的搜索策略
 - 减少场景数量 (鲁棒优化)
 
-## 联系方式 | Contact
-
-问题反馈: Algorithm Development - Optimization Team
