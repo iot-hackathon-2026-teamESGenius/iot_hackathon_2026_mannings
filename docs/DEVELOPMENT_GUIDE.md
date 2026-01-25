@@ -51,18 +51,24 @@
 #### 方法一：使用自动设置脚本（推荐）
 ```bash
 # 1. 克隆仓库
-git clone https://github.com/[组织名]/iot-hackathon-2026-mannings.git
-cd iot-hackathon-2026-mannings
+git clone https://github.com/iot-hackathon-2026-teamESGenius/iot_hackathon_2026_mannings.git
+cd iot_hackathon_2026_mannings
 
 # 2. 运行自动设置脚本
 bash scripts/setup_conda_environment.sh
+
+# 3. 激活环境
+conda activate mannings-sla
+
+# 4. 验证环境
+python scripts/verify_environment.py
 ```
 
 #### 方法二：手动设置
 ```bash
 # 1. 克隆仓库
-git clone https://github.com/[组织名]/iot-hackathon-2026-mannings.git
-cd iot-hackathon-2026-mannings
+git clone https://github.com/iot-hackathon-2026-teamESGenius/iot_hackathon_2026_mannings.git
+cd iot_hackathon_2026_mannings
 
 # 2. 安装 Miniconda（如未安装）
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
@@ -75,6 +81,28 @@ conda activate mannings-sla
 
 # 4. 验证环境
 python scripts/verify_environment.py
+```
+
+### 启动服务
+
+环境配置完成后，可以启动以下服务：
+
+#### REST API服务（前端调用）
+```bash
+uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --reload
+```
+- **API文档**：http://localhost:8000/docs
+- **健康检查**：http://localhost:8000/health
+
+#### Streamlit可视化看板（内部调试）
+```bash
+streamlit run src/visualization/dashboard/app.py
+```
+- **访问地址**：http://localhost:8501
+
+#### 路径优化Demo
+```bash
+python -m src.modules.routing.implementations.demo
 ```
 
 ### 环境变量配置
@@ -134,6 +162,7 @@ DEBUG=False
 iot_hackathon_2026_mannings/
 ├── config/                    # 配置文件
 │   ├── modules.yaml          # 模块注册配置
+│   ├── agents.yaml           # 智能体配置 (Stage 2)
 │   ├── environment.yaml      # 环境配置
 │   └── pipelines/            # 流水线配置
 │       └── daily_optimization.yaml
@@ -142,6 +171,17 @@ iot_hackathon_2026_mannings/
 │   │   ├── interfaces.py     # 所有模块接口定义
 │   │   ├── module_registry.py  # 模块注册表
 │   │   ├── orchestrator.py   # 流水线协调器
+│   │   └── __init__.py
+│   ├── api/                  # REST API服务层 (新增)
+│   │   ├── main.py           # FastAPI入口
+│   │   └── routers/          # API路由
+│   │       ├── auth.py       # 认证服务
+│   │       ├── dashboard.py  # 数据看板
+│   │       ├── forecast.py   # 预测服务
+│   │       ├── planning.py   # 决策规划
+│   │       └── sla.py        # SLA服务
+│   ├── agents/               # 智能体接口 (Stage 2预留)
+│   │   ├── interfaces.py     # Agent接口定义
 │   │   └── __init__.py
 │   ├── modules/              # 可插拔模块
 │   │   ├── data/            # 数据获取模块
@@ -155,7 +195,13 @@ iot_hackathon_2026_mannings/
 │   │   │       └── google_distance_matrix.py
 │   │   ├── forecasting/     # 预测模块
 │   │   ├── inventory/       # 库存优化模块
-│   │   ├── routing/         # 路径优化模块
+│   │   ├── routing/         # 路径优化模块 ⭐
+│   │   │   ├── interfaces.py
+│   │   │   └── implementations/
+│   │   │       ├── ortools_optimizer.py      # Baseline CVRPTW
+│   │   │       ├── robust_optimizer.py       # 鲁棒优化器 (创新点)
+│   │   │       ├── scenario_generator.py     # 情景生成器
+│   │   │       └── demo.py                   # Demo脚本
 │   │   ├── sla/             # SLA预测模块
 │   │   └── visualization/   # 可视化模块
 │   ├── main.py              # 主应用入口
@@ -169,7 +215,9 @@ iot_hackathon_2026_mannings/
 │   ├── official/           # 官方数据
 │   ├── synthetic/          # 模拟数据
 │   ├── processed/          # 处理后的数据
-│   └── external/           # 外部数据
+│   ├── external/           # 外部数据
+│   └── routing/            # 路径优化数据 (新增)
+│       └── forecast_input/  # 预测输入接口
 ├── outputs/                 # 输出目录
 │   ├── models/             # 模型输出
 │   ├── reports/            # 报告输出
@@ -193,18 +241,42 @@ iot_hackathon_2026_mannings/
 - `module_registry.py`：动态模块加载和注册系统
 - `orchestrator.py`：协调各个模块执行工作流
 
-#### 2. `src/modules/` - 可插拔模块
+#### 2. `src/api/` - REST API服务层 (新增)
+为前端(Vue3+uniapp)提供HTTP接口：
+- `main.py`：FastAPI应用入口
+- `routers/auth.py`：认证服务（登录/Token验证）
+- `routers/dashboard.py`：KPI数据看板
+- `routers/forecast.py`：需求预测服务
+- `routers/planning.py`：补货计划/车队调度
+- `routers/sla.py`：SLA预警服务
+
+#### 3. `src/agents/` - 智能体接口 (Stage 2预留)
+第二阶段AI Agent开发接口：
+- `IDemandForecastAgent`：需求预测智能体
+- `IInventoryOptimizationAgent`：库存优化智能体
+- `IRoutingDispatchAgent`：路径调度智能体
+- `ISLAAlertAgent`：SLA预警智能体
+- `IMultiAgentCoordinator`：多Agent协调器
+
+#### 4. `src/modules/` - 可插拔模块
 每个模块包含：
 - `interfaces.py`：模块特定的接口定义（继承核心接口）
 - `implementations/`：具体实现类
 - `__init__.py`：模块导出
 
-#### 3. `config/` - 配置管理
+#### 5. `src/modules/routing/` - 路径优化模块 ⭐
+包含鲁棒优化算法（项目创新点）：
+- `ortools_optimizer.py`：Baseline CVRPTW实现
+- `robust_optimizer.py`：基于多情景的鲁棒优化
+- `scenario_generator.py`：从预测结果生成需求情景
+
+#### 6. `config/` - 配置管理
 - `modules.yaml`：定义可用模块及其配置
+- `agents.yaml`：智能体系统配置 (Stage 2)
 - `environment.yaml`：系统级配置参数
 - `pipelines/`：预定义的工作流配置
 
-#### 4. `tests/` - 测试代码
+#### 7. `tests/` - 测试代码
 - 遵循与 `src/` 相同的目录结构
 - 每个模块都有对应的测试目录
 - 包含单元测试、集成测试和端到端测试
