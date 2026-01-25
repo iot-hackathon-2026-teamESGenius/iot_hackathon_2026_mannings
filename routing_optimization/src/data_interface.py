@@ -5,6 +5,7 @@ Data interface for loading forecast data
 
 import pandas as pd
 from typing import Dict, List, Tuple
+import config
 
 
 def load_forecast_data(file_path: str = None) -> pd.DataFrame:
@@ -14,9 +15,14 @@ def load_forecast_data(file_path: str = None) -> pd.DataFrame:
     
     Required columns:
         - store_id: Store identifier
-        - demand: Delivery demand
+        - demand: Delivery demand (or predicted_demand if provided)
         - time_window_start: Earliest delivery time (minutes from depot open)
         - time_window_end: Latest delivery time (minutes from depot open)
+
+    Optional predictive columns (used when present):
+        - predicted_demand: Point forecast for demand
+        - demand_p10 / demand_p50 / demand_p90: Quantile forecasts
+        - feature_score: Learning-enhanced feature (0-1 range)
     
     Args:
         file_path: Path to forecast data file (CSV or Excel)
@@ -32,7 +38,12 @@ def load_forecast_data(file_path: str = None) -> pd.DataFrame:
             'time_window_start',
             'time_window_end',
             'lat',
-            'lon'
+            'lon',
+            config.PREDICTED_DEMAND_COL,
+            config.DEMAND_QUANTILE_COLS['low'],
+            config.DEMAND_QUANTILE_COLS['mid'],
+            config.DEMAND_QUANTILE_COLS['high'],
+            config.LEARNING_FEATURE_COL
         ])
     
     # Load data
@@ -95,9 +106,11 @@ def prepare_vrp_input(
     
     # Add stores
     for idx, row in df.iterrows():
+        base_demand = float(row.get(config.PREDICTED_DEMAND_COL, row['demand']))
+
         store = {
             'id': int(row['store_id']),
-            'demand': float(row['demand']),
+            'demand': base_demand,
             'time_window': (
                 int(row['time_window_start']),
                 int(row['time_window_end'])
@@ -108,6 +121,21 @@ def prepare_vrp_input(
         if 'lat' in df.columns and 'lon' in df.columns:
             store['lat'] = float(row['lat'])
             store['lon'] = float(row['lon'])
+
+        # Optional predictive fields
+        quantiles = config.DEMAND_QUANTILE_COLS
+        if quantiles['low'] in df.columns and not pd.isnull(row.get(quantiles['low'], None)):
+            store[quantiles['low']] = float(row[quantiles['low']])
+        if quantiles['mid'] in df.columns and not pd.isnull(row.get(quantiles['mid'], None)):
+            store[quantiles['mid']] = float(row[quantiles['mid']])
+        if quantiles['high'] in df.columns and not pd.isnull(row.get(quantiles['high'], None)):
+            store[quantiles['high']] = float(row[quantiles['high']])
+
+        if config.LEARNING_FEATURE_COL in df.columns and not pd.isnull(row.get(config.LEARNING_FEATURE_COL, None)):
+            store[config.LEARNING_FEATURE_COL] = float(row[config.LEARNING_FEATURE_COL])
+
+        if config.PREDICTED_DEMAND_COL in df.columns and not pd.isnull(row.get(config.PREDICTED_DEMAND_COL, None)):
+            store[config.PREDICTED_DEMAND_COL] = float(row[config.PREDICTED_DEMAND_COL])
         
         vrp_input['stores'].append(store)
     

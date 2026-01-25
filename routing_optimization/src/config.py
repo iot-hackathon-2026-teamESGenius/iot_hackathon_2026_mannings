@@ -13,6 +13,17 @@ DEPOT_OPEN_TIME = 8 * 60    # 仓库开放时间：8:00 AM (分钟)
 DEPOT_CLOSE_TIME = 18 * 60  # 仓库关闭时间：6:00 PM (分钟)
 SERVICE_TIME = 15           # 单个客户的服务时间 (分钟)
 
+# Predictive Feature Configuration (预测特征配置)
+PREDICTED_DEMAND_COL = 'predicted_demand'  # 预测均值列名（可选）
+DEMAND_QUANTILE_COLS = {                    # 预测分位数列名（可选）
+    'low': 'demand_p10',
+    'mid': 'demand_p50',
+    'high': 'demand_p90'
+}
+LEARNING_FEATURE_COL = 'feature_score'      # 学习增强特征列名（0-1区间，可选）
+LEARNING_FEATURE_WEIGHT = 0.15              # 学习增强权重（>0时启用特征缩放）
+ENABLE_PREDICTIVE_SCENARIOS = True          # 如果存在分位数/特征则启用
+
 # Optimization Parameters (优化算法参数)
 MAX_SEARCH_TIME = 30        # 最大求解时间 (秒) - 更长的时间通常能找到更好的解
 FIRST_SOLUTION_STRATEGY = 'PATH_CHEAPEST_ARC'  # OR-Tools初始化策略：贪心路径构建

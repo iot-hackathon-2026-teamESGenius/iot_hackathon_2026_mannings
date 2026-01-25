@@ -15,7 +15,7 @@ import config
 import pandas as pd
 
 
-def run_demo_with_mock_data():
+def run_demo_with_mock_data(return_input: bool = False):
     """
     Run demo with mock data
     使用Mock数据运行演示
@@ -30,15 +30,21 @@ def run_demo_with_mock_data():
     mock_data = {
         'store_id': [1, 2, 3, 4, 5, 6, 7],
         'demand': [15, 20, 10, 25, 18, 12, 22],
+        'predicted_demand': [16, 21, 11, 24, 19, 13, 23],
+        'demand_p10': [14, 18, 9, 22, 16, 11, 20],
+        'demand_p50': [16, 21, 11, 24, 19, 13, 23],
+        'demand_p90': [18, 24, 13, 27, 21, 15, 25],
         'time_window_start': [480, 500, 520, 480, 540, 500, 520],  # 8:00-9:00 AM
         'time_window_end': [1080, 1080, 1080, 1080, 1080, 1080, 1080],  # 6:00 PM
         'lat': [40.75, 40.76, 40.74, 40.77, 40.73, 40.72, 40.78],
-        'lon': [-74.00, -74.01, -73.99, -74.02, -73.98, -74.01, -73.97]
+        'lon': [-74.00, -74.01, -73.99, -74.02, -73.98, -74.01, -73.97],
+        'feature_score': [0.35, 0.55, 0.45, 0.70, 0.40, 0.60, 0.50]  # 学习增强特征（0-1）
     }
     
     df = pd.DataFrame(mock_data)
-    print(f"✓ Loaded {len(df)} stores")
+    print(f"[OK] Loaded {len(df)} stores")
     print(f"  Total demand: {df['demand'].sum()} units")
+    print(f"  Includes: predicted_demand, quantile forecasts (p10/p50/p90), feature_score")
     
     # Step 2: Prepare VRP input
     print("\nStep 2: Preparing VRP Input...")
@@ -47,9 +53,10 @@ def run_demo_with_mock_data():
     vehicle_capacity = config.VEHICLE_CAPACITY
     num_vehicles = config.NUM_VEHICLES
     
+    # 准备VRP输入（自动使用预测需求和保留预测列）
     vrp_input = prepare_vrp_input(df, depot_location, vehicle_capacity, num_vehicles)
-    print(f"✓ Depot: {depot_location}")
-    print(f"✓ Vehicles: {num_vehicles} × {vehicle_capacity} capacity")
+    print(f"[OK] Depot: {depot_location}")
+    print(f"[OK] Vehicles: {num_vehicles} x {vehicle_capacity} capacity")
     
     # Step 3: Run Standard Optimization
     print("\n" + "=" * 60)
@@ -73,6 +80,8 @@ def run_demo_with_mock_data():
     print("✓ Solution exported in standardized format")
     print(f"  Format: {config.OUTPUT_FORMAT}")
     
+    if return_input:
+        return vrp_input, standard_solution, robust_solution
     return standard_solution, robust_solution
 
 
@@ -110,7 +119,7 @@ def run_simple_demo():
     
     # Display results
     if solution.get('status') == 'Success':
-        print(f"\n✓ Solution Found!")
+        print(f"\n[OK] Solution Found!")
         print(f"  Total Distance: {solution['total_distance'] / 100:.2f} km")
         print(f"  Routes: {len(solution['routes'])}")
         
@@ -127,7 +136,7 @@ if __name__ == "__main__":
     # Check if ortools is installed
     try:
         import ortools
-        print("✓ OR-Tools is installed")
+        print("[OK] OR-Tools is installed")
     except ImportError:
         print("✗ OR-Tools not installed. Please run: pip install ortools")
         sys.exit(1)

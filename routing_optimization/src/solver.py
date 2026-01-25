@@ -7,8 +7,9 @@ from typing import Dict, Tuple
 import time
 from data_interface import load_forecast_data, prepare_vrp_input, validate_input_data
 from distance_matrix import compute_matrices_from_vrp_input
-from vrp_model import VRPModel
-from robust_optimizer import RobustOptimizer
+from modules.routing.implementations.ortools_optimizer import VRPModel
+from modules.routing.implementations.robust_optimizer import RobustOptimizer
+from modules.routing.implementations.scenario_generator import ScenarioGenerator
 import config
 
 
@@ -42,9 +43,19 @@ def solve_vrp(
     
     # Robust optimization
     if use_robust:
+        # 若启用预测场景，创建自定义场景生成器（支持分位数和学习特征）
+        scenario_gen = None
+        if config.ENABLE_PREDICTIVE_SCENARIOS:
+            scenario_gen = ScenarioGenerator(
+                quantile_keys=config.DEMAND_QUANTILE_COLS,
+                feature_key=config.LEARNING_FEATURE_COL,
+                feature_weight=config.LEARNING_FEATURE_WEIGHT,
+            )
+
         robust_optimizer = RobustOptimizer(
             vrp_input,
-            demand_ratios=config.DEMAND_RATIOS
+            demand_ratios=config.DEMAND_RATIOS,
+            scenario_generator=scenario_gen,  # 传入自定义场景生成器
         )
         robust_optimizer.generate_scenarios()
         robust_optimizer.solve_all_scenarios(
@@ -124,10 +135,10 @@ def format_solution_output(solution: Dict, vrp_input: Dict = None) -> str:
     
     # SLA violations check (服务水平协议违反检查)
     if solution.get('dropped_nodes'):
-        output.append(f"\n⚠ SLA VIOLATIONS: {len(solution['dropped_nodes'])} stores not served")
+        output.append(f"\n[WARN] SLA VIOLATIONS: {len(solution['dropped_nodes'])} stores not served")
         output.append(f"   Dropped stores: {solution['dropped_nodes']}")
     else:
-        output.append(f"\n✓ All stores served within time windows")
+        output.append(f"\n[OK] All stores served within time windows")
     
     # Detailed routes (每条路线的详细信息)
     output.append(f"\n{'-' * 60}")
