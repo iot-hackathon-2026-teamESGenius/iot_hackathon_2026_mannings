@@ -296,4 +296,4 @@ downloads/
 
 # 其他工具缓存
 .hypothesis/
-.scrapy/
+.scrapy/pkgs/

@@ -16,7 +16,7 @@ REQUIRED_PACKAGES = {
     'numpy': '1.23',
     # 预测模型
     'prophet': '1.1',
-    'scikit-learn': '1.2',
+    'sklearn': '1.2',  # scikit-learn的导入名是sklearn
     'xgboost': '1.7',
     # 优化求解
     'ortools': '9.6',

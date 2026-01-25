@@ -1,19 +1,41 @@
 # .condarc - 项目级Conda配置
+# 更新: 2026-01-25
+
+# ==============================================================================
+# 镜像源配置 (使用清华源加速)
+# ==============================================================================
 channels:
-  - conda-forge
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/conda-forge
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/r
   - defaults
-  
-channel_priority: strict  # 避免通道冲突
-auto_activate_base: false  # 不自动激活base环境
-envs_dirs:
-  - ./envs  # 将环境创建在项目目录内
-  - ~/.conda/envs
-  
-pkgs_dirs:
-  - ./pkgs  # 包缓存也在项目内
-  - ~/.conda/pkgs
-  
+
+# 显示来源通道
+show_channel_urls: true
+
+# 通道优先级策略
+channel_priority: flexible  # flexible比strict更容易解决依赖
+
+# ==============================================================================
+# 环境配置
+# ==============================================================================
+# 不自动激活base环境
+auto_activate_base: false
+
+# 默认安装的包
 create_default_packages:
   - pip
   - ipython
-  - ipykernel
+
+# ==============================================================================
+# 网络配置
+# ==============================================================================
+# SSL验证 (如遇证书问题可临时关闭)
+ssl_verify: true
+
+# 远程连接超时 (秒)
+remote_connect_timeout_secs: 30
+remote_read_timeout_secs: 120
+
+# 重试次数
+remote_max_retries: 3

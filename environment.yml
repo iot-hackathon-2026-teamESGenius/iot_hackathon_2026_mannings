@@ -1,7 +1,11 @@
 # environment.yml
+# 更新: 2026-01-25
+# 说明: 使用清华源加速下载
+
 name: mannings-sla
 channels:
-  - conda-forge
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/conda-forge
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
   - defaults
 dependencies:
   # Python版本

@@ -15,33 +15,60 @@
 
 ## 快速开始
 
-### 方法一：一键安装（推荐）
+> **⚠️ 重要提示**：经过实战验证，**推荐使用方法一（手动pip安装）**，避免conda依赖求解过慢和Python版本降级问题。
+
+### 方法一：手动pip安装（推荐✅）
+
+这是最快速且稳定的安装方式，避免了conda的已知问题。
 
 ```bash
-# 克隆仓库
+# 1. 克隆仓库
 git clone https://github.com/iot-hackathon-2026-teamESGenius/iot_hackathon_2026_mannings.git
 cd iot_hackathon_2026_mannings
 
-# 运行安装脚本
-bash scripts/setup_conda_environment.sh
+# 2. 配置清华conda镜像源（加速）
+cp .condarc ~/.condarc
+conda clean --all -y
 
-# 激活环境
+# 3. 创建纯净Python 3.9环境
+conda create -n mannings-sla python=3.9 pip -y
+
+# 4. 激活环境
 conda activate mannings-sla
 
-# 验证环境
+# 5. 使用pip安装核心包（第一批）
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple \
+  pandas numpy scipy scikit-learn xgboost \
+  streamlit plotly pyyaml python-dotenv
+
+# 6. 安装专业包（第二批 - 使用官方源）
+pip install prophet ortools geopandas \
+  fastapi uvicorn python-multipart \
+  folium streamlit-folium
+
+# 7. 验证环境
 python scripts/verify_environment.py
 ```
 
-### 方法二：手动安装
+**安装时间**：约5-10分钟（清华源约3-5分钟）
+
+---
+
+### 方法二：environment.yml安装（不推荐⚠️）
+
+**已知问题**：
+- ❌ **依赖求解慢**：conda需要5-30分钟求解依赖关系
+- ❌ **Python版本降级风险**：可能从CPython 3.9.23降级到PyPy 3.9.18，导致streamlit等包无法安装
+- ❌ **卡死风险**：在`Solving environment`或`Collecting package metadata`阶段长时间无响应
+- ❌ **包冲突**：多通道(conda-forge/defaults)可能产生不兼容包组合
+
+如果仍需使用此方法：
 
 ```bash
-# 1. 安装Miniconda（如未安装）
-wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-bash Miniconda3-latest-Linux-x86_64.sh -b
-~/miniconda3/bin/conda init bash
-source ~/.bashrc
+# 1. 配置镜像源
+cp .condarc ~/.condarc
 
-# 2. 创建环境
+# 2. 创建环境（可能需要30分钟）
 conda env create -f environment.yml
 
 # 3. 激活环境
@@ -49,6 +76,19 @@ conda activate mannings-sla
 
 # 4. 验证
 python scripts/verify_environment.py
+```
+
+⚠️ **如遇到卡住**：按`Ctrl+C`终止，改用方法一
+
+---
+
+### 方法三：自动脚本安装（实验性）
+
+```bash
+# 运行安装脚本（内部调用conda）
+bash scripts/setup_conda_environment.sh
+
+# 如遇问题，改用方法一
 ```
 
 ---
@@ -88,17 +128,28 @@ conda remove --name mannings-sla --all
 
 ```bash
 # 查看已安装的包
+pip list
+# 或
 conda list
 
-# 安装新包（优先使用conda）
-conda install package_name
-
-# 如果conda没有，使用pip
+# 安装新包（优先使用pip）
 pip install package_name
 
+# 使用清华源加速
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple package_name
+
+# 如需conda安装（仅针对需C库的包）
+conda install -c conda-forge package_name
+
 # 导出当前环境
-conda env export > environment_export.yml
+pip freeze > requirements-export.txt
 ```
+
+**⚠️ 推荐使用pip原因**：
+- ✅ 安装速度快conda 10倍以上
+- ✅ 无Python版本降级风险
+- ✅ 包版本更新更及时
+- ✅ 与conda环境完全兼容
 
 ---
 
@@ -164,34 +215,107 @@ python -m src.modules.routing.implementations.demo
 
 ## 常见问题
 
-### Q1: 环境创建失败
+### Q1: 为什么不推荐使用environment.yml？
+
+**实战遇到的问题**：
+
+1. **依赖求解过慢** (5-30分钟)
+   - conda需要遍历多个通道的所有包的所有版本
+   - 计算SAT可满足问题（NP完全问题）
+   - 卡在`Collecting package metadata`或`Solving environment`阶段
+
+2. **Python版本被自动降级**
+   ```
+   # 期望：Python 3.9.23 (CPython)
+   # 实际：Python 3.9.18 (PyPy)  ← conda自动降级
+   ```
+   - PyPy与大量科学计算包不兼容
+   - 导致streamlit、prophet等包安装失败
+
+3. **包冲突问题**
+   - conda-forge和defaults通道的包可能不兼容
+   - 不同通道的同名包版本不一致
+
+4. **内存占用大**
+   - conda求解过程需要2-4GB内存
+   - 可能导致虚拟机卡顿
+
+**pip安装的优势**：
+- ✅ 安装时间：3-5分钟 vs 30分钟
+- ✅ 锁定CPython 3.9.23，不会降级
+- ✅ 无依赖求解，直接下载安装
+- ✅ 包版本更新，支持清华源加速
+
+---
+
+### Q2: 环境创建失败或卡住
 
 ```bash
-# 清理conda缓存
-conda clean --all
+# 方案一：终止并清理
+conda clean --all -y
 
-# 重新创建
-conda env create -f environment.yml
+# 方案二：删除环境重建（使用pip方法）
+conda env remove -n mannings-sla -y
+conda create -n mannings-sla python=3.9 pip -y
+conda activate mannings-sla
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple pandas numpy scipy scikit-learn xgboost streamlit plotly pyyaml python-dotenv
+pip install prophet ortools geopandas fastapi uvicorn python-multipart folium streamlit-folium
 ```
 
-### Q2: Prophet安装失败
+---
 
-Prophet依赖cmdstanpy，可能需要：
+### Q3: Prophet安装失败
+
+使用pip安装通常无问题，如遇问题：
 
 ```bash
-# 先安装cmdstanpy
+# pip直接安装（推荐）
+pip install prophet
+
+# 或使用conda（不推荐）
 conda install -c conda-forge cmdstanpy
 conda install -c conda-forge prophet
 ```
 
-### Q3: 环境已存在
+---
 
-脚本会提示选择：
-- `[1]` 更新环境（推荐）
-- `[2]` 重建环境
-- `[3]` 取消
+### Q4: 环境已存在
 
-### Q4: 如何切换不同环境
+```bash
+# 查看环境
+conda env list
+
+# 删除旧环境
+conda env remove -n mannings-sla -y
+
+# 重新创建（使用pip方法）
+conda create -n mannings-sla python=3.9 pip -y
+```
+
+---
+
+### Q5: streamlit安装卡住或闪退
+
+**原因**：conda尝试安装streamlit时触发Python版本降级至PyPy
+
+**解决方案**：
+```bash
+# 确认Python版本
+python --version  # 应为 3.9.23
+
+# 如果是PyPy，重建环境
+conda deactivate
+conda env remove -n mannings-sla -y
+conda create -n mannings-sla python=3.9 pip -y
+conda activate mannings-sla
+
+# 使用pip安装
+pip install streamlit
+```
+
+---
+
+### Q6: 如何切换不同环境
 
 ```bash
 # 退出当前环境
@@ -207,12 +331,34 @@ conda activate other_env
 
 ### 新增依赖后
 
+**推荐流程**（使用pip）：
+
+1. 更新 `requirements.txt`：
+```bash
+# 安装新包
+pip install new_package
+
+# 导出依赖列表
+pip freeze > requirements-current.txt
+
+# 手动更新requirements.txt（只添加新包）
+echo "new_package>=1.0.0" >> requirements.txt
+```
+
+2. 通知团队运行：
+```bash
+pip install new_package
+# 或
+pip install -r requirements.txt
+```
+
+**传统流程**（使用conda，不推荐）：
+
 1. 更新 `environment.yml`
 2. 更新 `requirements.txt`
 3. 通知团队运行：
-
 ```bash
-conda env update -f environment.yml --prune
+conda env update -f environment.yml --prune  # 可能很慢
 ```
 
 ### 提交前检查
