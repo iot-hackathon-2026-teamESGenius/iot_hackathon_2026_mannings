@@ -1,0 +1,250 @@
+# ==============================================================================
+# 智能体系统配置 - Stage 2 预留架构
+# ==============================================================================
+# 本配置文件定义AI Agent系统的参数，用于第二阶段开发
+# 当前Stage 1阶段无需修改此文件
+
+agent_system:
+  # 全局开关 - Stage 2启用时设为true
+  enabled: false
+  
+  # 协调器配置
+  coordinator:
+    type: "centralized"  # centralized / distributed
+    sync_interval_seconds: 30
+    heartbeat_timeout_seconds: 60
+    conflict_resolution: "priority"  # priority / voting / negotiation
+  
+  # 消息总线配置
+  message_bus:
+    type: "memory"  # memory / redis / kafka (Stage 2可选)
+    max_queue_size: 10000
+    ttl_seconds: 300
+
+# ==============================================================================
+# 需求预测智能体配置
+# ==============================================================================
+demand_forecast_agent:
+  enabled: false
+  
+  # 感知配置
+  perception:
+    data_refresh_interval_seconds: 300
+    external_factors:
+      - weather
+      - holidays
+      - promotions
+    anomaly_detection_sensitivity: 0.8
+  
+  # 决策配置
+  decision:
+    horizon_days: 14
+    scenario_ratios: [0.8, 0.9, 1.0, 1.1, 1.2]
+    confidence_threshold: 0.7
+  
+  # 学习配置
+  learning:
+    mode: "online"  # supervised / reinforcement / online
+    update_frequency: "daily"
+    min_feedback_samples: 100
+  
+  # 模型配置
+  models:
+    primary: "prophet"
+    fallback: "xgboost"
+    ensemble_enabled: true
+    auto_selection: true
+
+# ==============================================================================
+# 库存优化智能体配置
+# ==============================================================================
+inventory_optimization_agent:
+  enabled: false
+  
+  # 感知配置
+  perception:
+    inventory_sync_interval_seconds: 60
+    anomaly_types:
+      - negative_stock
+      - sudden_increase
+      - count_mismatch
+  
+  # 决策配置
+  decision:
+    safety_stock_method: "dynamic"  # static / dynamic / ml_based
+    service_level_target: 0.95
+    budget_constraint_enabled: true
+    storage_constraint_enabled: true
+  
+  # 学习配置
+  learning:
+    mode: "reinforcement"
+    reward_function: "minimize_cost_and_stockout"
+    discount_factor: 0.95
+  
+  # 优化配置
+  optimization:
+    algorithm: "adaptive"  # rule_based / optimization / adaptive
+    multi_product_coordination: true
+
+# ==============================================================================
+# 路径调度智能体配置
+# ==============================================================================
+routing_dispatch_agent:
+  enabled: false
+  
+  # 感知配置
+  perception:
+    traffic_api: "google_directions"
+    traffic_refresh_interval_seconds: 300
+    vehicle_status_sync_interval_seconds: 60
+  
+  # 决策配置
+  decision:
+    objectives:
+      cost: 0.4
+      time: 0.4
+      emission: 0.2
+    reoptimization_trigger:
+      delay_threshold_minutes: 15
+      new_order_threshold: 5
+  
+  # 学习配置
+  learning:
+    mode: "reinforcement"
+    state_features:
+      - traffic_congestion
+      - weather_condition
+      - time_of_day
+      - vehicle_capacity
+    action_space:
+      - reroute
+      - reassign_vehicle
+      - adjust_time_window
+  
+  # 与其他Agent协同
+  coordination:
+    demand_agent_sync: true
+    sla_agent_sync: true
+
+# ==============================================================================
+# SLA预警智能体配置
+# ==============================================================================
+sla_alert_agent:
+  enabled: false
+  
+  # 感知配置
+  perception:
+    monitoring_interval_seconds: 30
+    data_sources:
+      - order_status
+      - route_progress
+      - inventory_level
+  
+  # 预警配置
+  alerting:
+    threshold_mode: "dynamic"  # static / dynamic / ml_based
+    severity_levels:
+      low:
+        color: "#0066CC"
+        auto_resolve: true
+      medium:
+        color: "#FFC107"
+        notification: true
+      high:
+        color: "#FD7E14"
+        escalation: true
+      critical:
+        color: "#DC3545"
+        auto_mitigation: true
+        sound_alert: true
+  
+  # 根因分析配置
+  root_cause_analysis:
+    enabled: true
+    analysis_depth: 3  # 追溯层数
+    contributing_factors_limit: 5
+  
+  # 自动缓解配置
+  auto_mitigation:
+    enabled: false  # Stage 2启用前保持禁用
+    approval_required: true
+    allowed_actions:
+      - adjust_time_window
+      - reassign_vehicle
+      - priority_boost
+
+# ==============================================================================
+# 强化学习引擎配置
+# ==============================================================================
+reinforcement_learning:
+  enabled: false
+  
+  # 算法配置
+  algorithm: "PPO"  # DQN / PPO / A2C / SAC
+  
+  # 训练配置
+  training:
+    episodes: 10000
+    batch_size: 64
+    learning_rate: 0.0003
+    gamma: 0.99
+    clip_ratio: 0.2
+  
+  # 环境配置
+  environment:
+    type: "supply_chain_simulation"
+    max_steps_per_episode: 1000
+    reward_scaling: 1.0
+  
+  # 模型保存
+  checkpointing:
+    save_frequency: 100
+    keep_last_n: 5
+
+# ==============================================================================
+# 模型注册表配置
+# ==============================================================================
+model_registry:
+  enabled: false
+  
+  # 存储配置
+  storage:
+    type: "local"  # local / s3 / mlflow
+    path: "models/agents"
+  
+  # 版本管理
+  versioning:
+    enabled: true
+    max_versions_per_model: 10
+  
+  # A/B测试
+  ab_testing:
+    enabled: true
+    traffic_split_default: 0.1  # 10%流量给新模型
+    min_samples_for_decision: 1000
+
+# ==============================================================================
+# 日志与监控
+# ==============================================================================
+observability:
+  # 日志配置
+  logging:
+    level: "INFO"
+    format: "json"
+    include_decision_trace: true
+  
+  # 指标配置
+  metrics:
+    export_enabled: true
+    export_interval_seconds: 60
+    metrics_to_track:
+      - agent_decision_latency
+      - agent_accuracy
+      - message_throughput
+      - learning_progress
+  
+  # 追踪配置
+  tracing:
+    enabled: false
+    sampler_rate: 0.1

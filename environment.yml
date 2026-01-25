@@ -20,7 +20,7 @@ dependencies:
   - prophet>=1.1
   - scikit-learn>=1.2
   - xgboost>=1.7
-  - tensorflow>=2.13  # 可选，如果需要深度学习
+  # - tensorflow>=2.13  # Stage 2可选 - 深度学习Agent
   
   # 优化求解
   - ortools>=9.6
@@ -61,18 +61,31 @@ dependencies:
   - pip:
     # 地理可视化
     - folium>=0.14
+    - streamlit-folium>=0.15.0
+    
+    # REST API服务 (适配前端Vue3+uniapp)
+    - fastapi>=0.100.0
+    - uvicorn>=0.22.0
+    - python-multipart>=0.0.6
+    
+    # Google Maps API
+    - googlemaps>=4.10.0
     
     # 香港数据API包装（如果有）
     # - hk-weather-api
     
-    # 其他纯Python包
-# 新增依赖
-- pyyaml>=6.0
-- googlemaps>=4.10.0  # Google Distance Matrix API
-- streamlit-folium>=0.15.0  # Streamlit地图集成
+    # ==============================================================================
+    # Stage 2 - 智能体系统依赖 (待启用)
+    # ==============================================================================
+    # 深度学习框架
+    # - tensorflow>=2.12.0
+    # - torch>=2.0.0
+    
+    # 强化学习
+    # - stable-baselines3>=2.0.0
+    # - gymnasium>=0.28.0
+    
+    # LLM集成 (可选)
+    # - langchain>=0.0.200
+    # - openai>=0.27.0
 
-# 开发工具
-- pytest>=7.4.0
-- pytest-cov>=4.1.0
-- black>=23.0.0
-- flake8>=6.1.0

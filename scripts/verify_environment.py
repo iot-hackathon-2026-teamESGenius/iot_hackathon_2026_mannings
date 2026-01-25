@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 """
-环境验证脚本
+环境验证脚本 - Mannings SLA优化项目
 检查所有必需的包是否正确安装
+更新: 2026-01-25
 """
 
 import sys
@@ -10,22 +11,32 @@ from importlib import import_module, metadata
 
 # 必须的包和最小版本
 REQUIRED_PACKAGES = {
+    # 数据处理
     'pandas': '1.5',
     'numpy': '1.23',
+    # 预测模型
     'prophet': '1.1',
-    'streamlit': '1.22',
-    'geopandas': '0.13',
-    'ortools': '9.6',
-    'plotly': '5.14',
     'scikit-learn': '1.2',
     'xgboost': '1.7',
+    # 优化求解
+    'ortools': '9.6',
+    # 地理处理
+    'geopandas': '0.13',
+    # 可视化
+    'streamlit': '1.22',
+    'plotly': '5.14',
+    # REST API (Stage 1新增)
+    'fastapi': '0.100',
+    'uvicorn': '0.22',
 }
 
-# 可选的包（不强制检查）
+# 可选的包 (Stage 2 智能体系统)
 OPTIONAL_PACKAGES = {
-    'tensorflow': '2.13',
-    'torch': '2.0',
-    'dash': '2.0',
+    'tensorflow': '2.12',      # 深度学习Agent
+    'torch': '2.0',            # 深度学习备选
+    'stable_baselines3': '2.0', # 强化学习
+    'redis': '4.5',            # 多Agent通信
+    'mlflow': '2.3',           # 模型管理
 }
 
 def check_package(package, min_version=None):
