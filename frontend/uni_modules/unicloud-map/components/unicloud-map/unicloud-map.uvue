@@ -1,0 +1,525 @@
+<template>
+	<view class="unicloud-map">
+		<map :ref="mapId" :id="mapId" :style="styleCom" :latitude="latitudeCom" :longitude="longitudeCom" :scale="scale" :min-scale="minScale" :max-scale="maxScale"
+			:markers="markers" :polyline="polyline" :circles="circles" :controls="controls" :include-points="includePoints" :show-compass="showCompass" :enable-zoom="enableZoom"
+			:enable-scroll="enableScroll" :enable-rotate="enableRotate" :rotate="rotate" :enable-overlooking="enableOverlooking" :enable-satellite="enableSatellite"
+			:enable-traffic="enableTraffic" :enable-poi="enablePoi" :enable-building="enableBuilding" :show-location="showLocation" :polygons="polygons"
+			:enable-indoorMap="enableIndoorMap" @markertap="_markertap" @callouttap="_callouttap" @controltap="_controltap" @regionchange="_regionchange" @tap="_tap" @updated="_updated"
+			@poitap="_poitap"></map>
+	</view>
+</template>
+
+<script>
+	/**
+	 * unicloud-map
+	 * @description 云端一体地图组件
+	 * @property {String} loadtime = [auto|onready|manual] 数据加载时机
+	 * 	@value auto 页面就绪后或属性变化后加载数据，默认为auto
+	 * 	@value onready 页面就绪后不自动加载数据，属性变化后加载。适合在onready中接收上个页面的参数作为where条件时。
+	 * 	@value manual 手动模式，不自动加载数据。需要手动调用refresh函数加载数据
+	 * @property {String} collection 表名
+	 * @property {Object} where 查询条件
+	 * @property {Number} poiMaximum = 100 最大poi显示数量
+	 * @property {Number} poiMaxDistance 查询的最大距离
+	 * @property {Number} poiMinDistance 查询的最小距离
+	 * @property {Number|String} width 宽度
+	 * @property {Number|String} height	高度
+	 * @property {String} defaultIcon 默认的POI图标
+	 * @property {Array} customIcons 自定义图标，根据POI的type来区分
+	 * @property {String|Number} latitude 中心纬度
+	 * @property {String|Number} longitude 中心经度
+	 * @property {Number} scale 地图缩放等级，部分情况下会自动设置，此参数会失效
+	 * @property {Number} minScale 最小缩放等级
+	 * @property {Number} maxScale 最大缩放等级
+	 * @property {String|Number} layerStyle 个性化地图
+	 * @property {Boolean} showCompass 是否显示指南针
+	 * @property {Boolean} enableZoom 是否支持缩放
+	 * @property {Boolean} enableScroll 是否支持拖动
+	 * @property {Boolean} enableRotate 是否支持旋转
+	 * @property {Number} rotate 旋转角度，当enableRotate为true时才生效
+	 * @property {Boolean} enableOverlooking 是否开启俯视
+	 * @property {Boolean} enableSatellite 是否开启卫星图
+	 * @property {Boolean} enableTraffic 是否开启实时路况
+	 * @property {Boolean} enablePoi 是否展示地图的原生 POI 点
+	 * @property {Boolean} enableBuilding 是否展示建筑物
+	 * @property {Boolean} showLocation 显示带有方向的当前定位点
+	 * @property {Array} polygons 多边形
+	 * @property {Boolean} enableIndoorMap 是否展示室内地图
+	 * @event {Function} mounted 组件加载完成触发（此时不一定有数据）
+	 * @event {Function} load 数据加载完成事件
+	 * @event {Function} markertap 点击标记点时触发
+	 * @event {Function} labeltap 点击label时触发
+	 * @event {Function} callouttap 点击标记点对应的气泡时触发
+	 * @event {Function} controltap 点击控件时触发
+	 * @event {Function} regionchange 视野发生变化时触发
+	 * @event {Function} tap 点击地图时触发; App-nvue、微信小程序2.9支持返回经纬度
+	 * @event {Function} updated 在地图渲染更新完成时触发
+	 * @event {Function} anchorpointtap 点击定位标时触发
+	 * @event {Function} poitap 点击地图原生POI点时触发
+	 * @event {Function} custom-poitap 点击自定义POI点时触发
+	 */
+
+	export default {
+		name: "unicloud-map",
+		emits: ["mounted", "load", "markertap", "labeltap", "callouttap", "controltap", "regionchange", "tap", "updated", "anchorpointtap", "poitap", "custom-poitap"],
+		props: {
+			collection: {
+				type: String,
+				default: "opendb-poi"
+			},
+			// 数据加载时机
+			loadtime: {
+				type: String,
+				default: "auto"
+			},
+			where: {
+				type: Object as PropType<UTSJSONObject>,
+			},
+			poiMaximum: {
+				type: Number,
+				default: 100
+			},
+			poiMaxDistance: {
+				type: Number,
+				default: 0
+			},
+			poiMinDistance: {
+				type: Number,
+				default: 0
+			},
+			// 默认的POI图标
+			defaultIcon: {
+				type: String,
+				default: "/static/location.png"
+			},
+			// 自定义图标，根据POI的type来区分
+			customIcons: {
+				type: Array as PropType<Array<UTSJSONObject>>,
+				default: function () : Array<UTSJSONObject> {
+					return [] as Array<UTSJSONObject>
+				}
+			},
+			width: {
+				type: Number,
+				default: 0
+			},
+			height: {
+				type: Number,
+				default: 0
+			},
+			// 纬度
+			latitude: {
+				type: Number
+			},
+			// 经度
+			longitude: {
+				type: Number
+			},
+			// 默认纬度
+			defaultLatitude: {
+				type: Number,
+				default: 39.908823
+			},
+			// 默认经度
+			defaultLongitude: {
+				type: Number,
+				default: 116.39747
+			},
+			scale: {
+				type: Number,
+				default: 16
+			},
+			minScale: {
+				type: Number,
+				default: 3
+			},
+			maxScale: {
+				type: Number,
+				default: 20
+			},
+
+			showCompass: {
+				type: Boolean,
+				default: false
+			},
+			enableZoom: {
+				type: Boolean,
+				default: true
+			},
+			enableScroll: {
+				type: Boolean,
+				default: true
+			},
+			enableRotate: {
+				type: Boolean,
+				default: false
+			},
+			rotate: {
+				type: Number,
+				default: 0
+			},
+			enableOverlooking: {
+				type: Boolean,
+				default: false
+			},
+			enableSatellite: {
+				type: Boolean,
+				default: false
+			},
+			enableTraffic: {
+				type: Boolean,
+				default: false
+			},
+			enablePoi: {
+				type: Boolean,
+				default: true
+			},
+			enableBuilding: {
+				type: Boolean,
+				default: true
+			},
+			showLocation: {
+				type: Boolean,
+				default: true
+			},
+			polygons: {
+				type: Array as PropType<Array<Polygon>>,
+				default: function () : Array<Polygon> {
+					return [] as Array<Polygon>
+				}
+			},
+			enableIndoorMap: {
+				type: Boolean,
+				default: false
+			}
+		},
+		data() {
+			const mapId = `UniCloudMap_${(Math.random() * 10e5).toString(36)}` as string;
+			return {
+				mapId: mapId,
+				mapStyle: "",
+				// 标记点
+				markers: [] as Marker[],
+				// 路线
+				polyline: [] as Polyline[],
+				// 圆
+				circles: [] as Circle[],
+				// 控件
+				controls: [] as Control[],
+				// 缩放视野以包含所有给定的坐标点 
+				includePoints: [] as LocationObject[],
+				// 当前pois列表数据
+				pois: [] as UTSJSONObject[]
+			};
+		},
+		mounted() {
+			let loadtime = this.loadtime as string;
+			if (loadtime == "auto") {
+				this.getCloudData({
+					needIncludePoints: true
+				});
+			}
+			this.$emit("mounted");
+		},
+		methods: {
+			// 提供给外部调用 
+			async refresh(obj ?: UTSJSONObject) {
+				this.getCloudData(obj);
+			},
+			// 获取云端数据
+			async getCloudData(obj ?: UTSJSONObject) {
+				let collection = this.collection as string;
+				let longitude = this.longitudeCom as number;
+				let latitude = this.latitudeCom as number;
+				let poiMaxDistance = this.poiMaxDistance as number;
+				let poiMinDistance = this.poiMinDistance as number;
+				let needIncludePoints = false;
+				if (obj != null) {
+					if (obj['needIncludePoints'] != null) {
+						needIncludePoints = obj['needIncludePoints'] as boolean;
+					}
+					if (obj['longitude'] != null && obj['latitude'] != null) {
+						longitude = obj['longitude'] as number;
+						latitude = obj['latitude'] as number;
+					}
+				}
+				const db = uniCloud.databaseForJQL();
+				let where = Object.assign({
+					visible: true,
+				}, this.where as UTSJSONObject)
+				let geoNearJson = {
+					distanceField: 'distance', // 输出的每个记录中 distance 即是与给定点的距离
+					spherical: true,
+					near: new db.Geo.Point(longitude, latitude),
+					query: where,
+					key: 'location', // 若只有 location 一个地理位置索引的字段，则不需填
+					includeLocs: 'location', // 若只有 location 一个是地理位置，则不需填
+				} as UTSJSONObject;
+				if (poiMaxDistance > 0) {
+					geoNearJson['maxDistance'] = poiMaxDistance;
+				}
+				if (poiMinDistance > 0) {
+					geoNearJson['minDistance'] = poiMinDistance;
+				}
+				let res = await db.collection(collection).aggregate()
+					.geoNear(geoNearJson)
+					.orderBy("distance desc")
+					.limit(this.poiMaximum)
+					.get();
+				let list = res['data'] as UTSJSONObject[];
+				// 根据level手动排序 
+				list.sort((a : UTSJSONObject, b : UTSJSONObject) : number => {
+					let levelA = a['level'] != null ? a['level'] as number : 0;
+					let levelB = b['level'] != null ? b['level'] as number : 0;
+					return levelA - levelB;
+				});
+				this.pois = list;
+				let markers = list.map((item : UTSJSONObject, index : number) : Marker => {
+					let location = item['location'] as UTSJSONObject;
+					let coordinates = location['coordinates'] as Array<number>;
+					let data = {
+						id: index,
+						latitude: coordinates[1],
+						longitude: coordinates[0],
+						iconPath: this._getIcon(item),
+						width: item['width'] != null ? item['width'] as number : 30,
+						height: item['height'] != null ? item['height'] as number : 30,
+						rotate: item['rotate'] != null ? item['rotate'] as number : 0
+					} as Marker;
+					if (item['title'] != null) {
+						data.title = item['title'] as string;
+						data.callout = {
+							content: item['title'] as string,
+							color: "#000000",
+							fontSize: 12,
+							borderRadius: 5,
+							borderWidth: 1,
+							borderColor: "#f8f8f8",
+							bgColor: "#ffffff",
+							padding: 4,
+							display: "ALWAYS",
+							textAlign: "center"
+						} as MapMarkerCallout;
+					}
+					return data;
+				});
+				this.markers = markers;
+				if (needIncludePoints) {
+					this.calcIncludePoints();
+				}
+				let emitData = {
+					pois: list,
+					markers,
+				};
+				this.$emit("load", emitData);
+			},
+			// 计算一组坐标的边界
+			_calculateBounds(coordinates : LocationObject[]) : LocationObject[] {
+				if (coordinates.length == 0) {
+					return [];
+				}
+				let minLongitude = coordinates[0].longitude;
+				let maxLongitude = coordinates[0].longitude;
+				let minLatitude = coordinates[0].latitude;
+				let maxLatitude = coordinates[0].latitude;
+
+				coordinates.forEach((coord : LocationObject) => {
+					let longitude = coord.longitude;
+					let latitude = coord.latitude;
+					minLongitude = Math.min(minLongitude, longitude);
+					maxLongitude = Math.max(maxLongitude, longitude);
+					minLatitude = Math.min(minLatitude, latitude);
+					maxLatitude = Math.max(maxLatitude, latitude);
+				})
+				let k = 0.008; // 额外偏移0.008，使所有坐标都在一屏中显示
+				const southwest = { longitude: minLongitude - k, latitude: minLatitude - k } as LocationObject;
+				const northeast = { longitude: maxLongitude + k, latitude: maxLatitude + k } as LocationObject;
+
+				return [
+					southwest,
+					northeast
+				] as LocationObject[]
+			},
+			getMarkers() : Marker[] {
+				return this.markers;
+			},
+			setMarkers(markers : Marker[]) {
+				this.markers = markers;
+			},
+			getPolyline() : Polyline[] {
+				return this.polyline;
+			},
+			setPolyline(polyline : Polyline[]) {
+				this.polyline = polyline;
+				this.calcIncludePoints();
+			},
+			calcIncludePoints() {
+				let polyline = this.polyline as Polyline[];
+				let markers = this.markers as Marker[];
+				let points = [] as LocationObject[];
+				if (markers.length > 0) {
+					let list : LocationObject[] = markers.map((item : Marker) => {
+						return {
+							latitude: item.latitude,
+							longitude: item.longitude
+						} as LocationObject
+					});
+					points = points.concat(list);
+				}
+
+				if (polyline.length > 0) {
+					polyline.forEach((item : Polyline) => {
+						points = points.concat(item.points);
+					});
+				}
+				if (points.length > 0) {
+					this.includePoints = this._calculateBounds(points);
+				} else {
+					this.includePoints = [
+						{
+							latitude: this.latitudeCom,
+							longitude: this.longitudeCom
+						} as LocationObject
+					] as LocationObject[];
+				}
+			},
+			getCircles() : Circle[] {
+				return this.circles;
+			},
+			setCircles(circles : Circle[]) {
+				this.circles = circles;
+			},
+			getControls() : Control[] {
+				return this.controls;
+			},
+			setControls(controls : Control[]) {
+				this.controls = controls;
+			},
+			_getIcon(obj : UTSJSONObject) : string {
+				let type = obj['type'] as string;
+				if (obj['icon'] != null) {
+					return obj['icon'] as string;;
+				}
+				let customIcons = this.customIcons as Array<UTSJSONObject>;
+				let defaultIcon = this.defaultIcon as string;
+				let findItem : UTSJSONObject | null = customIcons.find((item : UTSJSONObject) : boolean => {
+					let _type = item['type'] as string;
+					return _type == type ? true : false;
+				});
+				if (findItem == null) {
+					return defaultIcon;
+				}
+				if (findItem['icon'] == null) {
+					return defaultIcon;
+				}
+				return findItem['icon'] as string;
+			},
+			_markertap(e : UniMapMarkerTapEvent) {
+				if (e.detail != null) {
+					let detail = e.detail as UniMapMarkerTapEventDetail;
+					let markerId = detail.markerId;
+					if (markerId != null) {
+						let poi = this.pois[markerId];
+						this.$emit("markertap", e);
+						this.$emit("custom-poitap", { poi });
+					}
+				} 
+			},
+			_callouttap(e : UniEvent) {
+				this.$emit("callouttap", e);
+			},
+			_controltap(e : UniMapControlTapEvent) {
+				this.$emit("controltap", e);
+			},
+			getMapContext() : MapContext | null {
+				// @ts-expect-error
+				return uni.createMapContext(this.mapId, this);
+			},
+			_regionchange(e : UniMapRegionChangeEvent) {
+				let causedBy = e.causedBy as string | null;
+				// #ifdef WEB
+				if (!causedBy) {
+					// @ts-expect-error
+					causedBy = e.detail.causedBy as string;
+				}
+				// #endif
+				if (e.type !== "end" || causedBy != "drag") {
+					return;
+				}
+				this.$emit("regionchange", e);
+				const mapContext = this.getMapContext();
+				if (mapContext != null) {
+					mapContext.getCenterLocation({
+						success: (res) => {
+							this.getCloudData({
+								latitude: res.latitude,
+								longitude: res.longitude
+							});
+						}
+					});
+				}
+			},
+			_tap(e : UniMapTapEvent) {
+				this.$emit("tap", e);
+			},
+			_updated(e : UniMapUpdatedEvent) {
+				this.$emit("updated", e);
+			},
+			_poitap(e : UniMapPoiTapEvent) {
+				this.$emit("poitap", e);
+			}
+
+		},
+		watch: {
+			whereWatchCom() {
+				// 需要重新查询
+				let loadtime = this.loadtime as string;
+				if (loadtime !== "manual") {
+					this.refresh({
+						needIncludePoints: true
+					});
+				}
+			}
+		},
+		computed: {
+			whereWatchCom() : string {
+				let where = this.where as UTSJSONObject;
+				let collection = this.collection as string;
+				return JSON.stringify({ where, collection })
+			},
+			styleCom() : string {
+				let width = this.width as number;
+				let height = this.height as number
+				let arr = [] as Array<string>;
+				if (width > 0) {
+					arr.push(`width:${width}px;`);
+				} else {
+					arr.push("width:100%;");
+				}
+				if (height > 0) {
+					arr.push(`height:${height}px;`);
+				} else {
+					arr.push("height:100%;");
+				}
+				return arr.join("");
+			},
+			latitudeCom() : number {
+				let latitude = this.latitude as number;
+				let defaultLatitude = this.defaultLatitude as number;
+				return (latitude != 0) ? latitude : defaultLatitude;
+			},
+			longitudeCom() : number {
+				let longitude = this.longitude as number;
+				let defaultLongitude = this.defaultLongitude as number;
+				return (longitude != 0) ? longitude : defaultLongitude;
+			}
+		}
+	}
+</script>
+
+<style lang="scss" scoped>
+.unicloud-map {
+	width: 100%;
+	height: 100%;
+}
+</style>

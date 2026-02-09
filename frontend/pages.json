@@ -1,0 +1,94 @@
+{
+  "easycom": {
+    "autoscan": true,
+    "^uni-(.*)": "@/uni_modules/uni-$1/components/uni-$1/uni-$1.vue",
+	"^qiun-(.*)": "@/uni_modules/qiun-$1/components/qiun-$1/qiun-$1.vue"
+  },
+  "pages": [
+    {
+      "path": "pages/index/index",
+      "style": {
+        "navigationBarTitleText": "首页",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/my", 
+      "style": {
+        "navigationBarTitleText": "个人中心",
+		"navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/index/replenishment",
+      "style": { 
+		  "navigationBarTitleText": "补货管理" ,
+		  "navigationStyle": "custom"
+		  }
+	},
+	{
+		"path": "pages/login",
+		"style": {
+			"navigationBarTitleText": "登录"
+		}
+	}
+  ,{
+	"path": "pages/index/deliever_map",
+	"style": {
+		"navigationBarTitleText": "配送地图",
+		"navigationStyle": "custom"
+	}
+},
+{
+	"path": "pages/index/forcast",
+	"style": {
+		"navigationBarTitleText": "需求预测",
+		"navigationStyle": "custom"
+	}
+}
+],
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "uni-app",
+    "navigationBarBackgroundColor": "#F8F8F8",
+    "backgroundColor": "#F8F8F8"
+  },
+  "tabBar": {
+    "color": "#8a8a8a",
+    "selectedColor": "#0066CC",
+    "borderStyle": "black",
+    "backgroundColor": "#ffffff",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "static/img/home.png",
+        "selectedIconPath": "static/img/home_selected.png"
+      },
+      {
+        "pagePath": "pages/index/forcast",
+        "text": "需求预测",
+        "iconPath": "static/img/forcast.png",
+        "selectedIconPath": "static/img/forcast_selected.png"
+      },
+      {
+        "pagePath": "pages/index/replenishment",
+        "text": "补货",
+        "iconPath": "static/img/replenishment.png",
+        "selectedIconPath": "static/img/replenishment_selected.png"
+      },
+      {
+        "pagePath": "pages/index/deliever_map",
+        "text": "调度",
+        "iconPath": "static/img/deliever.png",
+        "selectedIconPath": "static/img/deliever_selected.png"
+      },
+      {
+        "pagePath": "pages/my",
+        "text": "我的",
+        "iconPath": "static/img/my.png",
+        "selectedIconPath": "static/img/my_selected.png"
+      }
+    ]
+  }
+}
