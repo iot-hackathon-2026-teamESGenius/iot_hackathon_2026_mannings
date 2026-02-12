@@ -86,6 +86,9 @@ iot_hackathon_2026_mannings/
 │   │   ├── distance/                # 距离计算
 │   │   ├── forecasting/             # 需求预测
 │   │   ├── routing/                 # 路径优化 ⭐
+│   │   │   ├── config.py                     # 全局参数配置
+│   │   │   ├── optimization_result.py        # 标准化输出格式
+│   │   │   ├── distance_matrix.py            # 距离/时间矩阵
 │   │   │   └── implementations/
 │   │   │       ├── ortools_optimizer.py      # Baseline CVRPTW
 │   │   │       ├── robust_optimizer.py       # 鲁棒优化器 (创新)
@@ -257,6 +260,23 @@ result = optimizer.robust_optimization_from_forecasts(
 1. **多情景需求建模**: 从预测置信区间生成离散需求情景
 2. **Min-Max鲁棒策略**: 优化最坏情景下的表现
 3. **预测→决策闭环**: 预测不确定性直接驱动调度决策
+4. **学习增强策略**: 基于 feature_score 的需求缩放
+
+### 输出格式标准化
+
+```python
+from src.modules.routing.optimization_result import OptimizationResult
+
+# 标准化输出格式
+result = OptimizationResult(
+    routes=[[1,2,3], [4,5]],       # 每辆车的路径序列
+    total_distance=12.5,           # 总行驶距离 (km)
+    total_time=180,                # 总配送时间 (min)
+    vehicles_used=2,               # 使用车辆数
+    sla_risk_score=0.05,           # SLA风险评分 (0-1)
+    scenario_id="ratio_1.0"        # 情景标识
+)
+```
 
 ---
 
@@ -328,6 +348,9 @@ feat(frontend): add login page with authentication
 - [x] SLA预测模块
 - [x] REST API服务层
 - [x] Streamlit可视化看板
+- [x] 优化结果标准化输出 (OptimizationResult)
+- [x] 鲁棒优化学习增强策略
+- [x] 多情景生成器 (分位数/比例/蒙特卡洛)
 
 ### Stage 2 (计划)
 
