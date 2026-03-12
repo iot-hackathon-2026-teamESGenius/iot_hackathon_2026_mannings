@@ -177,6 +177,24 @@ __marimo__/
 
 # ==================== 项目特定忽略 ====================
 
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# HBuilderX IDE
+.hbuilderx/
+unpackage/
+
+# 前端构建产物
+frontend/dist/
+frontend/unpackage/
+
+# uni-app运行时缓存
+.uni/
+
 # 环境变量（敏感信息）
 .env.local
 .env.development
@@ -213,6 +231,11 @@ data/processed/*.feather
 data/external/*.csv
 data/external/*.zip
 data/external/*.gz
+
+# DFI企业数据（保密，绝不提交）
+data/dfi/**
+!data/dfi/.gitkeep
+!data/dfi/README.md
 
 # 保留目录结构的例外
 data/processed/

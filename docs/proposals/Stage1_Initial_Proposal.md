@@ -1,10 +1,5 @@
 # IOT Hackathon 2026 - Mannings Store Pickup SLA Optimization
-# Stage 1 Initial Proposal
-
-<p align="center">
-  <strong>Store Pickup SLA Optimization System</strong><br>
-  DFI Retail Group - Mannings
-</p>
+## Stage 1 Initial Proposal
 
 **Team Name:** ESGenius  
 **Submission Date:** February 15, 2026  
@@ -14,159 +9,120 @@
 
 ## 1. Objectives
 
-### 1.1 Project Vision
+### Project Vision
 
 Build an **end-to-end Store Pickup SLA Optimization System** for Mannings, integrating AI/ML prediction with mathematical optimization:
 
 > **"Ensure every customer picks up their order within the promised time, while maximizing efficiency and minimizing costs"**
 
-### 1.2 Core KPIs
+### Target KPIs
 
-```mermaid
-graph LR
-    A[SLA Rate] -->|+10%| B[85% → 95%]
-    C[Forecast MAPE] -->|Target| D[< 15%]
-    E[Route Cost] -->|-20%| F[Optimized]
-    G[Stockout] -->|Reduce| H[< 5%]
-    I[Pickup Promise] -->|Accuracy| J[±15 min]
-```
+| Metric | Target Improvement |
+|--------|-------------------|
+| SLA Achievement Rate | Increase from current baseline |
+| Forecast Accuracy (MAPE) | Reduce prediction error |
+| Delivery Efficiency | Optimize route distance |
+| Stockout Rate | Reduce inventory gaps |
+| Pickup Promise Accuracy | Improve time window precision |
 
-### 1.3 Strategic Goals
+### Strategic Goals
 
 1. **Customer Experience**: Reliable "Ready for Pickup" time promises
 2. **Operations Intelligence**: Data-driven automated decisions
 3. **Cost Optimization**: Minimize fleet & inventory costs while maintaining SLA
-4. **Scalability**: Modular architecture for future AI Agent expansion
+4. **Scalability**: Modular architecture for future expansion
 
 ---
 
 ## 2. Pain Points / Problems to Address
 
-Based on **A-E five core problems** from the Mannings Challenge Briefing:
-
-```mermaid
-graph TB
-    subgraph Problems
-        A[A: Demand Fluctuation]
-        B[B: Inventory Uncertainty]
-        C[C: Replenishment Delays]
-        D[D: Fleet Scheduling]
-        E[E: Store Processing Time]
-    end
-    
-    subgraph Solutions
-        A1[Prophet + External Features]
-        B1[ATP Inventory Model]
-        C1[Robust Optimization]
-        D1[CVRPTW + Min-Max]
-        E1[Probabilistic SLA]
-    end
-    
-    A --> A1
-    B --> B1
-    C --> C1
-    D --> D1
-    E --> E1
-```
-
-### Problem Details
+Based on the **Mannings Challenge Briefing (A-E five core problems)**:
 
 | Problem | Key Challenge | Our Solution |
 |---------|---------------|--------------|
-| **A. Demand** | Promotions, long-tail SKUs, seasonality | Prophet + HKO weather + promotion calendar |
-| **B. Inventory** | Book ≠ Actual, multi-channel competition | Available-to-Promise model with safety stock |
-| **C. Replenishment** | DC→ECDC lead time uncertainty | Scenario-based robust planning |
-| **D. Routing** | Time windows, capacity, SLA vs cost | **Robust CVRPTW (Core Innovation)** |
-| **E. Processing** | Picking/packing time variance | Probabilistic prediction with CI |
+| **A. Demand Fluctuation** | Promotions, long-tail SKUs, seasonality | Prophet + Weather + Promotion Calendar |
+| **B. Inventory Uncertainty** | Book stock ≠ Actual, multi-channel competition | Available-to-Promise (ATP) Model |
+| **C. Replenishment Delays** | DC→ECDC lead time uncertainty | Scenario-based Robust Planning |
+| **D. Fleet Scheduling** | Time windows, capacity, SLA vs cost | Robust CVRPTW Optimization |
+| **E. Store Processing** | Picking/packing time variance | Probabilistic Prediction |
+
+### Problem Details
+
+**A. Demand Fluctuation** - Promotions can cause significant demand spikes; long-tail SKUs have high variance; weather affects seasonal products. We integrate external features into Prophet forecaster.
+
+**B. Inventory Uncertainty** - Multi-channel sales compete for same inventory with synchronization delays. Our ATP model provides dynamic safety stock calculation.
+
+**C. Replenishment Delays** - DC→ECDC lead time varies with uncertain capacity. We use robust optimization for worst-case scenarios.
+
+**D. Fleet Scheduling** - Traditional routing assumes fixed demand; we use scenario-based approach to handle uncertainty.
+
+**E. Store Processing Time** - Varies by staff experience, order complexity, and time of day. Our probabilistic predictor outputs confidence intervals.
 
 ---
 
 ## 3. Proposed Solution
 
-### 3.1 Five-Layer System Architecture
+### Innovation: End-to-End Coupled Optimization
 
-```mermaid
-graph TB
-    subgraph L1[Layer 1: Frontend - Vue3 + uniapp]
-        F1[Login]
-        F2[Dashboard]
-        F3[Forecast]
-        F4[Planning]
-        F5[SLA Alerts]
-    end
-    
-    subgraph L2[Layer 2: API Service - FastAPI]
-        API[RESTful API Endpoints]
-    end
-    
-    subgraph L3[Layer 3: Core Algorithms]
-        M1[Demand Forecaster<br/>Prophet]
-        M2[Inventory Optimizer<br/>Safety Stock]
-        M3[Robust Router ⭐<br/>CVRPTW + Min-Max]
-        M4[SLA Predictor<br/>Probabilistic]
-        M5[Scenario Generator<br/>Quantile/MC]
-    end
-    
-    subgraph L4[Layer 4: AI Agents - Stage 2]
-        AG[Multi-Agent Coordinator]
-    end
-    
-    subgraph L5[Layer 5: Data Layer]
-        D1[Store/Order Data]
-        D2[External: HKO, Gov.hk]
-    end
-    
-    L1 --> L2
-    L2 --> L3
-    L3 -.-> L4
-    L3 --> L5
-```
+Unlike traditional approaches that optimize each module independently, our system implements **end-to-end coupling** where:
 
-### 3.2 Core Innovation: Robust Routing Optimizer ⭐
-
-Traditional routing optimization ignores demand uncertainty. Our **Scenario-based Robust CVRPTW** addresses this:
-
-```mermaid
-graph LR
-    subgraph Step1[Step 1: Scenario Generation]
-        S1[Quantile: P10, P50, P90]
-        S2[Ratio: 0.9x, 1.0x, 1.1x]
-        S3[Monte Carlo Sampling]
-    end
-    
-    subgraph Step2[Step 2: Multi-Scenario Solving]
-        SOLVE[OR-Tools CVRPTW<br/>per scenario]
-    end
-    
-    subgraph Step3[Step 3: Robust Selection]
-        SEL[Min-Max Strategy<br/>Best worst-case]
-    end
-    
-    Step1 --> Step2 --> Step3
-```
+| Traditional Approach | Our End-to-End Approach |
+|---------------------|-------------------------|
+| Forecast → Fixed numbers | Forecast → Confidence intervals |
+| Inventory optimized separately | Inventory linked to routing constraints |
+| Routing uses single demand | Routing uses demand scenarios |
+| SLA estimated after planning | SLA integrated into optimization objective |
 
 **Key Innovation Points:**
-- **Uncertainty Quantification**: Convert forecast CI to demand scenarios
-- **Min-Max Robustness**: Optimize for worst-case scenario performance
-- **Forecast→Decision Loop**: Prediction uncertainty directly drives routing
 
-### 3.3 End-to-End Data Flow
+1. **Forecast-to-Decision Pipeline**: Prediction uncertainty directly drives routing decisions
+2. **Closed-Loop Feedback**: SLA outcomes feed back to improve forecasts
+3. **Joint Optimization**: Demand, inventory, and routing optimized together, not sequentially
 
-```mermaid
-graph LR
-    A[Historical Data<br/>+ External Features] --> B[Prophet<br/>Forecaster]
-    B --> C[Scenario<br/>Generator]
-    C --> D[Robust<br/>Optimizer]
-    D --> E[SLA<br/>Predictor]
-    E --> F[Pickup Time<br/>Promise]
-    
-    style D fill:#e1f5fe
+### System Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  LAYER 1: Frontend (Vue3 + uniapp)                          │
+│  Login | Dashboard | Forecast | Planning | SLA Alerts       │
+├─────────────────────────────────────────────────────────────┤
+│  LAYER 2: API Service (FastAPI)                             │
+│  RESTful Endpoints: Auth | Dashboard | Forecast | Planning  │
+├─────────────────────────────────────────────────────────────┤
+│  LAYER 3: Core Algorithms                                   │
+│  • Demand Forecaster (Prophet)                              │
+│  • Inventory Optimizer (Safety Stock)                       │
+│  • Robust Router (CVRPTW + Min-Max)                         │
+│  • SLA Predictor (Probabilistic)                            │
+│  • Scenario Generator (Quantile/MC)                         │
+├─────────────────────────────────────────────────────────────┤
+│  LAYER 4: AI Agents (Stage 2)                               │
+│  Multi-Agent Coordinator                                    │
+├─────────────────────────────────────────────────────────────┤
+│  LAYER 5: Data Layer                                        │
+│  Store/Order Data | External: HKO, data.gov.hk, CSDI        │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### 3.4 Algorithm Implementation
+### Core Innovation: Robust Routing Optimizer
+
+Traditional routing assumes known demand; we use scenario-based approach:
+
+**Step 1 - Scenario Generation:**
+- Quantile scenarios: P10 (low), P50 (median), P90 (high)
+- Ratio scenarios: 0.9x, 1.0x, 1.1x
+- Monte Carlo sampling
+
+**Step 2 - Multi-Scenario Solving:**
+- Run OR-Tools CVRPTW for each scenario
+- Record routes, distance, time, SLA risk
+
+**Step 3 - Robust Selection:**
+- Min-Max criterion: Select route with best worst-case performance
+
+### Algorithm Implementation
 
 ```python
-# Robust Optimization Core Logic
 from scenario_generator import ScenarioGenerator
 from robust_optimizer import RobustOptimizer
 
@@ -182,154 +138,210 @@ solutions = optimizer.solve_all_scenarios(scenarios)
 robust_plan = optimizer.select_robust_solution(criterion="min_max_distance")
 ```
 
-**Standardized Output Format:**
+### End-to-End Data Flow
+
 ```
-OptimizationResult:
-  - routes: [[store_ids], ...]
-  - total_distance: km
-  - total_time: min
-  - vehicles_used: int
-  - sla_risk_score: 0-1
+Historical Data + External Features
+        ↓
+Prophet Forecaster → Demand with Confidence Intervals
+        ↓
+Scenario Generator → Multiple Demand Scenarios
+        ↓
+Robust Optimizer → Optimal Routes (Min-Max Selection)
+        ↓
+SLA Predictor → Pickup Time Promise with Confidence
+        ↓
+Customer Promise → Reliable pickup time notification
 ```
 
 ---
 
 ## 4. Data Sources
 
-### 4.1 Data Integration Architecture
+### Official Hong Kong Open Data (Required)
 
-```mermaid
-graph TB
-    subgraph Official[Official HK Open Data ✓]
-        HKO[HKO Weather API]
-        GOV[data.gov.hk<br/>Holidays, Traffic]
-        CSDI[CSDI Geospatial]
-    end
-    
-    subgraph Challenge[Challenge Data - Stage 2]
-        STORE[Store Info]
-        ORDER[Order History]
-        INV[Inventory]
-        FLEET[Fleet Info]
-    end
-    
-    subgraph Simulated[Stage 1 Dev]
-        SIM[SimulatedDataFetcher]
-    end
-    
-    Official --> CORE[Core Modules]
-    Challenge --> CORE
-    Simulated --> CORE
+**HKO Weather API** - Primary External Dataset
+
+| Data Element | Description | Application |
+|--------------|-------------|-------------|
+| Weather Forecast | Temperature, humidity, rainfall | Seasonal demand adjustment |
+| Current Weather | Real-time conditions | Same-day delivery estimation |
+| Weather Warnings | Typhoon, rainstorm signals | SLA contingency planning |
+| Historical Data | Past weather patterns | Model training features |
+
+**data.gov.hk - Supplementary Datasets**
+
+| Dataset | Description | Application |
+|---------|-------------|-------------|
+| Public Holidays | Government holiday calendar | Demand spike prediction |
+| Traffic Flow | Real-time traffic conditions | Travel time estimation |
+
+**CSDI (Common Spatial Data Infrastructure)**
+
+| Data Element | Application |
+|--------------|-------------|
+| Road Network | Distance matrix calculation |
+| Geolocation | Store/DC coordinate mapping |
+
+### Data Governance Framework
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    DATA GOVERNANCE                           │
+├─────────────────────────────────────────────────────────────┤
+│  Data Quality                                                │
+│  ├── Validation: Schema checks, range validation            │
+│  ├── Cleaning: Missing value imputation, outlier detection  │
+│  └── Monitoring: Data drift detection alerts                │
+├─────────────────────────────────────────────────────────────┤
+│  Data Pipeline                                                │
+│  ├── Ingestion: API polling, batch imports                  │
+│  ├── Transformation: Feature engineering, normalization     │
+│  └── Storage: Structured database + Cache layer             │
+├─────────────────────────────────────────────────────────────┤
+│  Data Security                                                │
+│  ├── Access Control: Role-based permissions                 │
+│  ├── Encryption: At-rest and in-transit                     │
+│  └── Audit: Access logging for compliance                   │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### 4.2 Official Data Usage
+### Challenge Data (Stage 2)
 
-- **HKO**: Weather forecasts → Demand adjustment factors
-- **data.gov.hk**: Public holidays, traffic flow → Time estimation
-- **CSDI**: Road network, geolocation → Distance matrix
+Upon receiving Mannings operational data:
+
+| Data Type | Description |
+|-----------|-------------|
+| Store Information | Locations, operating hours, capacity |
+| Order History | Historical demand patterns, SKU-level data |
+| Inventory Data | Current stock levels, safety stock requirements |
+| Fleet Information | Vehicle capacity, availability, driver schedules |
 
 ---
 
 ## 5. Benefits & Impacts
 
-### 5.1 Expected Improvements
+### Expected Improvements
 
-```mermaid
-graph TB
-    subgraph Customer[Customer Experience]
-        C1[Reliable Promises]
-        C2[Reduced Waiting]
-        C3[Proactive Alerts]
-    end
-    
-    subgraph Operations[Operational Efficiency]
-        O1[Automated Planning]
-        O2[Real-time Visibility]
-        O3[Early Exception Detection]
-    end
-    
-    subgraph Cost[Cost Control]
-        CO1[Route Optimization -15%]
-        CO2[Vehicle Utilization +20%]
-        CO3[Stockout Reduction -40%]
-    end
-```
+| Metric | Expected Impact |
+|--------|-----------------|
+| SLA Achievement | Improvement through better demand forecasting and route optimization |
+| Delivery Distance | Reduction through optimized routing algorithms |
+| Vehicle Utilization | Improvement through better capacity planning |
+| Stockout Rate | Reduction through improved demand prediction |
+| Planning Time | Reduction from manual to automated planning |
 
-### 5.2 Quantified Benefits
+### Environmental Impact
 
-| Metric | Improvement | Impact |
-|--------|-------------|--------|
-| SLA Achievement | +10% (85%→95%) | Customer satisfaction ↑ |
-| Delivery Distance | -15% | Fuel cost savings |
-| Vehicle Utilization | +20% | Fleet size reduction |
-| Stockout Rate | -40% | Lost sales reduction |
-| Planning Time | -80% | Hours → Minutes |
+| Factor | Contribution |
+|--------|--------------|
+| Route Optimization | Reduced delivery distance → Lower fuel consumption |
+| Fleet Efficiency | Better vehicle utilization → Fewer trips required |
+| Carbon Footprint | Supports DFI's ESG and sustainability commitments |
+
+### Customer Experience Improvements
+
+| Before | After |
+|--------|-------|
+| Uncertain pickup times | Reliable time promises with confidence intervals |
+| Long waiting at store | Reduced wait times through better planning |
+| No proactive communication | Real-time alerts via mobile app |
+| Frustration from delays | Proactive delay notifications |
+
+### Operational Efficiency
+
+| Before | After |
+|--------|-------|
+| Manual planning | Automated planning |
+| Limited visibility | Real-time dashboard across all stores |
+| Reactive problem solving | Early exception detection |
+| Siloed information | Integrated view: inventory + routing + SLA |
 
 ---
 
-## 6. Technical Stack & Repository
+## 6. Commercial Potential & Feasibility
 
-### 6.1 Technology Overview
-
-```mermaid
-graph LR
-    subgraph Backend
-        PY[Python 3.9]
-        FAST[FastAPI]
-        ORT[OR-Tools]
-        PROP[Prophet]
-    end
-    
-    subgraph Data
-        PD[Pandas]
-        NP[NumPy]
-        GEO[GeoPandas]
-    end
-    
-    subgraph Viz
-        ST[Streamlit]
-        PLT[Plotly]
-    end
-    
-    subgraph Frontend
-        VUE[Vue 3]
-        UNI[uniapp]
-    end
-```
-
-### 6.2 Repository Structure
+### Phased Implementation Roadmap
 
 ```
-iot_hackathon_2026_mannings/
-├── src/
-│   ├── api/routers/          # FastAPI endpoints
-│   ├── modules/
-│   │   ├── routing/          # ⭐ Robust Optimizer
-│   │   ├── forecasting/      # Prophet
-│   │   ├── inventory/        # Safety Stock
-│   │   └── sla/              # Probabilistic
-│   └── agents/               # Stage 2 interfaces
-├── config/
-└── tests/
+┌─────────────────────────────────────────────────────────────┐
+│                    IMPLEMENTATION PHASES                     │
+├─────────────────────────────────────────────────────────────┤
+│  PHASE 1: Core MVP                                           │
+│  ├── Demand forecasting module (Prophet)                     │
+│  ├── Basic routing optimization (OR-Tools)                   │
+│  └── Simple dashboard for KPI visualization                  │
+│  Deliverable: Working prototype with simulated data          │
+├─────────────────────────────────────────────────────────────┤
+│  PHASE 2: Integration                                        │
+│  ├── HKO weather API integration                             │
+│  ├── data.gov.hk holiday data integration                    │
+│  ├── Robust routing with scenario optimization               │
+│  └── SLA prediction module                                   │
+│  Deliverable: Pilot deployment                               │
+├─────────────────────────────────────────────────────────────┤
+│  PHASE 3: Scale & Refine                                     │
+│  ├── Full fleet integration                                  │
+│  ├── Real-time tracking and alerts                           │
+│  ├── Performance monitoring and model retraining             │
+│  └── Mobile app for store operations                         │
+│  Deliverable: Production deployment                          │
+├─────────────────────────────────────────────────────────────┤
+│  PHASE 4: AI Agents & Expansion                              │
+│  ├── Multi-agent orchestration                               │
+│  ├── Cross-region replication                                │
+│  └── Advanced analytics and recommendations                  │
+│  Deliverable: Scalable platform for DFI group                │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### 6.3 API Endpoints
+### Resource Requirements
 
-| Module | Endpoint | Function |
-|--------|----------|----------|
-| Auth | `/api/auth/*` | Login, Token |
-| Dashboard | `/api/dashboard/*` | KPI, Trends |
-| Forecast | `/api/forecast/*` | Demand, Inventory |
-| Planning | `/api/planning/*` | Routes, Replenishment |
-| SLA | `/api/sla/*` | Orders, Alerts |
+| Resource | Phase 1 | Phase 2 | Phase 3 |
+|----------|---------|---------|---------|
+| Developers | Small team | Medium team | Full team |
+| Data Scientists | Part-time | Full-time | Full-time |
+| Cloud Infrastructure | Minimal | Moderate | Production |
+
+### Replicability - Expansion Potential
+
+**Within DFI Group:**
+- Same architecture applicable to other DFI brands (Wellcome, 7-Eleven)
+- Modular design allows brand-specific customization
+- Shared infrastructure reduces marginal cost
+
+**Cross-Industry Applications:**
+
+| Industry | Use Case | Adaptation Required |
+|----------|----------|---------------------|
+| Grocery Retail | Fresh food delivery | Add perishability constraints |
+| F&B | Restaurant supply chain | Modify time windows |
+| Healthcare | Pharmacy delivery | Add compliance requirements |
+| E-commerce | Last-mile delivery | Scale volume handling |
+
+**Key Success Factors for Replication:**
+1. Standardized data interfaces (REST API)
+2. Configurable optimization parameters
+3. Modular algorithm components
+4. Cloud-native deployment
+
+### Risk Mitigation
+
+| Risk | Mitigation Strategy |
+|------|---------------------|
+| Data quality issues | Validation pipeline + fallback rules |
+| Model performance degradation | Continuous monitoring + retraining triggers |
+| System downtime | Redundant infrastructure + manual fallback |
+| User adoption | Training program + intuitive UI |
 
 ---
 
 ## Declaration
 
-- This proposal is an **original work** by our team
+- This proposal is an original work by Team ESGenius
 - Uses official public data sources: **HKO, data.gov.hk, CSDI**
 - All team members participate only in this team
+- Maximum 6 members per team requirement satisfied
 
 **GitHub:** https://github.com/iot-hackathon-2026-teamESGenius/iot_hackathon_2026_mannings
 
@@ -337,7 +349,7 @@ iot_hackathon_2026_mannings/
 
 # Appendix: Team Profile (Not counted in page limit)
 
-## Team: ESGenius (6 members)
+## Team ESGenius (6 Members)
 
 | Name | Major | Role | Responsibilities |
 |------|-------|------|------------------|
@@ -346,24 +358,18 @@ iot_hackathon_2026_mannings/
 | Simin XIAN | CS | Forecasting Dev | Prophet, inventory optimization |
 | Taiyi LI | DS | Data Engineer | Official data, forecasting support |
 | Cong TAN | DS | Data Engineer | Data integration, simulation |
-| Yu FU | CS | Visualization | Streamlit dashboard, demo |
+| Yu FU | CS | Visualization | Dashboard, demo |
 
-## Responsibility Matrix
+## Team Strengths
 
-```mermaid
-graph LR
-    YW[Yechen WANG] --> ARCH[Architecture]
-    YW --> ROUTE[Routing]
-    SL[Shuang LENG] --> ROUTE
-    SX[Simin XIAN] --> FORECAST[Forecasting]
-    TL[Taiyi LI] --> DATA[Data Eng]
-    TL --> FORECAST
-    CT[Cong TAN] --> DATA
-    YF[Yu FU] --> VIZ[Visualization]
-```
+- Cross-disciplinary: CS + Data Science combination
+- Full-stack capability: Backend algorithms + Frontend visualization
+- Domain expertise: Operations research, machine learning, supply chain
 
 ## Timeline
 
-- **Stage 1** (Feb 1-15): Proposal, architecture, prototypes
-- **Stage 2** (Feb 16 - Mid Mar): Data integration, refinement
-- **Final** (Late Mar): Testing, demo, submission
+| Phase | Period | Deliverables |
+|-------|--------|--------------|
+| Stage 1 | Feb 1-15, 2026 | Proposal, architecture, prototypes |
+| Stage 2 | Feb 16 - Mid Mar | Data integration, refinement |
+| Final | Late Mar | Testing, demo, submission |
