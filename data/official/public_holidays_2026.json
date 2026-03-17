@@ -1,0 +1,129 @@
+{
+  "vcalendar": [
+    {
+      "vevent": [
+        {
+          "dtstart": [
+            "20260101"
+          ],
+          "summary": "The first day of January",
+          "uid": "holiday_20260101@hk.gov"
+        },
+        {
+          "dtstart": [
+            "20260217"
+          ],
+          "summary": "Lunar New Year’s Day",
+          "uid": "holiday_20260217@hk.gov"
+        },
+        {
+          "dtstart": [
+            "20260218"
+          ],
+          "summary": "The second day of Lunar New Year",
+          "uid": "holiday_20260218@hk.gov"
+        },
+        {
+          "dtstart": [
+            "20260219"
+          ],
+          "summary": "The third day of Lunar New Year",
+          "uid": "holiday_20260219@hk.gov"
+        },
+        {
+          "dtstart": [
+            "20260403"
+          ],
+          "summary": "Good Friday",
+          "uid": "holiday_20260403@hk.gov"
+        },
+        {
+          "dtstart": [
+            "20260404"
+          ],
+          "summary": "The day following Good Friday",
+          "uid": "holiday_20260404@hk.gov"
+        },
+        {
+          "dtstart": [
+            "20260406"
+          ],
+          "summary": "The day following Ching Ming Festival",
+          "uid": "holiday_20260406@hk.gov"
+        },
+        {
+          "dtstart": [
+            "20260407"
+          ],
+          "summary": "The day following Easter Monday",
+          "uid": "holiday_20260407@hk.gov"
+        },
+        {
+          "dtstart": [
+            "20260501"
+          ],
+          "summary": "Labour Day",
+          "uid": "holiday_20260501@hk.gov"
+        },
+        {
+          "dtstart": [
+            "20260525"
+          ],
+          "summary": "The day following the Birthday of the Buddha",
+          "uid": "holiday_20260525@hk.gov"
+        },
+        {
+          "dtstart": [
+            "20260619"
+          ],
+          "summary": "Tuen Ng Festival",
+          "uid": "holiday_20260619@hk.gov"
+        },
+        {
+          "dtstart": [
+            "20260701"
+          ],
+          "summary": "Hong Kong Special Administrative Region Establishment Day",
+          "uid": "holiday_20260701@hk.gov"
+        },
+        {
+          "dtstart": [
+            "20260926"
+          ],
+          "summary": "The day following the Chinese Mid-Autumn Festival",
+          "uid": "holiday_20260926@hk.gov"
+        },
+        {
+          "dtstart": [
+            "20261001"
+          ],
+          "summary": "National Day",
+          "uid": "holiday_20261001@hk.gov"
+        },
+        {
+          "dtstart": [
+            "20261019"
+          ],
+          "summary": "The day following Chung Yeung Festival",
+          "uid": "holiday_20261019@hk.gov"
+        },
+        {
+          "dtstart": [
+            "20261225"
+          ],
+          "summary": "Christmas Day",
+          "uid": "holiday_20261225@hk.gov"
+        },
+        {
+          "dtstart": [
+            "20261226"
+          ],
+          "summary": "The first weekday after Christmas Day",
+          "uid": "holiday_20261226@hk.gov"
+        }
+      ],
+      "prodid": "HK Government Holiday Calendar",
+      "version": "2.0"
+    }
+  ]
+}

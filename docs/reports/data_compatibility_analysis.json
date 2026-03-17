@@ -1,0 +1,167 @@
+{
+  "report_metadata": {
+    "generated_at": "2026-03-17T11:18:28.116999",
+    "analyzer_version": "1.0",
+    "data_sources_analyzed": [
+      "dim_store.csv",
+      "case_study_order_detail.csv",
+      "fulfillment_detail.csv",
+      "dim_date.csv",
+      "store_coordinates_enhanced_v2.csv",
+      "public_holidays_2025.json",
+      "traffic_data"
+    ]
+  },
+  "compatibility_analysis": {
+    "store_compatibility": {
+      "total_enterprise_stores": 306,
+      "total_enhanced_stores": 306,
+      "matched_stores": 306,
+      "match_rate": 100.0,
+      "missing_in_enhanced": [],
+      "extra_in_enhanced": []
+    },
+    "temporal_compatibility": {
+      "order_date_range": {
+        "start_date": "2025-06-01",
+        "end_date": "2025-12-31",
+        "total_days": 213,
+        "unique_dates": 214
+      },
+      "fulfillment_time_analysis": {
+        "order_create_time": {
+          "non_null_count": 77807,
+          "completion_rate": 100.0
+        },
+        "ready_time": {
+          "non_null_count": 77807,
+          "completion_rate": 100.0
+        },
+        "shipped_time": {
+          "non_null_count": 77807,
+          "completion_rate": 100.0
+        },
+        "completed_time": {
+          "non_null_count": 77586,
+          "completion_rate": 99.71596385929287
+        }
+      },
+      "holiday_compatibility": {
+        "total_holidays": 51,
+        "holiday_date_range": "2024-01-01 to 2026-12-26",
+        "overlaps_with_order_period": true
+      }
+    },
+    "business_compatibility": {
+      "order_metrics": {
+        "total_orders": 77807,
+        "unique_users": 52116,
+        "unique_stores": 265,
+        "avg_sku_per_order": 2.8261338954078683,
+        "avg_quantity_per_order": 4.866729422687591
+      },
+      "fulfillment_metrics": {
+        "avg_ready_time_minutes": 17.659443237754957,
+        "avg_delivery_time_hours": 93.88204587669023,
+        "completion_rate": 99.71596385929287
+      },
+      "business_hours_analysis": {
+        "total_stores_with_hours": 306,
+        "stores_with_extended_hours": 18,
+        "extended_hours_rate": 5.88235294117647
+      }
+    },
+    "integration_opportunities": [
+      {
+        "type": "地理位置增强",
+        "description": "将精确的门店坐标集成到订单分析中，支持地理位置相关的业务分析",
+        "data_sources": [
+          "enhanced_coordinates",
+          "order_detail"
+        ],
+        "potential_benefits": [
+          "精确的配送距离计算",
+          "基于地理位置的需求分析",
+          "区域性配送优化",
+          "门店辐射范围分析"
+        ],
+        "implementation_complexity": "低",
+        "business_value": "高"
+      },
+      {
+        "type": "节假日影响分析",
+        "description": "结合公共假期数据分析订单模式和履约表现",
+        "data_sources": [
+          "public_holidays",
+          "order_detail",
+          "fulfillment_detail"
+        ],
+        "potential_benefits": [
+          "节假日订单量预测",
+          "节假日配送时间调整",
+          "节假日人员配置优化",
+          "促销活动时机优化"
+        ],
+        "implementation_complexity": "中",
+        "business_value": "高"
+      },
+      {
+        "type": "智能配送路径优化",
+        "description": "利用实时交通数据优化配送路径和时间预测",
+        "data_sources": [
+          "traffic_data",
+          "fulfillment_detail",
+          "enhanced_coordinates"
+        ],
+        "potential_benefits": [
+          "动态配送路径规划",
+          "准确的配送时间预测",
+          "交通拥堵避免",
+          "配送成本降低"
+        ],
+        "implementation_complexity": "高",
+        "business_value": "极高"
+      },
+      {
+        "type": "营业时间智能匹配",
+        "description": "基于门店营业时间优化订单分配和履约时间",
+        "data_sources": [
+          "dim_store",
+          "order_detail",
+          "fulfillment_detail"
+        ],
+        "potential_benefits": [
+          "避免非营业时间配送",
+          "优化门店工作负载",
+          "提高客户满意度",
+          "减少配送失败率"
+        ],
+        "implementation_complexity": "中",
+        "business_value": "中"
+      }
+    ]
+  },
+  "recommendations": [
+    {
+      "category": "数据集成",
+      "priority": "中",
+      "issue": "未充分利用地理位置增强的潜力",
+      "recommendation": "将精确的门店坐标集成到订单分析中，支持地理位置相关的业务分析",
+      "expected_impact": "精确的配送距离计算、基于地理位置的需求分析"
+    },
+    {
+      "category": "数据集成",
+      "priority": "中",
+      "issue": "未充分利用节假日影响分析的潜力",
+      "recommendation": "结合公共假期数据分析订单模式和履约表现",
+      "expected_impact": "节假日订单量预测、节假日配送时间调整"
+    },
+    {
+      "category": "数据集成",
+      "priority": "高",
+      "issue": "未充分利用智能配送路径优化的潜力",
+      "recommendation": "利用实时交通数据优化配送路径和时间预测",
+      "expected_impact": "动态配送路径规划、准确的配送时间预测"
+    }
+  ]
+}

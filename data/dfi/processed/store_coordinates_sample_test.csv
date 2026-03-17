@@ -1,0 +1,6 @@
+store_code,district,address,latitude,longitude,geocode_status,note
+417.0,Wong Tai Sin,"Shop No.213 & 214, 2/F., Fung Tak Shopping Centre, Wong Tai Sin, Kln.",22.344192339962515,114.20068110787366,SUCCESS_CSDI,"SUCCESS_CSDI: Fung Tak Shopping Centre iPostal Station - Site No. LK03, 2/F, Fung Tak Shopping Centre, Fung Tak Estate, Wong Tai Sin"
+227.0,Kowloon City,"Unit MTR-09, Festival Walk, 80 Tat Chee Avenue, Kowloon Tong, Kln.",22.337483823520767,114.17432330878539,SUCCESS_CSDI,"SUCCESS_CSDI: MANNINGS O/B THE DAIRY FARM CO. LTD. - UNIT MTR-09, FESTIVAL WALK, 80, TAT CHEE AVENUE, KOWLOON TONG, KLN"
+112.0,Sha Tin,"Shop No.113, G/F, Hin Keng Shopping Ctr, Hin Keng Estate, Shatin, N.T.",22.362972513686262,114.17157132595021,SUCCESS_CSDI,"SUCCESS_CSDI: SHING FUNG DISPENSARY (HONG KONG) COMPANY LIMITED - SHOP NO. 111, G/F, HIN KENG SHOPPING CTR., HIN KENG EST., SHATIN,NT"
+920.0,Wong Tai Sin,"Shop No. B14, B1/F, Kai Chuen Shopping Centre, Kai Chuen Court (Phase 2), Diamond Hill, Wong Tai Sin, Kowloon",22.33973527298124,114.20028855714492,SUCCESS_CSDI,SUCCESS_CSDI: Kai Chuen Court Kai Chi House - Kai Chuen Court
+530.0,Wong Tai Sin,"Shop No. N210A, Level 2, Temple Mall North, 136 Lung Cheung Road, Wong Tai Sin, Kln",22.34212937846227,114.1918239816509,SUCCESS_CSDI,SUCCESS_CSDI: Temple Mall North - 136 LUNG CHEUNG ROAD  

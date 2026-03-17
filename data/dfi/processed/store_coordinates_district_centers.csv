@@ -1,0 +1,332 @@
+﻿store_code,district,address,latitude,longitude,geocode_status,note
+417.0,Wong Tai Sin,"Shop No.213 & 214, 2/F., Fung Tak Shopping Centre, Wong Tai Sin, Kln.",22.342,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+227.0,Kowloon City,"Unit MTR-09, Festival Walk, 80 Tat Chee Avenue, Kowloon Tong, Kln.",22.328,114.191,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+112.0,Sha Tin,"Shop No.113, G/F, Hin Keng Shopping Ctr, Hin Keng Estate, Shatin, N.T.",22.387,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+920.0,Wong Tai Sin,"Shop No. B14, B1/F, Kai Chuen Shopping Centre, Kai Chuen Court (Phase 2), Diamond Hill, Wong Tai Sin, Kowloon",22.342,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+530.0,Wong Tai Sin,"Shop No. N210A, Level 2, Temple Mall North, 136 Lung Cheung Road, Wong Tai Sin, Kln",22.342,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+898.0,Wong Tai Sin,"Shop No.3183A, 3/F., Lok Fu Place, 198 Junction Road, Wong Tai Sin,  Kowloon",22.342,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+325.0,Sha Tin,"Shops 20-22, G/F., Mei Lam Shopping Centre, Mei Lam Estate, Tai Wai, N.T.",22.387,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+327.0,Sha Tin,"Shops 103 & 104, 1/F., Mei Tin Shopping Centre, Mei Tin Estate, Tai Wai, N.T.",22.387,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+116.0,Wong Tai Sin,"Shop 377-378, Plaza Hollywood, Diamond Hill, Kln.",22.342,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+529.0,Sha Tin,"Shop 7, G/F, Sun Chui Shopping Centre, Sun Chui Estate, Tai Wai, N.T.",22.387,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+107.0,Sha Tin,"Shop No.10 G/F Grandeur Garden Shopping Arcade, 55-56 Tai Wai Rd, Tai Wai, N.T.",22.387,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+931.0,Sha Tin,"Shop Units 302-303, 3rd Floor, The Wai, Shatin, N.T.",22.387,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+324.0,Sha Tin,"Shops 12 & 13, Paid Concourse, MTR Tai Wai Station, N.T.",22.387,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+477.0,North,"Shop 19-21, UG/F, Avon Park, 15 Yat Ming Road, Fanling, N.T.",22.494,114.138,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+532.0,North,"Shop 106a, Metropolis Plaza, 8 Lung Wan Street, Sheung Shui, N.T.",22.494,114.138,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+536.0,North,"Shop No. R8, 3/F, Choi Yuen Plaza, Choi Yuen Estate, 
+Sheung Shui, N.T.",22.494,114.138,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+358.0,North,"Shop 9, Ching Ho Shopping Centre, Ching Ho Estate, Sheung Shui, N.T.",22.494,114.138,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+105.0,North,"Shop A56-A59, G/F, Flora Plaza, 88 Pak Wo Road, Fanling, N.T.",22.494,114.138,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+328.0,North,"Shops. LMC 119 & 120, MTR Lok Ma Chau Station, N.T.",22.494,114.138,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+376.0,North,"Shop Low 108, MTR Lo Wu Station, Lo Wu, N.T.",22.494,114.138,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+834.0,North,"Shop No. LOW K13, MTR Lo Wu Station, Lo Wu, N.T.",22.494,114.138,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+492.0,North,"Shop Nos.2077D-H,2/F,Sheung Shui Centre, No.3 Chi Cheong Road,Sheung Shui, N.T.",22.494,114.138,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+166.0,North,"Shop A & B, G/F, Lung Ha Building, Nos. 122-130 San Fung Avenue, Shek Wu Hui, Sheung Shui, New Territories",22.494,114.138,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+381.0,North,"G/F., No.96 San Hong Street, Sheung Shui, N.T.",22.494,114.138,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+819.0,North,"Shop 419-423, Level 4, Landmark North, 39 Lung Sum Avenue, Shek Wu Hui, Sheung Shui, N.T.",22.494,114.138,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+885.0,North,"Shop 3, G/F, Yung Shing Shopping Centre, Yung Shing Court, Fanling, N.T.",22.494,114.138,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+900.0,North,"Shop No. LMC 117, MTR Lok Ma Chau Station, N.T.",22.494,114.138,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+890.0,Tai Po,"Shop 269-270, 2/F, Zone B, Tai Po Mega Mall, Tai Po, N.T.",22.451,114.164,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+873.0,North,"Shop 5, G/F, Commune Modern, 28 Wo Fung Street, 
+Fanling, New Territories
+",22.494,114.138,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+822.0,Tai Po,"Shop Nos. 15-16, G/F, Eightland Gardens, Tai Po, N.T.",22.451,114.164,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+959.0,Tai Po,"Shop No. 15, G/F, Fu Tip Shopping Centre, Fu Tip Estate (Phase 2), Tai Po, N.T.",22.451,114.164,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+115.0,Tai Po,"Shop 28, Fu Heng Shopping Centre, Fu Heng Estate, Tai Po, N.T. ",22.451,114.164,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+872.0,North,"Shop 139-142, G/F, Fanling Centre, 33 San Wan Road, Fanling, N.T.",22.494,114.138,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+300.0,North,"Shop No. 111,1/F., Ka Fuk Shopping Centre, Ka Fuk Estate, Fanling, N.T.",22.494,114.138,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+299.0,Tai Po,"Shop Nos. 206-209, 1/F., Kwong Fuk Shopping Centre, Kwong Fuk Estate, Tai Po, N.T.",22.451,114.164,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+213.0,North,"Shop 1 & 2, Level 1, Regentville Phase 1, 8 Wo Mun Street, Luen Wo Hui, Fanling, N.T.",22.494,114.138,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+522.0,Tai Po,"Shop Nos. 055 & 056, Level 2 of Zone A of Tai Po Mega Mall, Tai Po, N.T.",22.451,114.164,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+881.0,Tai Po,"Shop A048-A050, Level 1, Uptown Plaza, 9 Nam Wan Road, Tai Po, N.T.",22.451,114.164,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+493.0,Tai Po,"Shop E, G/F, Mee Fat Building, 34-38 & 42-48 Tai Wing Lane, Tai Po, N.T.",22.451,114.164,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+199.0,Tai Po,"Shop 29, Shopping Centre, Wan Tau Tong Estate, Tai Po, N.T.",22.451,114.164,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+816.0,Tai Po,"Shop 201, Level 2, Tai Wo Plaza, Tai Wo Estate, 12 Tai Po Tai Wo Road, Tai Po, N.T.
+",22.451,114.164,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+271.0,Tai Po,"Shop 1, G/F., New Annex Block, Tai Yuen Shopping Ctr, Tai Yuen Estate, Tai Po, N.T.",22.451,114.164,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+901.0,Kwai Tsing,"Shop Nos. 313-315, 3/F, Cheung Hang Shopping Centre, Cheung Hang Estate, Tsing Yi, N.T. ",22.356,114.13,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+190.0,Kwai Tsing,"85 Wo Tong Tsui Street, Kwai Hing. N.T.",22.356,114.13,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+494.0,Kwai Tsing,"Kiosk No.KWH 5, MTR Kwai Hing Station, Kwai Hing, N.T.",22.356,114.13,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+918.0,Kwai Tsing,"Shop 131, Level 1, Kwai Shing East Shopping Centre, Kwai Shing East Estate, Kwai Chung, N.T.",22.356,114.13,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+295.0,Kwai Tsing,"Shop No. 104, Kwai Chung Shopping Centre, Kwai Chung Estate Phase III, Sheung Kok Street, Kwai Chung, N.T.",22.356,114.13,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+818.0,Kwai Tsing,"Shop Nos. 417-419, Level 4, Metroplaza, Kwai Fong, N.T.",22.356,114.13,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+830.0,Kwai Tsing,"Shop 8- 10, G/F, Foon Tak Building, 38-44 Shing Fong Street, Kwai Chung, N.T.",22.356,114.13,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+365.0,Kwai Tsing,"Shop 125, Lei Muk Shue Shopping Centre, Tsuen Wan, N.T.",22.356,114.13,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+245.0,Tsuen Wan,"Shop S10, Level 1, Park Island - Pier, Ma Wan, NT",22.371,114.114,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+903.0,Kwai Tsing,"Shop Nos. B322 & B323, 3/F, Shek Lei Shopping Centre (Phase 2), Shek Lei Estate, Kwai Chung, N.T",22.356,114.13,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+277.0,Kwai Tsing,"Shop No. 1, G/F., Tin On House, 96 Shek Yam Road, Kwai Chung, N.T.",22.356,114.13,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+39.0,Kwai Tsing,"Shop No, 217, 2/F, Cheung Fat Plaza, Cheung Fat Estate, Tsing Yi, N.T.",22.356,114.13,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+113.0,Sha Tin,"Shop No.110 & 111, Chung On Shopping Centre, Ma On Shan, N.T.",22.387,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+30.0,Sha Tin,"Shop 221-222,Level 2, Heng On Estate Shopping Centre, Ma On Shan, Shatin, N.T.",22.387,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+57.0,Sha Tin,"CB4, Shop 1-3, Kwong Yuen Estate, Shatin, N.T.",22.387,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+899.0,Sha Tin,"Shop G10, Lake Silver, 599 Sai Sha Road, Ma On Shan, N.T.",22.387,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+500.0,Sha Tin,"Shop No. 2A, G/F, 1 On Ping Street, Shatin, N.T.",22.387,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+240.0,Sha Tin,"Shop 107-109, Pok Hong Shopping Centre, Shatin, N.T.",22.387,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+883.0,Sha Tin,"Shop P12, P1/F, Shek Mun Shopping Centre, 
+Shek Mun Estate (Phase 2), Shatin",22.387,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+810.0,Sha Tin,"Shop No. 2108, Level 2, MOSTown, Ma On Shan, N.T.",22.387,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+827.0,Sha Tin,"Shop No. G10, G/F, 16 Po Tai Street, Ma On Shan, N.T.",22.387,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+367.0,Sha Tin,"Shop No. 119-120, Level 1, Yu Chui Shopping Centre, Yu Chui Court, Shatin, N.T.",22.387,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+542.0,Sha Tin,"Shop No. 204, 2/F, Shui Chuen O Plaza, Shui Chuen O Estate, Shatin, N.T.",22.387,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+437.0,Sha Tin,"Shop Units G63-65, Plaza Ascot, Fotan, N.T.",22.387,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+847.0,Sha Tin,"Shop A213, Level 2, New Town Plaza Phase III, Shatin, N.T.",22.387,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+290.0,Sha Tin,"Shop Nos. 12-13, G/F., Greenwood Garden, 7-11 Sha Kok Street, Shatin, N.T.",22.387,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+210.0,Sha Tin,"Shop 214, 2/F, Lek Yuen Shopping Centre, Lek Yuen Estate, Shatin, N.T.",22.387,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+484.0,Sha Tin,"Shop Nos.307 and 307A, Level 3, New Town Plaza (Phase I), Shatin, N.T.",22.387,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+27.0,Sha Tin,"Shop G30-G32, Fortune City One, City One, Shatin, N.T.",22.387,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+499.0,Sha Tin,"Shop 235, 2/F, Sha Kok Shopping Centre, Sha Kok Estate, 5 Sha Kok Street, Shatin, NT",22.387,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+936.0,Sha Tin,"Shop No. 48, Level 3, Shatin Plaza, Shatin, N.T.",22.387,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+161.0,Sha Tin,"Shop No.G11, G12, G.F, Sui Wo Shopping Centre, Shatin, N.T.",22.387,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+98.0,Sha Tin,"Shop 261, 2/F Wo Che Shopping Centre, Wo Che Estate, Shatin, N.T.",22.387,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+902.0,Sha Tin,"Shop No.G13, G/F, Chun Yeung Shopping Centre, Chun Yeung Estate, Fo Tan, Shatin, N.T.",22.387,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+915.0,Southern,"Unit No. 122, First Floor, Marina Square West Commercial Block, South Horizons, Ap Lei Chau, H.K. ",22.247,114.158,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+230.0,Central & Western,"Ground Floor, 57 Bonham Road, H.K.",22.286,114.151,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+177.0,Central & Western,"Shop 1, G/F, Leader House, 57-61 Belcher's Street, H.K.",22.286,114.151,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+438.0,Central & Western,"Shop C,G/F,Luen Hong Apartments,No 116-122 & 122A Belcher's Street,H.K.",22.286,114.151,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+16.0,Southern,"Shop 303, Chi Fu Landmark, Pokfulam, H.K.",22.247,114.158,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+247.0,Central & Western,"Shop A, G/F., Lai Yan Lau, 42-56 Queen's Road West, Sheung Wan, H.K.",22.286,114.151,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+388.0,Southern,"Shop Nos. 106-107, 1/F., Port Centre, Aberdeen, H.K.",22.247,114.158,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+933.0,Southern,"Portion of Ground Floor, Harrow Mansion,170-172 Aberdeen Main Road,Aberdeen,H.K.",22.247,114.158,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+155.0,Central & Western,"Shop C, G/F, Good Time Building, 230-236 Queen's Road West, H.K.",22.286,114.151,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+160.0,Central & Western,"Shop 8, G/F, Fairview Height, 1 Seymour Road, H.K.",22.286,114.151,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+90.0,Central & Western,"Shop 6, 1/F, Welland Building, 368 Queen's Road, Central, H.K.",22.286,114.151,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+138.0,Central & Western,"Shop No. 8, G/F., Hang Yue Building, No. 334-350 Des Voeux Road West, H.K.",22.286,114.151,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+289.0,Central & Western,"G/F., Ko Leung Mansion, 572-574 Queen's Road West, Hong Kong",22.286,114.151,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+207.0,Central & Western,"Shop 237, Level 2, The Westwood, 8 Belcher's Street, Kennedy Town, H.K.",22.286,114.151,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+256.0,Southern,"Shop No. 714-715, Wah Chun House, Wah Fu (1) Estate, H.K.",22.247,114.158,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+141.0,Central & Western,"G/F, Amtel Building, 144-148 Des Voeux Road Central, Sheung Wan, H.K.",22.286,114.151,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+144.0,Island,"G/F, 31 Praya Road, Cheung Chau, H.K.",,,DISTRICT_NOT_FOUND: Island,District center approximation - not exact location
+316.0,Wan Chai,"Shops C, E, F, G & J, G/F., Everwin Mansion, 18 Johnston Road, Wanchai, H.K.",22.278,114.171,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+389.0,Wan Chai,"Shop A & B, 269-273 Hennessy Road, Wan Chai, H.K.",22.278,114.171,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+345.0,Wan Chai,"G/F., No 25-27 Sing Woo Road, Happy Valley, H.K.",22.278,114.171,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+267.0,Central & Western,"Shop No.2004 on Podium Level Two, IFC mall, 1 Harbour View Street, Central, H.K.",22.286,114.151,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+892.0,Wan Chai,"G/F, Tower 188, 188-190 Hennessy Road, Wan Chai, Hong Kong",22.278,114.171,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+906.0,Central & Western,"Shop HOK 48, MTR Hong Kong Station, H.K.",22.286,114.151,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+170.0,Wan Chai,"G08, G/F, Mall Plus, 388 Hennessy Road, Wanchai, HK",22.278,114.171,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+427.0,Central & Western,"Shop No.203, 2/F, Shun Tak Centre, 200 Connaught Road Central, Sheung Wan, Hong Kong",22.286,114.151,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+509.0,Wan Chai,"Shops E & F, G/F, New Spring Garden Mansion, 47-65 Spring Garden Lane, Wan Chai, H.K.",22.278,114.171,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+281.0,Wan Chai,"Shop G14-G18, G/F., Sun Hung Kai Centre, Wan Chai, H.K.",22.278,114.171,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+25.0,Central & Western,"Shop 02, G/F Regent Centre, 88 Queen's Road, Central, H.K.",22.286,114.151,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+361.0,Wan Chai,"Shop B, G/F, Yee Hong Building, Nos. 212-214 Wan Chai Road, H.K.",22.278,114.171,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+254.0,Eastern,"Shop A, G/F, Cambridge House, Taikoo Place, Quarry Bay, H.K.",22.284,114.224,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+17.0,Eastern,"33 Cloudview Road, North Point, H.K.",22.284,114.224,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+273.0,Eastern,"Shop 420, City Plaza 1, 18 Tai Koo Shing Road, Island East, H.K.",22.284,114.224,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+158.0,Eastern,"Shop 5-6, G/F, AIA Tower, 183 Electric Road, North Point, H.K.",22.284,114.224,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+313.0,Eastern,"Shop No. L37 Lower Ground Floor, Fitfort, 560 King's Road, North Point, H.K.",22.284,114.224,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+523.0,Eastern,"Shop 02, G/F, Fortress Tower, 250 King’s Road, North Point, Hong Kong",22.284,114.224,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+535.0,Eastern,"Shop S30, 2/F & Shop S8-S10, Upper Floor of East Footbridge, Kornhill Plaza, 1-2 Kornhill Road, Hong Kong",22.284,114.224,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+124.0,Eastern,"Shop B, G/F North Point Cape Commercial Bldg., 386-388 King's Road, North Point, H.K.",22.284,114.224,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+248.0,Wan Chai,"Shop B, G/F., 517 Jaffe Road, Causeway Bay, H.K.",22.278,114.171,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+865.0,Wan Chai,"G/F, 8 Pak Sha Road, Causeway Bay, Hong Kong",22.278,114.171,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+849.0,Eastern,"Shop 102, Lower G/F, Fok Cheong Building, 
+1032-1044 King's Road, Quarry Bay, HK
+",22.284,114.224,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+905.0,Wan Chai,"Shop B & C, G/F, 68 Electric Road, Tin Hau, H.K.",22.278,114.171,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+871.0,Wan Chai,"Shop No. 917, 9/F, Times Square, Causeway Bay, Hong Kong",22.278,114.171,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+813.0,Wan Chai,"Shop Nos. 311-312, 3/F, Windsor House, 311 Gloucester Road, Causeway Bay, H.K.",22.278,114.171,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+960.0,Wan Chai,"Shop No. L2-12, Level 2, The World Trade Centre, 280 Gloucester Road, Causeway Bay, HK",22.278,114.171,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+209.0,Eastern,"Shop 157 - 159, Paradise Mall, Heng Fa Chuen, Chai Wan, H.K.",22.284,114.224,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+413.0,Eastern,"Shop G05 & G06, G/F, Hing Wah Shopping Centre, Chai Wan, Hong Kong",22.284,114.224,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+296.0,Eastern,"Shop No. 10, G/F., Hing Tung Shopping Centre, Hing Tung Estate, Shau Kei Wan, H.K.",22.284,114.224,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+476.0,Eastern,"Shop UG 51 & UG52A, UG/F, Island Resort Mall, 28 Siu Sai Wan Road, H.K.",22.284,114.224,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+380.0,Eastern,"Shop No. GD20-21A, G/F, Site D, No.25 Tai On Street, Lei King Wan, H.K.",22.284,114.224,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+87.0,Eastern,"Shop 1-11, L4, New Jade Shopping Arcade, Chai Wan, H.K.",22.284,114.224,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+204.0,Eastern,"Shop 111, Oi Tung Shopping Centre, Oi Tung Estate Shau Kei Wan, H.K.",22.284,114.224,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+276.0,Eastern,"Shop G7 & A6, G/F., Tai On Bldg., 57-87 Shau Kei Wan Road, Shau Kei Wan, H.K.",22.284,114.224,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+829.0,Eastern,"Shop No. 110A, 1/F, Siu Sai Wan Plaza, Siu Sai Wan Road, 
+Chai Wan, H.K.",22.284,114.224,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+424.0,Eastern,"Shop 2, G/F, Yue Fung House, Yue Wan Estate, Chai Wan, H.K.",22.284,114.224,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+310.0,Eastern,"Shop No. 201, 2/F., Yiu Tung Shopping Centre, Yiu Tung Estate, Shau Kei Wan. H.K.",22.284,114.224,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+513.0,Eastern,"Shop No. 4, G/F, Hong Tai Building, Nos. 326-332 Shau Kei Wan Road, Hong Kong",22.284,114.224,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+939.0,Yuen Long,"Shop No. 2008, Level 2, YOHO MALL I, No. 9 Long Yat Road, Yuen Long, N.T.",22.445,114.022,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+919.0,Tuen Mun,"Shop G12, G/F, Ching Tin Shopping Centre, Ching Tin Estate, Tuen Mun, N.T.",22.391,113.977,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+249.0,Yuen Long,"Shop No. 2, G/F, Block D, Town Centre, Fairview Park, Yuen Long, N.T.",22.445,114.022,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+527.0,Yuen Long,"Shop No. 9 & 10, G/F, Hung Fuk Shopping Centre, 
+Hung Shui Kiu, Yuen Long, N.T.",22.445,114.022,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+372.0,Yuen Long,"Shop No. 3, G/F., Beauty Court, no.3 Hung Tai Road, Hung Shui Kiu, Yuen Long, N.T.",22.445,114.022,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+374.0,Yuen Long,"Shop Nos. 4, G/F, Kwong Wah Centre, 34-36 Fau Tsoi Street, Yuen Long, N.T.",22.445,114.022,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+841.0,Yuen Long,"Shop No. 7, G/F, Hing Fat House, Nos 9-13 Kau Yuk Road, Yuen Long, N.T.",22.445,114.022,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+832.0,Tuen Mun,"Shop No. G06, G/F, Yan Tin Shopping Centre, Yan Tin Estate, Tuen Mun, N.T.",22.391,113.977,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+457.0,Yuen Long,"Shop M006 & M007, Mezzanine Floor, Kang Ping House, Blk 5, Long Ping Estate, Yuen Long, N.T.",22.445,114.022,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+433.0,Yuen Long,"Shop Nos.4A&4B, G/F, Yuen Long Centre, No. 51-59 Sau Fu Street,  Yuen Long, N.T.",22.445,114.022,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+446.0,Yuen Long,"Shop No.73, G/F, Fortune Centre, Nos.15-21 Fung Kam Street, Yuen Long, N.T.",22.445,114.022,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+866.0,Yuen Long,"G/F, 21 Tung Lok Street, Yuen Long, N.T.",22.445,114.022,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+498.0,Yuen Long,"Shop A212a, Level 2, YOHO MALL, 8-9 Long Yat Road & 9 Yuen Lung Street, Yuen Long, N.T.",22.445,114.022,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+533.0,Yuen Long,"Shop 130 & 181-183, 1/F, Yuen Long Plaza, Yuen Long, N.T.",22.445,114.022,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+534.0,Tuen Mun,"Shop Nos.17-18, G/F, Blossom Garden, 11 Leung Tak Street, Tuen Mun, N.T.",22.391,113.977,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+231.0,Tuen Mun,"Shop 211, 2/F., Fu Tai Shopping Centre, 9 Tuen Kwai Road, Tuen Mun, N.T.",22.391,113.977,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+319.0,Yuen Long,"Shop 104, 1/F., Grandeur Terrace, 88 Tin Shui Road, Tin Shui Wai, N.T.",22.445,114.022,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+49.0,Tuen Mun,"Shop No. L217, Level 2, Leung King Plaza, Leung King Estate, Tuen Mun, N.T.",22.391,113.977,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+917.0,Tuen Mun,"Shop Nos. 22 & 23, G/F, NOVO WALK, 8 Yan Po Road, Tuen Mun, N.T.",22.391,113.977,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+514.0,Tuen Mun,"Shop No. 226, Siu Hong Shopping Centre, Siu Hong Court, Tuen Mun, N.T.",22.391,113.977,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+173.0,Yuen Long,"Shop C61 & C62, 1/F, Richly Plaza, Tin Shui Wai, Yuen Long, N.T.",22.445,114.022,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+811.0,Yuen Long,"Shop No. 210A, 2/F, Tin Chak Shopping Centre, Tin Chak Estate, Tin Shui Wai, N.T.",22.445,114.022,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+359.0,Yuen Long,"Shop 8, Tin Ching Shopping Centre, Tin Ching Estate, Tin Shui Wai, N.T.",22.445,114.022,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+937.0,Yuen Long,"Shop No. G21, G/F, Tin Shui Shopping Centre, Tin Shui Estate, Tin Shui Wai, N.T.",22.445,114.022,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+877.0,Yuen Long,"Shop SG25, G/F, T Town South, No. 30 Tin Wah Road, 
+Tin Shui Wai, Yuen Long, N.T.",22.445,114.022,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+259.0,Tuen Mun,"Shop No. 6-9, Unpaid Concourse, MTR Siu Hong Station, N.T.",22.391,113.977,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+198.0,Yuen Long,"Shop No.L029, G/F, Tin Yiu Plaza, Tin Shui Wai, N.T.",22.445,114.022,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+541.0,Yuen Long,"Shop No. L102, 1/F, Tin Shing Shopping Centre, 
+Tin Shing Court, 3 Tin Ching Street, Tin Shui Wai, Yuen Long, N.T.",22.445,114.022,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+215.0,Tuen Mun,"Shop No. R123, Level 1, Butterfly Plaza, Tuen Mun, N.T.",22.391,113.977,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+318.0,Tuen Mun,"Shop No. 66A, G/F., Chi Lok Fa Yuen, Tuen Mun, N.T.",22.391,113.977,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+547.0,Tuen Mun,"Shop G2A, G/F, Chelsea Height, 1 Shek Pai Tau Path, 
+Tuen Mun, N.T.",22.391,113.977,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+165.0,Tuen Mun,"Shop 55, 56 & 58, Glorious Garden, 45 Lung Mun Road, Tuen Mun, N.T.",22.391,113.977,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+135.0,Tuen Mun,"Shop Nos.2199B-2199F, 2/F, Phase 1, Tuen Mun Town Plaza, 1 Tuen Shun Street, Tuen Mun, N.T.",22.391,113.977,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+520.0,Tuen Mun,"Shop Nos. S229-230, Lv2, Zone S, H.A.N.D.S, Yau Oi Estate, Yau Oi Road, Tuen Mun, N.T.",22.391,113.977,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+132.0,Tuen Mun,"Shop C, Shops D and E, G/F, Forward Mansion, 26A Yan Ching St, Tuen Mun, N.T.",22.391,113.977,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+314.0,Tuen Mun,"Shop Nos. 1 & 85-86, Ocean Walk, 168-236 Wu Chui Road, Tuen Mun, N.T.",22.391,113.977,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+448.0,Tuen Mun,"Shop Nos. 213-214, Level 2, Hanford Plaza, No.333 Castle Peak Road (Castle Peak Bay), Tuen Mun, N.T.",22.391,113.977,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+909.0,Tuen Mun,"Shop 106C & 106D, LG/F, Shan King Shopping Centre, Shan King Estate, Tuen Mun, N.T.",22.391,113.977,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+415.0,Tuen Mun,"Shop Nos.8, 9 & 39, Level 3, South Wing, Trend Plaza, Tuen Mun, N.T.",22.391,113.977,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+821.0,Tuen Mun,"Shop No. L107, G/F, Tai Hing Shopping Centre, 
+Tai Hing Estate, 1 Tai Hing Street, Tuen Mun, N.T.",22.391,113.977,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+826.0,Tuen Mun,"Shop No. M-72, MTR Level, V City, 
+83 Tuen Mun Heung Sze Wui Road, Tuen Mun, N.T.
+",22.391,113.977,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+549.0,Tuen Mun,"Shop M-28, 29, 30 & 31, MTR Level, V City, No. 83 Tuen Mun Heung Sze Wui Road, Tuen Mun, N.T.",22.391,113.977,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+330.0,Tsuen Wan,"Shop No. 8, Level 3, Bellagio Mall, 33 Castle Peak Road, Sham Tseng, N.T.",22.371,114.114,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+526.0,Tsuen Wan,"Shop Nos. G016 & G017, G/F, KOLOUR , 68 Chung On Street, Tsuen Wan, N.T.",22.371,114.114,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+495.0,Tsuen Wan,"Shop 2050, Level 2, Discovery Park Shopping Centre, 398 Castle Peak Road, Tsuen Wan, N.T.",22.371,114.114,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+935.0,Tsuen Wan,"Shop Nos. 202B & 203, 2/F, Nina Mall 1, No. 8 Yeung Uk Road, Tsuen Wan, N.T.",22.371,114.114,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+191.0,Tsuen Wan,"G/F, 19 Tai Ho Road, Tsuen Wan, N.T.",22.371,114.114,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+317.0,Tsuen Wan,"Shop B118, Basement 1, Panda Place of Panda Hotel, 3 Tsuen Wah Street, Tsuen Wan, N.T.",22.371,114.114,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+844.0,Tsuen Wan,"G/F & The Rear Yard & Flat Roof, No. 236 Sha Tsui Road, Tsuen Wan, N.T.",22.371,114.114,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+21.0,Tsuen Wan,"Shop 110-125, Tsuen Kam Centre, Tsuen Wan, N.T.",22.371,114.114,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+908.0,Kwai Tsing,"Shop B01 & B02, 1/F, Tai Wo Hau Commercial Centre (I), Tai Wo Hau Estate, Kwai Chung, N.T.",22.356,114.13,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+356.0,Tsuen Wan,"Shop No. G39 & G41, G/F, Citywalk, Tsuen Wan, N.T.",22.371,114.114,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+399.0,Tsuen Wan,"Shops UG70-73 & UG75-77, Upper G/F, Citywalk 2, 18 Yeung Uk Road, Tsuen Wan, N.T.",22.371,114.114,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+233.0,Tsuen Wan,"Shop Units P11A & P11B, Luk Yeung Galleria, Tsuen Wan, N.T.",22.371,114.114,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+504.0,Tsuen Wan,"Shop 308-313, Level 3, Tsuen Wan Plaza, Tsuen Wan, NT",22.371,114.114,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+331.0,Yau Tsim Mong,"Shop 1092, Level 1, Elements, 1 Austin Road West, Kln",22.312,114.172,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+934.0,Yau Tsim Mong,"Shop A, G/F, Fourseas Building, Nos. 208-212 Nathan Road, Tsim Sha Tsui, Kowloon",22.312,114.172,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+151.0,Yau Tsim Mong,"Shop A, G/F, Full Win Commercial Centre, 573 Nathan Rd, Kln",22.312,114.172,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+531.0,Yau Tsim Mong,"G/F, Cambridge House, 26-28 Cameron Road, Tsim Sha Tsui, Kln.",22.312,114.172,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+545.0,Yau Tsim Mong,"Shop 3304, Level 3, Gateway Arcade, Harbour City, Kowloon",22.312,114.172,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+932.0,Yau Tsim Mong,"Shop on G/F & Yard, Zhong Da Building, 38-40 Haiphong Road, Tsim Sha Tsui",22.312,114.172,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+868.0,Yau Tsim Mong,"Shop Nos.17, 20-23, MTR Floor, iSQUARE, 63 Nathan Road, Tsim Sha Tsui, Kln",22.312,114.172,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+264.0,Yau Tsim Mong,"Shop 1, Sino Cheer Plaza, No. 23 Jordan Road, Kowloon",22.312,114.172,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+923.0,Yau Tsim Mong,"Unit 01B, Shop B201, Level B2, K11 MUSEA, 
+Victoria Dockside, 18 Salisbury Road, Tsim Sha Tsui, Kln",22.312,114.172,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+400.0,Yau Tsim Mong,"Shop Nos. B109-B110, Basement 1, K11, No.18 Hanoi Road, Tsim Sha Tsui, Kowloon",22.312,114.172,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+947.0,Yau Tsim Mong,"Shop 11 & 11A, G/F, China Hong Kong City, 33 Canton Road, Tsim Sha Tsui, Kowloon",22.312,114.172,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+848.0,Yau Tsim Mong,"Shop B1-2, Concourse Level, Hong Kong West Kowloon Station, 3 Austin Road West, TST, Kln",22.312,114.172,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+70.0,Yau Tsim Mong,"G/F, Oxford Commercial Building, 494-496 Nathan Road, Kln.",22.312,114.172,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+175.0,Yau Tsim Mong,"Shop No.101, Hoi Fu Shopping Center, Hoi Wang Road, Mongkok West, Kln.",22.312,114.172,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+255.0,Yau Tsim Mong,"Shop 3-4, G/F., Tai Fong Building, 51-65 Ivy Street, Tai Kok Tsui, Kln.",22.312,114.172,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+47.0,Yau Tsim Mong,"Shop 056-059, G/F, New Kowloon Plaza, 38 Tai Kok Tsui Road, Kln.",22.312,114.172,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+275.0,Yau Tsim Mong,"Shop 109-110, Level 1, Metro Harbour Plaza, 8 Fuk Lee Street, Tai Kok Tsui, Kln",22.312,114.172,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+491.0,Yau Tsim Mong,"Shop A & B, G/F, Sang Fat Building, 218-220 Sai Yeung Choi Street South, 41 Bute Street, Kowloon",22.312,114.172,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+80.0,Yau Tsim Mong,"Shop A & B1A, G/F., Man Kee Mansion, 86D Waterloo Road, Kln.",22.312,114.172,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+516.0,Yau Tsim Mong,"Shop No.162 , Level 1,Moko, 193 Prince Edward Road West, Mongkok, Kowloon",22.312,114.172,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+843.0,Yau Tsim Mong,"Shop G20-22, G/F, Grand Plaza, 625 & 639 Nathan Road, Kowloon",22.312,114.172,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+430.0,Yau Tsim Mong,"Shop 10-13, G/F, Sim City of Chung Kiu Co Bldg, Nos.47-51 Shan Tung Street, Mongkok, Kln",22.312,114.172,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+224.0,Yau Tsim Mong,"Shop B & C, G/F, Tai Wah House, 50-52 Lai Chi Kok Road, Kln.",22.312,114.172,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+922.0,Yau Tsim Mong,"Shop B on G/F & Yard, Ruby Mansion, No. 38-42 Nullah Road, Prince Edward, Kowloon",22.312,114.172,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+337.0,Yau Tsim Mong,"Shop No. UG05,Upper G/F, Olympian City 1, 11 Hoi Fai Road, West Kowloon",22.312,114.172,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+250.0,Yau Tsim Mong,"Shop 142-143, 1/F., Olympian City 2, Tai Kok Tsui, Kln.",22.312,114.172,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+828.0,Kowloon City,"Shop No 320-321, Level 3, Homantin Plaza, Ho Man Tin Estate, Ho Man Tin, Kln",22.328,114.191,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+444.0,Kowloon City,"Shop No. G17, Oi Man Plaza, Oi Man Estate, Homantin, Kln",22.328,114.191,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+426.0,Kowloon City,"Shop No.G02, G/F, Grand Waterfront Plaza, 38 San Ma Tau Street, Ma Tau Kok, Kowloon",22.328,114.191,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+335.0,Kowloon City,"Shop No. 31, G/F, Honour Building, 78-80W To Kwa Wan Road, Tokwawan, Kln.",22.328,114.191,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+229.0,Kowloon City,"Shop 54-60, 1/F, Hunghom Commercial Centre, 37-41 Ma Tau Wai Rd., Hung Hom, Kln.",22.328,114.191,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+76.0,Kowloon City,"Shop E, 1/F, Planet Square, 1-15 Tak Man Street, Hung Hom, Kln.",22.328,114.191,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+360.0,Kowloon City,"Shop 17 G1A, G/F No. 1-7 Wu Kwong Street, Hung Hom, Kln.",22.328,114.191,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+266.0,Wong Tai Sin,"G/F., Nos. 74-76 Tseuk Luk Street, San Po Kong, Kln.",22.342,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+211.0,Kowloon City,"Shop 3 & 4, G/F, Metropolitan Rise, 28 Ma Tau Kok Road, Kln.",22.328,114.191,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+875.0,Kowloon City,"Shop 1, G/F, Billionnaire Luxe, 39 Nga Tsin Wai Road, Kowloon City, Kln",22.328,114.191,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+512.0,Wong Tai Sin,"Shop 2 ,G/F, Nos.35-49 Hong Keung Street, Kowloon",22.342,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+74.0,Kowloon City,"Shop 243A, G/F, Mei King Mansion Tokwawan Road, Tokwawan, Kln.",22.328,114.191,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+81.0,Sham Shui Po,"Shop 501B, Dragon Ctr, Level 5, 37K Yen Chow St, Sham Shui Po, Kln.",22.331,114.162,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+180.0,Sham Shui Po,"G/F, 316-318 Lai Chi Kok Road, Sham Shui Po, Kln.",22.331,114.162,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+878.0,Sham Shui Po,"Shop G01 & G02, G/F, Lai Kok Shopping Centre, Lai Kok Estate, Sham Shui Po, Kln",22.331,114.162,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+521.0,Sham Shui Po,"Shop No. B6 & B7,G/F, Kam Wah Mansion, Nos. 226-242 Cheung Sha Wan Road, Kln",22.331,114.162,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+879.0,Sham Shui Po,"Shop L2-1 & L2-2, Level 2, V Walk, 28 Sham Mong Road, Sham Shui Po, Kln",22.331,114.162,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+870.0,Sham Shui Po,"Shop F110, 1/F, Fu Cheong Shopping Centre, Fu Cheong Estate, Sham Shui Po, Kln",22.331,114.162,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+463.0,Sham Shui Po,"Shop No 9, G/F, Mei Leong House, Shek Kip Mei Estate Phase 2, Kln.",22.331,114.162,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+253.0,Sham Shui Po,"Shop A, G/F, Ample Building, Nos. 1 - 13 Woh Chai Street, Shek Kip Mei, Kln.",22.331,114.162,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+79.0,Sham Shui Po,"G/F., Maintown Plaza, 223-237 Nam Cheong St., Kln.",22.331,114.162,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+168.0,Sham Shui Po,"G/F, 10A Tai Po Road, Kln.",22.331,114.162,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+223.0,Sham Shui Po,"Shop 4, 5 & 11, G/F., Rondall Building, 168-178 Tai Po Road, Kln.",22.331,114.162,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+886.0,Sham Shui Po,"Shop L2-97 & L2-98, Level 2, V Walk, 28 Sham Mong Road, Sham Shui Po, Kln",22.331,114.162,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+142.0,Sham Shui Po,"Flat G18A-B, G/F Apollo Shopping Ctr, 164-170 Castle Peak Rd, Shamshuipo, Kln.",22.331,114.162,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+237.0,Sham Shui Po,"Units 121-123, 1/F, Cheung Sha Wan Plaza, 833 Cheung Sha Wan Road, Kln.",22.331,114.162,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+297.0,Sham Shui Po,"Shop Nos. 12 & 13, G/F., Hoi Lai Shopping Centre, Hoi Lai Estate, Sham Shui Po, Kln.",22.331,114.162,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+279.0,Sham Shui Po,"Shop Nos. 130 & 132, 1/F., Liberte, 833 Lai Chi Kok Road, Kowloon",22.331,114.162,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+65.0,Sham Shui Po,"Shop G11, G/F, Sun Light Building, 273 Shunning Road, Kln.",22.331,114.162,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+94.0,Sham Shui Po,"Shop 99B, G/F, 69-119 Broadway, Mei Foo Sun Chuen, Kln.",22.331,114.162,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+252.0,Sham Shui Po,"Shop N72, G/F, Mount Sterling Mall, Mei Foo Sun Chuen, Kln.",22.331,114.162,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+222.0,Sham Shui Po,"Shop G01, G/F, PeakCastle, 476 Castle Peak Road, Cheung Sha Wan, Kln.",22.331,114.162,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+882.0,Sham Shui Po,"Shop G12, G/F, So Uk Shopping Centre, So Uk Estate, 
+Sham Shui Po",22.331,114.162,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+502.0,Sham Shui Po,"Shop B, G/F, TST Tower, No.388 Un Chau Street, Sham Shui Po, Kowloon",22.331,114.162,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+350.0,Island,"Unit 7T100, Level 7, Landside Check - In Hall, Terminal 1 , Hong Kong International Airport, Lantau, H.K.",,,DISTRICT_NOT_FOUND: Island,District center approximation - not exact location
+835.0,Island,"Unit 7E140, Departure Hall, L7, Terminal 1 (Restricted Area), Hong Kong International Airport",,,DISTRICT_NOT_FOUND: Island,District center approximation - not exact location
+840.0,Island,"Unit 6Z514A, Departure Hall, L6, Terminal 1 (Restricted Area), Hong Kong International Airport",,,DISTRICT_NOT_FOUND: Island,District center approximation - not exact location
+409.0,Island,"Unit 5E525A, Terminal 1, Hong Kong International Airport, Lantau, Hong Kong",,,DISTRICT_NOT_FOUND: Island,District center approximation - not exact location
+518.0,Island,"Unit 7E105,  L7 Departures Hall, Terminal 1, Hong Kong International Airport, Lantau, Hong Kong",,,DISTRICT_NOT_FOUND: Island,District center approximation - not exact location
+95.0,Kwai Tsing,"Shop 8-11, G/F., Comm Ctr, Broadview Garden, 1 Tsing Luk St, Tsing Yi, N.T.",22.356,114.13,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+874.0,Island,"Unit 501, 5/F, Citygate Outlets, Tung Chung, N.T.",,,DISTRICT_NOT_FOUND: Island,District center approximation - not exact location
+452.0,Kwai Tsing,"Shop 301, Lv 3, Cheung Hong Shopping Centre No.2, Cheung Hong Estate, 12 Ching Hong Road, Tsing Yi, N.T.",22.356,114.13,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+447.0,Kwai Tsing,"Shop Unit 216-217, Level 2, Maritime Square, 33 Tsing King Road, Tsing Yi, N.T.",22.356,114.13,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+867.0,Island,"Shop G02, G/F, JoysMark, Mun Tung Estate, 
+7 Chung Mun Road, Tung Chung, Lantau Island, HK
+",,,DISTRICT_NOT_FOUND: Island,District center approximation - not exact location
+338.0,Island,"Shops 3-4, G/F., Tung Chung Crescent, Tung Chung, Lantau, H.K.",,,DISTRICT_NOT_FOUND: Island,District center approximation - not exact location
+837.0,Island,"Shop 115 & 116, 1/F, Yat Tung Shopping Centre, 8 Yat Tung Street, Tung Chung, N.T., H.K.",,,DISTRICT_NOT_FOUND: Island,District center approximation - not exact location
+474.0,Kwun Tong,"Shops 2 & 3, G/F, Lower Ngau Tau Kok Estate Plaza, Kln",22.313,114.226,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+9.0,Kwun Tong,"Shop 183-185, G/F Amoy Plaza, Phase 2, 77 Ngau Tau Kok Road, Kln",22.313,114.226,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+916.0,Kowloon City,"Shop Nos. B119-B120, B1 Floor, Airside, No. 2 Concorde Road, Kai Tak, Kowloon, Hong Kong",22.328,114.191,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+100.0,Wong Tai Sin,"Shop S101, 1/F, Chuk Yuen Shopping Ctr, Chuk Yuen (South) Estate, Kln.",22.342,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+497.0,Kowloon City,"Shop A004,G/F, Ching Long Shopping Centre, Muk Chui Street, Kowloon City, Kowloon",22.328,114.191,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+461.0,Wong Tai Sin,"Shop L203-204, LG2/F, Fu Yan House, Fu Shan Estate, Kowloon ",22.342,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+369.0,Kwun Tong,"Shop 281, G/F., Hung Cheuk Lau, 281 Ngau Tau Kok Road, Kwun Tong Garden Estate, Kowloon",22.313,114.226,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+958.0,Kowloon City,"Shop No. M1-204, Level 2, Kai Tak Mall 1, Kai Tak Sports Park, Kowloon City, Kowloon, Hong Kong",22.328,114.191,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+862.0,Wong Tai Sin,"Shop No. G56, G/F, Mikiki, 638 Prince Edward Road East, 
+San Po Kong, Kln
+",22.342,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+31.0,Kwun Tong,"G/F, 7 Tung Ming Street, Kwun Tong, Kln.",22.313,114.226,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+284.0,Kwun Tong,"Shop No. L1-28 & L1-29, Level 1, APM, Millennium City 5, Kwun Tong, Kln",22.313,114.226,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+480.0,Kwun Tong,"Shop 2182, 2183 & 2186, 2/F, Richland Gardens (Commercial & Garage Blk), Kowloon Bay, Kln",22.313,114.226,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+146.0,Wong Tai Sin,"G/F, 18 Sheung Fung Street, Wong Tai Sin, Kln.",22.342,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+40.0,Kwun Tong,"Shop Nos. F16A & F17-F17A, Telford Plaza I, Kowloon Bay, Kln",22.313,114.226,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+278.0,Wong Tai Sin,"Shop 537-538, 5/F, Tsz Wan Shan Shopping Centre, 23 Yuk Wah Street, Tsz Wan Shan, Kln.",22.342,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+496.0,Wong Tai Sin,"Shop A111, Upper G/F, Choi Wan Shopping Ctr (Ph 2), Choi Wan (I) Est, Ngau Chi Wan, Kln.",22.342,114.195,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+812.0,Kwun Tong,"No 228, 2/F, Kai Tin Shopping Centre, Lam Tin, Kwun Tong, Kln",22.313,114.226,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+363.0,Kwun Tong,"Shop Nos. 34 & 36, G.F., Laguna Plaza, 88 Cha Kwo Ling Road, Kwun Tong, Kln",22.313,114.226,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+817.0,Kwun Tong,"Shop 314, 3/F, Lok Wah Shopping Centre, Lok Wah South & North Estate, Ngau Tau Kok, Kln
+",22.313,114.226,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+540.0,Kwun Tong,"Shop No. LG02, Lower G/F, On Tat Shopping Centre, 
+On Tat Estate, Kwun Tong, Kowloon",22.313,114.226,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+861.0,Kwun Tong,"Shop 105, UG/F, On Tai Shopping Centre, On Tai Estate, 
+Kwun Tong, Kln
+",22.313,114.226,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+234.0,Kwun Tong,"Shop 7, G/F., Po Tat Shopping Centre, Po Lam Road, Sau Mau Ping, Kln",22.313,114.226,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+455.0,Kwun Tong,"Shops 117-120, G/F, Yuk Shek House, Ping Shek Estate, Kowloon",22.313,114.226,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+436.0,Kwun Tong,"Shop No.103, 1/F., Tak Tin Shopping Centre, 223 Pik Wan Road, Lam Tin, Kln",22.313,114.226,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+236.0,Kwun Tong,"Shop 108, 1/F, Sau Mau Ping Shopping Centre, Sau Mau Ping, Kln",22.313,114.226,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+880.0,Kwun Tong,"Shop 201B, 2/F, Shun Lee Commercial Centre, Shun Lee Estate, 15 Lee On Road, Kwun Tong, Kln",22.313,114.226,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+904.0,Kwun Tong,"ShopsL3-1,Level 3,Sceneway Plaza, No. 8 Sceneway Road, Lam Tin, Kln",22.313,114.226,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+355.0,Kwun Tong,"Shop Nos. 9-10, G/F, Tin Kuen House, Shun Tin Estate, Kln",22.313,114.226,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+51.0,Kwun Tong,"Shop 4A, Tsui Ping Shopping Circuit, Tsui Ping (North) Estate, Kwun Tong, Kln",22.313,114.226,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+475.0,Sai Kung,"Shop Unit F68, 1/F, Pop Corn, 9 Tong Chun Street, Tseung Kwan O, N.T.",22.383,114.27,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+468.0,Kwun Tong,"Shop No. 233 2/F, Domain, Yau Tong, Kln",22.313,114.226,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+339.0,Sai Kung,"Shop No.238A & 238B, Level 2, East Point City, 8 Chung Wa Road, Tseung Kwan O, N.T.",22.383,114.27,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+471.0,Sai Kung,"Shop 109, 1/F, Sheung Tak Shopping Ctr, Sheung Tak Est, 2 Tong Ming St, T.K.O., N.T.",22.383,114.27,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+907.0,Sai Kung,"Shop Unit 342, 3/F, The LOHAS, Tseung Kwan O, N.T",22.383,114.27,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+285.0,Sai Kung,"Shop Unit 119-121, 1/F., The Lane, Hang Hau, Tseung Kwan O, N.T.",22.383,114.27,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+503.0,Sai Kung,"Shop 310, Choi Ming Shopping Centre, Tseung Kwan O, N.T.",22.383,114.27,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+208.0,Sai Kung,"Shop 205 & 208, Level 2, MCP Discovery, Tseung Kwan O, N.T.",22.383,114.27,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+929.0,Sai Kung,"Shop Nos. 1116 - 1118, Level One, MCP Central, Tseung Kwan O, N.T.",22.383,114.27,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+897.0,Sai Kung,"Shop 117, Level 1, Park Central, 9 Tong Tak Street, Tseung Kwan O, Sai Kung, N.T.",22.383,114.27,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+456.0,Sai Kung,"Shop Unit(s) F66-67, 1/F, PopCorn, 9 Tong Yin Street, Tseung Kwan O, New Territories",22.383,114.27,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+478.0,Sai Kung,"Shop 116 & 117, G/F, Po Kan Hse, Po Lam Est, 18 Po Lam Rd North, Tseung Kwan O, N.T.",22.383,114.27,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+149.0,Sai Kung,"Shop Nos. 26-27, G/F, Sai Kung Town Centre, 22-40 Fuk Man Road, Sai Kung, N.T.",22.383,114.27,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+321.0,Sai Kung,"Shop 101, 5/F., Tsui Lam Square, Tsui Lam Estate, Tseung Kwan O, N.T.",22.383,114.27,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+425.0,Kwun Tong,"Shop 9, G/F, Yau Lai Shopping Centre, Yau Tong, Kln",22.313,114.226,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+472.0,Kwun Tong,"Shop 140, 1/F, Lei Yue Mun Plaza, Yau Tong, Kln",22.313,114.226,SUCCESS_DISTRICT_CENTER,District center approximation - not exact location
+928.0,Island,"Minor Portion of Shops G11 & G13, G/F Discovery Bay North Plaza, Lantau Island, HK.",,,DISTRICT_NOT_FOUND: Island,District center approximation - not exact location
+,,,,,DISTRICT_NOT_FOUND: nan,District center approximation - not exact location
