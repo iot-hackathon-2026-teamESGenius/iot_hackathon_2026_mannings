@@ -61,6 +61,8 @@ def solve_vrp(
             vrp_input,
             demand_ratios=config.DEMAND_RATIOS,
             scenario_generator=scenario_gen,  # 传入自定义场景生成器
+            enable_parallel=getattr(config, 'ROBUST_ENABLE_PARALLEL', False),
+            parallel_workers=getattr(config, 'ROBUST_PARALLEL_WORKERS', 0),
         )
         robust_optimizer.generate_scenarios()
         robust_optimizer.solve_all_scenarios(
@@ -70,7 +72,8 @@ def solve_vrp(
         )
         
         solution = robust_optimizer.select_robust_solution(
-            criterion=config.ROBUST_SELECTION_CRITERION
+            criterion=config.ROBUST_SELECTION_CRITERION,
+            weights=getattr(config, 'ROBUST_SELECTION_WEIGHTS', None),
         )
         solution['optimization_type'] = 'robust'
         solution['scenarios'] = robust_optimizer.get_scenario_comparison()
@@ -176,8 +179,10 @@ def format_solution_output(solution: Dict, vrp_input: Dict = None) -> str:
         output.append(f"{'-' * 60}")
         
         for scenario in solution['scenarios']['scenarios']:
+            ratio = scenario.get('demand_ratio', None)
+            ratio_display = f"{ratio:.1%}" if isinstance(ratio, (int, float)) else "N/A"
             output.append(f"\nScenario {scenario['scenario_id'] + 1} "
-                         f"(Demand: {scenario['demand_ratio']:.1%}):")
+                         f"(Demand: {ratio_display}):")
             output.append(f"  Distance: {scenario['total_distance']:.2f} km")
             output.append(f"  Routes: {scenario['num_routes']}")
             if scenario['sla_violations'] > 0:

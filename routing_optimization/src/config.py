@@ -46,6 +46,15 @@ ROBUST_SELECTION_CRITERION = 'min_max_distance'  # 鲁棒方案选择标准：
                                                    # - min_max_distance: 最小化最坏情况距离
                                                    # - min_avg_distance: 最小化平均距离
                                                    # - min_sla_violation: 最小化SLA违反
+                                                   # - weighted_sum: 距离/SLA加权综合
+                                                   # - pareto: 多目标Pareto前沿筛选
+ROBUST_SELECTION_WEIGHTS = {                        # weighted_sum 下使用
+    'distance': 0.5,
+    'max_route': 0.2,
+    'sla': 0.3,
+}
+ROBUST_ENABLE_PARALLEL = True                      # 是否启用多场景并行求解
+ROBUST_PARALLEL_WORKERS = 0                        # 0=自动（最多4线程）
 
 # Distance Calculation (距离计算配置)
 USE_EUCLIDEAN_DISTANCE = True   # True: 欧几里得距离（快速，用于小范围）

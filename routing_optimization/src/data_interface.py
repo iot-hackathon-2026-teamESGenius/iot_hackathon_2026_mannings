@@ -4,6 +4,8 @@ Data interface for loading forecast data
 """
 
 import pandas as pd
+import re
+import zipfile
 from typing import Dict, List, Tuple
 import config
 
@@ -180,3 +182,141 @@ def validate_input_data(vrp_input: Dict) -> Tuple[bool, str]:
         return False, f"Total demand ({total_demand}) exceeds total capacity ({total_capacity})"
     
     return True, "Input data is valid"
+
+
+def _normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
+    renamed = {}
+    for col in df.columns:
+        new_col = re.sub(r"\s+", " ", str(col)).strip().lower()
+        renamed[col] = new_col
+    return df.rename(columns=renamed)
+
+
+def _parse_time_window_from_store_row(row: pd.Series, default_window: Tuple[int, int]) -> Tuple[int, int]:
+    # dim_store uses columns like "Business Hrs 1" and "Business Hrs 1.1"
+    candidate_cols = [
+        'business hrs 1.1',
+        'business hrs 2.1',
+        'business hrs 3.1',
+    ]
+    for c in candidate_cols:
+        val = str(row.get(c, '')).strip()
+        m = re.match(r'^(\d{1,2}):(\d{2})-(\d{1,2}):(\d{2})$', val)
+        if not m:
+            continue
+        h1, mm1, h2, mm2 = map(int, m.groups())
+        return h1 * 60 + mm1, h2 * 60 + mm2
+    return default_window
+
+
+def _stable_store_coords(store_code: int) -> Tuple[float, float]:
+    # Deterministic pseudo coordinates around Hong Kong center for routing distance consistency.
+    center_lat, center_lon = 22.3193, 114.1694
+    seed = int(store_code) * 2654435761 % (2**32)
+    lat_off = (((seed >> 8) % 10000) / 10000.0 - 0.5) * 0.25
+    lon_off = (((seed >> 20) % 10000) / 10000.0 - 0.5) * 0.30
+    return center_lat + lat_off, center_lon + lon_off
+
+
+def load_dfi_zip_as_forecast_data(
+    zip_path: str,
+    target_date: str = None,
+    top_n_stores: int = 25,
+    demand_col: str = 'total_quantity_cnt',
+    default_time_window: Tuple[int, int] = (8 * 60, 21 * 60),
+) -> pd.DataFrame:
+    """
+    Convert DFI zip dataset to forecast dataframe compatible with VRP pipeline.
+
+    Args:
+        zip_path: Path to DFI.zip
+        target_date: Date string (YYYY-MM-DD). If None, use latest date in orders.
+        top_n_stores: Keep top N stores by aggregated demand.
+        demand_col: Demand aggregation column in order detail table.
+        default_time_window: Fallback time window if store business hours unavailable.
+
+    Returns:
+        DataFrame ready for prepare_vrp_input.
+    """
+    with zipfile.ZipFile(zip_path) as zf:
+        order_file = [n for n in zf.namelist() if 'case_study_order_detail' in n][0]
+        store_file = [n for n in zf.namelist() if 'dim_store' in n][0]
+
+        with zf.open(order_file) as f:
+            orders = pd.read_csv(f)
+        with zf.open(store_file) as f:
+            stores = pd.read_csv(f)
+
+    orders = _normalize_columns(orders)
+    stores = _normalize_columns(stores)
+
+    if 'dt' not in orders.columns or 'fulfillment_store_code' not in orders.columns:
+        raise ValueError('DFI order detail file missing required columns: dt, fulfillment_store_code')
+    if demand_col not in orders.columns:
+        raise ValueError(f"DFI order detail file missing demand column: {demand_col}")
+
+    orders['dt'] = pd.to_datetime(orders['dt'], errors='coerce')
+    orders = orders.dropna(subset=['dt'])
+
+    if target_date is None:
+        target_ts = orders['dt'].max().normalize()
+    else:
+        target_ts = pd.to_datetime(target_date).normalize()
+
+    day_orders = orders[orders['dt'].dt.normalize() == target_ts].copy()
+    if day_orders.empty:
+        raise ValueError(f'No records found in DFI data for date: {target_ts.date()}')
+
+    agg = (
+        day_orders
+        .groupby('fulfillment_store_code', as_index=False)[demand_col]
+        .sum()
+        .rename(columns={'fulfillment_store_code': 'store_id', demand_col: 'demand'})
+    )
+    agg = agg.sort_values('demand', ascending=False).head(top_n_stores)
+
+    store_code_col = 'store code' if 'store code' in stores.columns else None
+    if store_code_col is None:
+        # Keep compatibility with unusual newline-based source names
+        for col in stores.columns:
+            if col.replace(' ', '') == 'storecode':
+                store_code_col = col
+                break
+
+    if store_code_col:
+        stores = stores.rename(columns={store_code_col: 'store_id'})
+        merged = agg.merge(stores, on='store_id', how='left')
+    else:
+        merged = agg.copy()
+
+    rows = []
+    for _, row in merged.iterrows():
+        store_id = int(row['store_id'])
+        demand = float(max(row['demand'], 0.0))
+        tw_start, tw_end = _parse_time_window_from_store_row(row, default_time_window)
+        lat, lon = _stable_store_coords(store_id)
+        rows.append({
+            'store_id': store_id,
+            'demand': demand,
+            'predicted_demand': demand,
+            'demand_p10': demand * 0.9,
+            'demand_p50': demand,
+            'demand_p90': demand * 1.1,
+            'time_window_start': tw_start,
+            'time_window_end': tw_end,
+            'lat': lat,
+            'lon': lon,
+        })
+
+    df = pd.DataFrame(rows)
+    if df.empty:
+        raise ValueError('No valid store-level demand rows generated from DFI data')
+
+    # feature_score normalized by demand percentile for scenario learning factor.
+    if len(df) == 1:
+        df['feature_score'] = 0.5
+    else:
+        ranks = df['demand'].rank(method='average', pct=True)
+        df['feature_score'] = ranks.clip(0.0, 1.0)
+
+    return df
