@@ -1,20 +1,23 @@
-# 数据处理
-pandas>=1.5.0
-numpy>=1.23.0
+# Requirements for IOT Hackathon 2026 - Mannings SLA Optimization
+# Python 3.9+
 
-# 数据获取
+# Core Libraries
+ortools>=9.7.0
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Data Processing & Fetching
 requests>=2.28.0
 
-# 预测模型
+# Forecasting Models
 prophet>=1.1.0
 scikit-learn>=1.2.0
 xgboost>=1.7.0
 
-# 优化
-ortools>=9.6.0
+# Optimization
 pulp>=2.7.0
 
-# 可视化
+# Visualization
 streamlit>=1.22.0
 plotly>=5.13.0
 folium>=0.14.0
@@ -22,53 +25,53 @@ matplotlib>=3.7.0
 seaborn>=0.12.0
 streamlit-folium>=0.15.0
 
-# REST API服务 (适配前端Vue3+uniapp)
+# REST API Services
 fastapi>=0.100.0
 uvicorn>=0.22.0
 python-multipart>=0.0.6
 
-# 地理处理
+# Geographic Processing
 geopandas>=0.13.0
 shapely>=2.0.0
 
-# 工具
+# Development Tools
 jupyter>=1.0.0
 ipykernel>=6.0.0
 python-dotenv>=1.0.0
 pyyaml>=6.0
 
-# 代码质量
+# Code Quality
 black>=23.0.0
 flake8>=6.0.0
 isort>=5.12.0
 pre-commit>=3.0.0
 
-# 测试
+# Testing
 pytest>=7.3.0
 pytest-cov>=4.0.0
 
 # ==============================================================================
-# Stage 2 - 智能体系统依赖 (待启用)
+# Stage 2 - AI Agent System Dependencies (To be enabled)
 # ==============================================================================
-# 说明: 以下依赖用于第二阶段AI Agent开发
-# Stage 1无需安装，Stage 2启动时取消注释
+# Note: The following dependencies are for Stage 2 AI Agent development
+# Not needed for Stage 1, uncomment when Stage 2 is activated
 
-# 深度学习框架 (需求预测Agent)
+# Deep Learning Frameworks (Demand Forecasting Agent)
 # tensorflow>=2.12.0
 # torch>=2.0.0
 # keras>=2.12.0
 
-# 强化学习 (库存/路径Agent)
+# Reinforcement Learning (Inventory/Routing Agents)
 # stable-baselines3>=2.0.0
 # gymnasium>=0.28.0
 
-# LLM集成 (可选 - 智能对话)
+# LLM Integration (Optional - Intelligent Dialogue)
 # langchain>=0.0.200
 # openai>=0.27.0
 
-# 消息队列 (多Agent通信)
+# Message Queue (Multi-Agent Communication)
 # redis>=4.5.0
 # kafka-python>=2.0.2
 
-# 模型管理
+# Model Management
 # mlflow>=2.3.0
