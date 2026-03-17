@@ -5,8 +5,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from typing import Dict, Any, List
-from ...interfaces import IVisualization
-from src.core.interfaces import RoutePlan
+from src.core.interfaces import IVisualization, RoutePlan
 
 class StreamlitDashboard(IVisualization):
     """Streamlit仪表板"""

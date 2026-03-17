@@ -320,3 +320,7 @@ downloads/
 # 其他工具缓存
 .hypothesis/
 .scrapy/pkgs/
+# 文档报告文件（自动生成，可重新生成）
+docs/reports/*.md
+docs/reports/*.json
+!docs/reports/README.md

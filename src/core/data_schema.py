@@ -13,6 +13,14 @@ from enum import Enum
 import pandas as pd
 
 
+class GeocodeStatus(Enum):
+    """地理编码状态枚举"""
+    SUCCESS = "success"
+    FAILED = "failed"
+    PARTIAL = "partial"
+    PENDING = "pending"
+
+
 # ==================== 枚举类型定义 ====================
 
 class District(Enum):
@@ -613,3 +621,230 @@ def validate_fulfillment_data(fulfillments: List[FulfillmentDetailSchema]) -> Di
         report['median_order_to_pickup_min'] = statistics.median(order_to_pickup_times)
     
     return report
+
+# ==================== Vehicle and Traffic Schemas ====================
+
+@dataclass
+class DeliveryVehicle:
+    """配送车辆信息"""
+    vehicle_id: str
+    capacity: float                     # 载重量
+    current_location: Tuple[float, float]  # (latitude, longitude)
+    max_distance_km: Optional[float] = None
+    max_duration_hours: Optional[float] = None
+    cost_per_km: Optional[float] = None
+    driver_id: Optional[str] = None
+    vehicle_type: Optional[str] = None
+    
+    def to_dict(self) -> Dict:
+        return asdict(self)
+
+
+@dataclass
+class TrafficCondition:
+    """交通状况信息"""
+    timestamp: datetime
+    road_segment: str
+    speed_kmh: float
+    congestion_level: int               # 1-5, 1=free flow, 5=severe congestion
+    travel_time_factor: float           # 相对于自由流动的时间倍数
+    incident_reported: bool = False
+    incident_description: Optional[str] = None
+    
+    def to_dict(self) -> Dict:
+        return asdict(self)
+
+
+@dataclass
+class WeatherData:
+    """天气数据 (简化版本，用于算法接口)"""
+    date: date
+    temperature_high: Optional[float] = None
+    temperature_low: Optional[float] = None
+    humidity: Optional[float] = None
+    rainfall: Optional[float] = None
+    weather_condition: Optional[WeatherCondition] = None
+    impact_factor: float = 1.0          # 对需求的影响因子
+    
+    def to_dict(self) -> Dict:
+        result = asdict(self)
+        if self.weather_condition:
+            result['weather_condition'] = self.weather_condition.value
+        return result
+
+
+@dataclass
+class PublicHoliday:
+    """公众假期 (简化版本，用于算法接口)"""
+    date: date
+    name: str
+    impact_factor: float = 1.2          # 对需求的影响因子
+    
+    def to_dict(self) -> Dict:
+        return asdict(self)
+
+
+@dataclass
+class SLAForecast:
+    """SLA预测结果"""
+    store_code: str
+    forecast_date: date
+    predicted_sla_rate: float           # 预测SLA达成率 (0-1)
+    confidence_interval: Tuple[float, float]  # (lower, upper)
+    risk_factors: List[str] = field(default_factory=list)
+    improvement_recommendations: List[str] = field(default_factory=list)
+    forecast_timestamp: datetime = field(default_factory=datetime.now)
+    
+    def to_dict(self) -> Dict:
+        return asdict(self)
+
+
+# ==================== Routing and Optimization Schemas ====================
+
+@dataclass
+class OrderItem:
+    """订单项目"""
+    sku_id: str
+    sku_name: str
+    quantity: int
+    unit_price: Optional[float] = None
+    
+    def to_dict(self) -> Dict:
+        return asdict(self)
+
+
+@dataclass
+class OrderDetail:
+    """订单详情"""
+    order_id: str
+    user_id: str
+    fulfillment_store_code: str
+    order_date: date
+    items: List[OrderItem]
+    total_quantity: int
+    unique_sku_count: int
+    total_amount: Optional[float] = None
+    priority: int = 1
+    
+    def to_dict(self) -> Dict:
+        return asdict(self)
+
+
+@dataclass
+class StoreLocation:
+    """店铺位置信息"""
+    store_code: str
+    latitude: float
+    longitude: float
+    district: str
+    address: str
+    geocode_status: str
+    accuracy_note: Optional[str] = None
+    
+    def to_dict(self) -> Dict:
+        return asdict(self)
+
+
+@dataclass
+class RouteOptimizationResult:
+    """路径优化结果"""
+    scenario_id: str
+    vehicle_routes: Dict[str, List[str]]  # vehicle_id -> [store_codes]
+    total_distance: float
+    total_time: float
+    total_cost: float
+    sla_compliance_rate: float
+    optimization_timestamp: datetime
+    solver_status: str
+    
+    def to_dict(self) -> Dict:
+        return asdict(self)
+
+
+@dataclass
+class DeliveryScenario:
+    """配送场景"""
+    scenario_id: str
+    orders: List[OrderDetail]
+    demand_forecast: Dict[str, float]  # store_code -> demand_multiplier
+    weather_impact: float
+    traffic_impact: float
+    probability: float
+    generated_timestamp: datetime
+    
+    def to_dict(self) -> Dict:
+        return asdict(self)
+
+
+@dataclass
+class RobustOptimizationResult:
+    """鲁棒优化结果"""
+    scenarios: List[DeliveryScenario]
+    route_results: List[RouteOptimizationResult]
+    selected_route: RouteOptimizationResult
+    selection_strategy: str
+    robustness_score: float
+    confidence_level: float
+    optimization_timestamp: datetime = field(default_factory=datetime.now)
+    
+    def to_dict(self) -> Dict:
+        return asdict(self)
+
+
+@dataclass
+class DemandForecast:
+    """需求预测结果"""
+    store_code: str
+    sku_id: str
+    forecast_date: date
+    predicted_demand: float
+    confidence_intervals: Dict[str, float]  # {"P10": 10, "P50": 15, "P90": 25}
+    external_factors: Dict[str, float]  # {"weather_impact": 0.1, "holiday_impact": 0.3}
+    model_version: str
+    forecast_timestamp: datetime
+    
+    def to_dict(self) -> Dict:
+        return asdict(self)
+
+
+# ==================== Data Conversion Functions ====================
+
+def dataframe_to_store_locations(df: pd.DataFrame) -> List[StoreLocation]:
+    """Convert DataFrame to StoreLocation objects"""
+    locations = []
+    for _, row in df.iterrows():
+        location = StoreLocation(
+            store_code=str(row.get('store_code', '')),
+            latitude=float(row.get('latitude', 0.0)),
+            longitude=float(row.get('longitude', 0.0)),
+            district=str(row.get('district', '')),
+            address=str(row.get('address', '')),
+            geocode_status=str(row.get('geocode_status', 'success')),
+            accuracy_note=row.get('accuracy_note')
+        )
+        locations.append(location)
+    return locations
+
+
+def dataframe_to_order_details(df: pd.DataFrame) -> List[OrderDetail]:
+    """Convert DataFrame to OrderDetail objects"""
+    orders = []
+    for _, row in df.iterrows():
+        # Create order items (simplified)
+        items = [OrderItem(
+            sku_id=f"SKU_{i}",
+            sku_name=f"Product {i}",
+            quantity=1
+        ) for i in range(int(row.get('unique_sku_cnt', 1)))]
+        
+        order = OrderDetail(
+            order_id=str(row.get('order_id', '')),
+            user_id=str(row.get('user_id', '')),
+            fulfillment_store_code=str(row.get('fulfillment_store_code', '')),
+            order_date=pd.to_datetime(row.get('dt')).date() if 'dt' in row else date.today(),
+            items=items,
+            total_quantity=int(row.get('total_quantity_cnt', 0)),
+            unique_sku_count=int(row.get('unique_sku_cnt', 0))
+        )
+        orders.append(order)
+    return orders

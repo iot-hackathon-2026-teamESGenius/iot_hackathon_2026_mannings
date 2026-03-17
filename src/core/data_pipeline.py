@@ -29,11 +29,11 @@ try:
     from .interfaces import DataFetcher, DataProcessor, Logger
 except ImportError:
     # For direct execution
-    from data_schema import (
+    from .data_schema import (
         StoreLocation, OrderDetail, WeatherData, PublicHoliday, TrafficCondition,
         GeocodeStatus, WeatherCondition, dataframe_to_store_locations, dataframe_to_order_details
     )
-    from interfaces import DataFetcher, DataProcessor, Logger
+    from .interfaces import DataFetcher, DataProcessor, Logger
 
 # 配置日志
 logging.basicConfig(

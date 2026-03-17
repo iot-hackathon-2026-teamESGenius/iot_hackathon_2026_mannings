@@ -16,6 +16,8 @@ import logging
 from pathlib import Path
 import math
 
+logger = logging.getLogger(__name__)
+
 try:
     from ortools.constraint_solver import routing_enums_pb2
     from ortools.constraint_solver import pywrapcp
@@ -24,6 +26,9 @@ try:
 except ImportError as e:
     ORTOOLS_AVAILABLE = False
     logger.warning(f"OR-Tools not available: {str(e)}. Using mock implementation for testing.")
+except OSError as e:
+    ORTOOLS_AVAILABLE = False
+    logger.warning(f"OR-Tools library error: {str(e)}. Using mock implementation for testing.")
     
     # Mock classes for testing when OR-Tools is not available
     class MockRoutingIndexManager:
@@ -168,8 +173,14 @@ class ORToolsOptimizer(CVRPTWOptimizer):
         self.traffic_conditions = []  # Current traffic conditions
         self.optimization_stats = {}
         
+        # 添加距离矩阵缓存
+        self.distance_cache = {}
+        self.cache_stats = {'hits': 0, 'misses': 0}
+        
         if not ORTOOLS_AVAILABLE:
             logger.warning("OR-Tools not available. Using mock implementation for testing.")
+        
+        logger.info("OR-Tools优化器初始化完成，启用距离矩阵缓存")
     
     def _get_default_config(self) -> Dict[str, Any]:
         """获取默认配置"""
@@ -510,7 +521,8 @@ class ORToolsOptimizer(CVRPTWOptimizer):
             'time_windows_count': len(self.time_windows),
             'traffic_conditions_count': len(self.traffic_conditions),
             'config': self.config.copy(),
-            'optimization_stats': self.optimization_stats.copy() if self.optimization_stats else {}
+            'optimization_stats': self.optimization_stats.copy() if self.optimization_stats else {},
+            'cache_stats': self.get_cache_stats()  # 添加缓存统计
         }
         
         # 添加矩阵统计
@@ -605,7 +617,21 @@ class ORToolsOptimizer(CVRPTWOptimizer):
         logger.info(f"总需求: {sum(loc['demand'] for loc in self.locations)}")
     
     def _create_distance_matrix(self) -> None:
-        """创建距离矩阵"""
+        """创建距离矩阵（带缓存）"""
+        # 生成位置列表的缓存键
+        location_tuples = [(loc['lat'], loc['lng']) for loc in self.locations]
+        cache_key = str(sorted(location_tuples))
+        
+        # 检查缓存
+        if cache_key in self.distance_cache:
+            self.distance_matrix = self.distance_cache[cache_key].copy()
+            self.cache_stats['hits'] += 1
+            logger.info(f"使用缓存的距离矩阵: {len(self.locations)}x{len(self.locations)}")
+            return
+        
+        self.cache_stats['misses'] += 1
+        
+        # 计算距离矩阵
         n = len(self.locations)
         self.distance_matrix = np.zeros((n, n))
         
@@ -617,7 +643,28 @@ class ORToolsOptimizer(CVRPTWOptimizer):
                     distance = self._haversine_distance(lat1, lng1, lat2, lng2)
                     self.distance_matrix[i][j] = distance
         
-        logger.info(f"创建距离矩阵: {n}x{n}")
+        # 缓存结果
+        self.distance_cache[cache_key] = self.distance_matrix.copy()
+        
+        # 限制缓存大小
+        if len(self.distance_cache) > 50:  # 最多缓存50个矩阵
+            # 删除最旧的缓存项（简单FIFO策略）
+            oldest_key = next(iter(self.distance_cache))
+            del self.distance_cache[oldest_key]
+        
+        logger.info(f"创建并缓存距离矩阵: {n}x{n}")
+    
+    def get_cache_stats(self) -> Dict[str, Any]:
+        """获取缓存统计信息"""
+        total_requests = self.cache_stats['hits'] + self.cache_stats['misses']
+        hit_rate = self.cache_stats['hits'] / max(1, total_requests)
+        
+        return {
+            'cache_hits': self.cache_stats['hits'],
+            'cache_misses': self.cache_stats['misses'],
+            'hit_rate': hit_rate,
+            'cached_matrices': len(self.distance_cache)
+        }
     
     def _create_time_matrix(self) -> None:
         """创建时间矩阵（分钟）"""

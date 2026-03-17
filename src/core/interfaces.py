@@ -559,3 +559,170 @@ class IScheduleService(ABC):
     def get_realtime_vehicle_positions(self) -> List[Dict[str, Any]]:
         """获取车辆实时位置（用于地图展示）"""
         pass
+
+
+class IDataProcessor(ABC):
+    """数据处理接口"""
+    
+    @abstractmethod
+    def process_data(self, raw_data: Any) -> Any:
+        """处理数据"""
+        pass
+    
+    @abstractmethod
+    def validate_data(self, data: Any) -> bool:
+        """验证数据"""
+        pass
+
+
+class ILogger(ABC):
+    """日志记录接口"""
+    
+    @abstractmethod
+    def log_info(self, message: str) -> None:
+        """记录信息日志"""
+        pass
+    
+    @abstractmethod
+    def log_error(self, message: str, exception: Exception = None) -> None:
+        """记录错误日志"""
+        pass
+
+
+class IScenarioGenerator(ABC):
+    """场景生成器接口"""
+    
+    @abstractmethod
+    def generate_demand_scenarios(self, base_forecast: Dict[str, float], 
+                                uncertainty_params: Dict[str, float]) -> List[Any]:
+        """生成需求场景"""
+        pass
+    
+    @abstractmethod
+    def incorporate_weather_scenarios(self, base_scenario: Any, 
+                                    weather_forecasts: List[Any]) -> List[Any]:
+        """整合天气场景"""
+        pass
+    
+    @abstractmethod
+    def calculate_scenario_probabilities(self, scenarios: List[Any]) -> List[float]:
+        """计算场景概率"""
+        pass
+    
+    @abstractmethod
+    def create_traffic_impact_scenarios(self, base_routes: Dict[str, List[str]], 
+                                      traffic_variations: Dict[str, float]) -> List[Any]:
+        """创建交通影响场景"""
+        pass
+
+
+# ==================== Interface Aliases for Backward Compatibility ====================
+
+# Aliases for cleaner imports
+DemandForecaster = IDemandForecaster
+SLAPredictor = ISLAPredictor
+ScenarioGenerator = IScenarioGenerator
+DataFetcher = IDataFetcher
+DataProcessor = IDataProcessor
+Logger = ILogger
+DistanceCalculator = IDistanceCalculator
+InventoryOptimizer = IInventoryOptimizer
+RoutingOptimizer = IRoutingOptimizer
+Visualization = IVisualization
+Orchestrator = IOrchestrator
+AuthService = IAuthService
+SLAAnalyzer = ISLAAnalyzer
+OrderService = IOrderService
+ReplenishmentService = IReplenishmentService
+ScheduleService = IScheduleService
+
+class CVRPTWOptimizer(ABC):
+    """Capacitated Vehicle Routing Problem with Time Windows optimizer interface"""
+    
+    @abstractmethod
+    def optimize(self, orders: List[Any], vehicles: List[Any], constraints: Dict[str, Any]) -> Any:
+        """
+        Optimize vehicle routes for given orders and constraints
+        
+        Args:
+            orders: List of order details to be delivered
+            vehicles: List of available vehicles with capacity constraints
+            constraints: Optimization constraints (time windows, capacity, etc.)
+            
+        Returns:
+            RouteOptimizationResult with optimized routes
+        """
+        pass
+
+
+class RobustOptimizer(ABC):
+    """Robust optimization interface for handling uncertainty in routing"""
+    
+    @abstractmethod
+    def optimize_min_max_strategy(self, scenario_solutions: List[Any]) -> Any:
+        """
+        Min-max robust optimization for worst-case performance
+        
+        Args:
+            scenario_solutions: List of route solutions for different scenarios
+            
+        Returns:
+            RouteOptimizationResult that performs best in worst-case scenario
+        """
+        pass
+    
+    @abstractmethod
+    def optimize_expected_value_strategy(self, scenario_solutions: List[Any], probabilities: List[float]) -> Any:
+        """
+        Expected value optimization for average-case performance
+        
+        Args:
+            scenario_solutions: List of route solutions for different scenarios
+            probabilities: Probability of each scenario occurring
+            
+        Returns:
+            RouteOptimizationResult with minimum expected cost
+        """
+        pass
+    
+    @abstractmethod
+    def optimize_weighted_sum_strategy(self, scenario_solutions: List[Any], weights: Dict[str, float]) -> Any:
+        """
+        Weighted sum strategy with customizable priorities
+        
+        Args:
+            scenario_solutions: List of route solutions for different scenarios
+            weights: Weights for different objectives (cost, time, distance, sla_compliance)
+            
+        Returns:
+            RouteOptimizationResult optimized for weighted objectives
+        """
+        pass
+    
+    @abstractmethod
+    def evaluate_solution_robustness(self, solution: Any, scenarios: List[Any]) -> float:
+        """
+        Evaluate robustness of a solution across scenarios
+        
+        Args:
+            solution: RouteOptimizationResult to evaluate
+            scenarios: List of DeliveryScenario objects
+            
+        Returns:
+            Robustness score between 0.0 and 1.0
+        """
+        pass
+    
+    @abstractmethod
+    def calculate_regret_matrix(self, solutions: List[Any], scenarios: List[Any]) -> Any:
+        """
+        Calculate regret matrix for decision analysis
+        
+        Args:
+            solutions: List of RouteOptimizationResult objects
+            scenarios: List of DeliveryScenario objects
+            
+        Returns:
+            numpy.ndarray representing regret matrix
+        """
+        pass
