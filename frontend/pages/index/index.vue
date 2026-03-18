@@ -84,6 +84,52 @@
 			<view style="height: 40rpx;"></view>
 		</scroll-view>
 
+		<!-- 门店选择模态框 -->
+		<view v-if="showStoreModal" class="modal-overlay" @click.self="closeStoreModal">
+			<view class="store-modal" @click.stop>
+				<view class="modal-header">
+					<text class="modal-title">选择门店</text>
+					<view class="close-btn" @click="closeStoreModal">
+						<uni-icons type="close" size="20" color="#666"></uni-icons>
+					</view>
+				</view>
+				<view class="search-box">
+					<input 
+						class="search-input" 
+						v-model="storeSearchText" 
+						placeholder="搜索门店名称、ID或地区"
+						@input="onStoreSearch"
+					/>
+					<uni-icons type="search" size="18" color="#999" class="search-icon"></uni-icons>
+				</view>
+				<scroll-view scroll-y class="store-list">
+					<view class="store-item" @click="selectAllStores">
+						<view class="store-info">
+							<text class="store-name">全部门店</text>
+							<text class="store-detail">显示所有门店的数据</text>
+						</view>
+					</view>
+					<view 
+						v-for="store in displayedStores" 
+						:key="store.store_id"
+						class="store-item"
+						@click="selectStore(store)"
+					>
+						<view class="store-info">
+							<text class="store-name">{{ store.store_name }}</text>
+							<text class="store-detail">ID: {{ store.store_id }} · {{ store.district || '未知地区' }}</text>
+						</view>
+					</view>
+					<view v-if="!displayedStores.length && storeSearchText" class="no-result">
+						<text>未找到匹配的门店</text>
+					</view>
+					<view v-if="hasMoreStores" class="load-more" @click="loadMoreStores">
+						<text>加载更多 ({{ filteredStoreList.length - displayedStores.length }} 个)</text>
+					</view>
+				</scroll-view>
+			</view>
+		</view>
+
 		<view class="tab-bar-placeholder"></view>
 		<AppTabBar />
 	</view>
@@ -99,9 +145,13 @@ export default {
 	data() {
 		return {
 			// 当前门店名（导航栏下拉选择）
-			currentShopName: '请选择门店',
+			currentShopName: '全部门店',
 			// 当前用户可访问的门店列表（用于下拉）
 			storeList: [],
+			// 门店选择模态框
+			showStoreModal: false,
+			storeSearchText: '',
+			displayLimit: 20, // 初始显示的门店数量
 			// 侧栏菜单项（按权限过滤）
 			menuItems: [],
 
@@ -134,23 +184,67 @@ export default {
 			errorMsg: ''
 		}
 	},
+	computed: {
+		// 过滤后的门店列表（根据搜索文本）
+		filteredStoreList() {
+			if (!this.storeSearchText.trim()) {
+				return this.storeList
+			}
+			const searchText = this.storeSearchText.toLowerCase()
+			return this.storeList.filter(store => {
+				return store.store_name.toLowerCase().includes(searchText) ||
+					   store.store_id.toLowerCase().includes(searchText) ||
+					   (store.district && store.district.toLowerCase().includes(searchText))
+			})
+		},
+		// 当前显示的门店列表（分页显示）
+		displayedStores() {
+			return this.filteredStoreList.slice(0, this.displayLimit)
+		},
+		// 是否还有更多门店
+		hasMoreStores() {
+			return this.filteredStoreList.length > this.displayLimit
+		}
+	},
 	onLoad() {
 		const userInfo = getUserInfo()
 		this.menuItems = getVisibleMenuItems(userInfo)
-		const selected = getSelectedStore()
-		if (selected) this.currentShopName = selected.store_name
-		else this.currentShopName = '请选择门店'
+		// 不要直接使用缓存的门店名称，等待fetchStoreListThenData()更新
+		this.currentShopName = '全部门店'
 		this.fetchStoreListThenData()
 	},
 	onShow() {
 		// 从其他页返回时同步选中门店显示
 		const selected = getSelectedStore()
-		if (selected) this.currentShopName = selected.store_name
+		if (selected) {
+			// 检查选中的门店是否在当前门店列表中，如果不在则重新获取
+			if (this.storeList.length > 0) {
+				const foundStore = this.storeList.find(store => store.store_id === selected.store_id)
+				if (foundStore) {
+					this.currentShopName = foundStore.store_name
+				} else {
+					this.currentShopName = selected.store_name
+				}
+			} else {
+				this.currentShopName = selected.store_name
+			}
+		}
 		this.menuItems = getVisibleMenuItems(getUserInfo())
 	},
 	methods: {
 		/** 拉取可访问门店列表（需已登录）；若无选中门店则选第一个，再拉首页数据 */
 		async fetchStoreListThenData() {
+			// 清除旧的门店缓存
+			uni.removeStorageSync('mannings_selected_store')
+			
+			// 加载门店列表（与需求预测页面使用相同的逻辑）
+			await this.loadStoreOptions()
+			
+			// 默认选择"全部门店"，与需求预测页面保持一致
+			setSelectedStore('', '全部门店')
+			this.currentShopName = '全部门店'
+			
+			// 处理用户登录状态
 			if (getToken()) {
 				// 若本地无用户信息（如清除过缓存），从 validate 恢复
 				if (!getUserInfo()) {
@@ -160,21 +254,8 @@ export default {
 					} catch (e) {}
 				}
 				this.menuItems = getVisibleMenuItems(getUserInfo())
-				try {
-					const res = await apiGet('/auth/stores', { params: {} })
-					if (res && res.success && res.data && res.data.length) {
-						this.storeList = res.data
-						const selected = getSelectedStore()
-						if (!selected && this.storeList.length) {
-							const first = this.storeList[0]
-							setSelectedStore(first.store_id, first.store_name)
-							this.currentShopName = first.store_name
-						}
-					}
-				} catch (e) {
-					console.error('获取门店列表失败', e)
-				}
 			}
+			
 			this.loadDashboardData()
 		},
 		/** 导航栏点击：弹出门店下拉选择 */
@@ -183,17 +264,46 @@ export default {
 				uni.showToast({ title: '暂无可选门店', icon: 'none' })
 				return
 			}
-			const itemList = this.storeList.map(s => s.store_name)
-			uni.showActionSheet({
-				itemList,
-				success: (res) => {
-					const idx = res.tapIndex
-					const s = this.storeList[idx]
-					setSelectedStore(s.store_id, s.store_name)
-					this.currentShopName = s.store_name
-					this.loadDashboardData()
+			this.showStoreModal = true
+		},
+		closeStoreModal() {
+			this.showStoreModal = false
+			this.storeSearchText = ''
+			this.displayLimit = 20 // 重置显示限制
+		},
+		selectStore(store) {
+			setSelectedStore(store.store_id, store.store_name)
+			this.currentShopName = store.store_name
+			this.closeStoreModal()
+			this.loadDashboardData()
+		},
+		selectAllStores() {
+			// 首页选择"全部门店"时，显示为"全部门店"但不设置具体门店ID
+			setSelectedStore('', '全部门店')
+			this.currentShopName = '全部门店'
+			this.closeStoreModal()
+			this.loadDashboardData()
+		},
+		onStoreSearch() {
+			// 搜索输入处理，computed属性会自动更新filteredStoreList
+			this.displayLimit = 20 // 重置显示限制
+		},
+		loadMoreStores() {
+			this.displayLimit += 20 // 每次加载20个更多门店
+		},
+		async loadStoreOptions() {
+			try {
+				// 使用公开API获取门店列表（与需求预测页面完全相同的逻辑）
+				const res = await apiGet('/auth/stores/public', { params: {} })
+				if (res && res.success && res.data && res.data.length) {
+					// 直接使用API返回的原始格式
+					this.storeList = res.data
 				}
-			})
+			} catch (e) {
+				console.error('加载门店列表失败', e)
+				// 保持空数组，不使用模拟数据
+				this.storeList = []
+			}
 		},
 		showDrawer() {
 			this.$refs.leftDrawer.open()
@@ -453,6 +563,129 @@ export default {
 			&.shadow { box-shadow: 0 8rpx 20rpx rgba(0,0,0,0.08); }
 			text { margin-top: 16rpx; font-size: 28rpx; font-weight: bold; }
 		}
+	}
+}
+
+/* 门店选择模态框样式 */
+.modal-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1000;
+	padding: 40rpx;
+}
+
+.store-modal {
+	width: 100%;
+	max-width: 600rpx;
+	max-height: 80vh;
+	background: #fff;
+	border-radius: 20rpx;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+}
+
+.modal-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 30rpx 40rpx;
+	border-bottom: 1px solid #f0f0f0;
+	
+	.modal-title {
+		font-size: 32rpx;
+		font-weight: bold;
+		color: #333;
+	}
+	
+	.close-btn {
+		padding: 10rpx;
+		cursor: pointer;
+	}
+}
+
+.search-box {
+	position: relative;
+	margin: 20rpx 40rpx;
+	
+	.search-input {
+		width: 100%;
+		height: 80rpx;
+		padding: 0 50rpx 0 20rpx;
+		border: 1px solid #e0e0e0;
+		border-radius: 40rpx;
+		font-size: 28rpx;
+		background: #f8f9fa;
+		box-sizing: border-box;
+	}
+	
+	.search-icon {
+		position: absolute;
+		right: 20rpx;
+		top: 50%;
+		transform: translateY(-50%);
+	}
+}
+
+.store-list {
+	flex: 1;
+	max-height: 500rpx;
+}
+
+.store-item {
+	padding: 24rpx 40rpx;
+	border-bottom: 1px solid #f5f5f5;
+	cursor: pointer;
+	
+	&:hover {
+		background: #f8f9fa;
+	}
+	
+	&:active {
+		background: #e9ecef;
+	}
+}
+
+.store-info {
+	.store-name {
+		display: block;
+		font-size: 30rpx;
+		color: #333;
+		font-weight: 500;
+		margin-bottom: 8rpx;
+	}
+	
+	.store-detail {
+		display: block;
+		font-size: 24rpx;
+		color: #666;
+	}
+}
+
+.no-result {
+	padding: 60rpx 40rpx;
+	text-align: center;
+	color: #999;
+	font-size: 28rpx;
+}
+
+.load-more {
+	padding: 30rpx 40rpx;
+	text-align: center;
+	color: #0066CC;
+	font-size: 28rpx;
+	border-top: 1px solid #f5f5f5;
+	cursor: pointer;
+	
+	&:active {
+		background: #f8f9fa;
 	}
 }
 </style>

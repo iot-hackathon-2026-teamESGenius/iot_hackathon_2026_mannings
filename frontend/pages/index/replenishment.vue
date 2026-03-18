@@ -17,12 +17,10 @@
 					</view>
 					<view class="filter-item half">
 						<text class="label">门店</text>
-						<uni-data-select
-							v-model="filters.storeId"
-							:localdata="storeOptions"
-							placeholder="全部门店"
-							@change="fetchReplenishment"
-						/>
+						<view class="store-selector" @click="openStoreModal">
+							<text class="selector-text">{{ selectedStoreName || '全部门店' }}</text>
+							<uni-icons type="bottom" size="14" color="#666"></uni-icons>
+						</view>
 					</view>
 				</view>
 				<view class="filter-row">
@@ -196,6 +194,52 @@
 
 		</scroll-view>
 
+		<!-- 门店选择模态框 -->
+		<view v-if="showStoreModal" class="modal-overlay" @click.self="closeStoreModal">
+			<view class="store-modal" @click.stop>
+				<view class="modal-header">
+					<text class="modal-title">选择门店</text>
+					<view class="close-btn" @click="closeStoreModal">
+						<uni-icons type="close" size="20" color="#666"></uni-icons>
+					</view>
+				</view>
+				<view class="search-box">
+					<input 
+						class="search-input" 
+						v-model="storeSearchText" 
+						placeholder="搜索门店名称、ID或地区"
+						@input="onStoreSearch"
+					/>
+					<uni-icons type="search" size="18" color="#999" class="search-icon"></uni-icons>
+				</view>
+				<scroll-view scroll-y class="store-list">
+					<view class="store-item" @click="selectAllStores">
+						<view class="store-info">
+							<text class="store-name">全部门店</text>
+							<text class="store-detail">显示所有门店的数据</text>
+						</view>
+					</view>
+					<view 
+						v-for="store in displayedStores" 
+						:key="store.store_id"
+						class="store-item"
+						@click="selectStore(store)"
+					>
+						<view class="store-info">
+							<text class="store-name">{{ store.store_name }}</text>
+							<text class="store-detail">ID: {{ store.store_id }} · {{ store.district || '未知地区' }}</text>
+						</view>
+					</view>
+					<view v-if="!displayedStores.length && storeSearchText" class="no-result">
+						<text>未找到匹配的门店</text>
+					</view>
+					<view v-if="hasMoreStores" class="load-more" @click="loadMoreStores">
+						<text>加载更多 ({{ filteredStoreList.length - displayedStores.length }} 个)</text>
+					</view>
+				</scroll-view>
+			</view>
+		</view>
+
 		<AppTabBar />
 	</view>
 </template>
@@ -224,14 +268,7 @@ export default {
 				skuId: '',
 				status: ''
 			},
-			storeOptions: [
-				{ value: '', text: '全部门店' },
-				{ value: 'M001', text: 'Mannings Tsim Sha Tsui' },
-				{ value: 'M002', text: 'Mannings Causeway Bay' },
-				{ value: 'M003', text: 'Mannings Central' },
-				{ value: 'M004', text: 'Mannings Mongkok' },
-				{ value: 'M005', text: 'Mannings Sha Tin' }
-			],
+			storeOptions: [],
 			statusOptions: [
 				{ value: '', text: '全部状态' },
 				{ value: 'pending', text: '待审' },
@@ -243,6 +280,10 @@ export default {
 			statistics: { total: 0, pending: 0, approved: 0, adjusted: 0, infeasible: 0 },
 			loading: false,
 			errorMsg: '',
+			// 门店选择模态框
+			showStoreModal: false,
+			storeSearchText: '',
+			displayLimit: 20, // 初始显示的门店数量
 			// 调整与审批相关
 			adjustModalVisible: false,
 			approveModalVisible: false,
@@ -257,6 +298,34 @@ export default {
 			}
 		}
 	},
+	computed: {
+		// 过滤后的门店列表（根据搜索文本）
+		filteredStoreList() {
+			if (!this.storeSearchText.trim()) {
+				return this.storeOptions
+			}
+			const searchText = this.storeSearchText.toLowerCase()
+			return this.storeOptions.filter(store => {
+				return store.store_name.toLowerCase().includes(searchText) ||
+					   store.store_id.toLowerCase().includes(searchText) ||
+					   (store.district && store.district.toLowerCase().includes(searchText))
+			})
+		},
+		// 当前显示的门店列表（分页显示）
+		displayedStores() {
+			return this.filteredStoreList.slice(0, this.displayLimit)
+		},
+		// 是否还有更多门店
+		hasMoreStores() {
+			return this.filteredStoreList.length > this.displayLimit
+		},
+		// 当前选中门店的显示名称
+		selectedStoreName() {
+			if (!this.filters.storeId) return '全部门店'
+			const store = this.storeOptions.find(s => s.store_id === this.filters.storeId)
+			return store ? store.store_name : '全部门店'
+		}
+	},
 	onLoad() {
 		const userInfo = getUserInfo()
 		if (!canAccessPage('/pages/index/replenishment', userInfo)) {
@@ -269,11 +338,37 @@ export default {
 		if (selected && selected.store_id) {
 			this.filters.storeId = selected.store_id
 		}
+		this.loadStoreOptions()
 		this.fetchReplenishment()
 	},
 	methods: {
 		goBack() {
 			uni.navigateBack()
+		},
+		onStoreSearch() {
+			// 搜索输入处理，computed属性会自动更新filteredStoreList
+			this.displayLimit = 20 // 重置显示限制
+		},
+		openStoreModal() {
+			this.showStoreModal = true
+		},
+		closeStoreModal() {
+			this.showStoreModal = false
+			this.storeSearchText = ''
+			this.displayLimit = 20 // 重置显示限制
+		},
+		selectStore(store) {
+			this.filters.storeId = store.store_id
+			this.closeStoreModal()
+			this.fetchReplenishment()
+		},
+		selectAllStores() {
+			this.filters.storeId = ''
+			this.closeStoreModal()
+			this.fetchReplenishment()
+		},
+		loadMoreStores() {
+			this.displayLimit += 20 // 每次加载20个更多门店
 		},
 		async fetchReplenishment() {
 			this.loading = true
@@ -300,6 +395,20 @@ export default {
 				uni.showToast({ title: '加载失败', icon: 'none' })
 			} finally {
 				this.loading = false
+			}
+		},
+		async loadStoreOptions() {
+			try {
+				// 使用公开API获取门店列表
+				const res = await apiGet('/auth/stores/public', { params: {} })
+				if (res && res.success && res.data && res.data.length) {
+					// 直接使用API返回的原始格式，与首页保持一致
+					this.storeOptions = res.data
+				}
+			} catch (e) {
+				console.error('加载门店列表失败', e)
+				// 保持空数组
+				this.storeOptions = []
 			}
 		},
 		resetFilters() {
@@ -476,6 +585,21 @@ export default {
 }
 .filter-item.half {
 	flex-basis: calc(50% - 8rpx);
+}
+.store-selector {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 10rpx 14rpx;
+	border: 1px solid #ddd;
+	border-radius: 8rpx;
+	background-color: #fff;
+	cursor: pointer;
+	
+	.selector-text {
+		font-size: 26rpx;
+		color: #333;
+	}
 }
 .input-border {
 	border: 1px solid #ddd;
@@ -724,6 +848,129 @@ export default {
 @media screen and (max-width: 960px) {
 	.filter-item.half {
 		flex-basis: 100%;
+	}
+}
+
+/* 门店选择模态框样式 */
+.modal-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1000;
+	padding: 40rpx;
+}
+
+.store-modal {
+	width: 100%;
+	max-width: 600rpx;
+	max-height: 80vh;
+	background: #fff;
+	border-radius: 20rpx;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+}
+
+.modal-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 30rpx 40rpx;
+	border-bottom: 1px solid #f0f0f0;
+	
+	.modal-title {
+		font-size: 32rpx;
+		font-weight: bold;
+		color: #333;
+	}
+	
+	.close-btn {
+		padding: 10rpx;
+		cursor: pointer;
+	}
+}
+
+.search-box {
+	position: relative;
+	margin: 20rpx 40rpx;
+	
+	.search-input {
+		width: 100%;
+		height: 80rpx;
+		padding: 0 50rpx 0 20rpx;
+		border: 1px solid #e0e0e0;
+		border-radius: 40rpx;
+		font-size: 28rpx;
+		background: #f8f9fa;
+		box-sizing: border-box;
+	}
+	
+	.search-icon {
+		position: absolute;
+		right: 20rpx;
+		top: 50%;
+		transform: translateY(-50%);
+	}
+}
+
+.store-list {
+	flex: 1;
+	max-height: 500rpx;
+}
+
+.store-item {
+	padding: 24rpx 40rpx;
+	border-bottom: 1px solid #f5f5f5;
+	cursor: pointer;
+	
+	&:hover {
+		background: #f8f9fa;
+	}
+	
+	&:active {
+		background: #e9ecef;
+	}
+}
+
+.store-info {
+	.store-name {
+		display: block;
+		font-size: 30rpx;
+		color: #333;
+		font-weight: 500;
+		margin-bottom: 8rpx;
+	}
+	
+	.store-detail {
+		display: block;
+		font-size: 24rpx;
+		color: #666;
+	}
+}
+
+.no-result {
+	padding: 60rpx 40rpx;
+	text-align: center;
+	color: #999;
+	font-size: 28rpx;
+}
+
+.load-more {
+	padding: 30rpx 40rpx;
+	text-align: center;
+	color: #0066CC;
+	font-size: 28rpx;
+	border-top: 1px solid #f5f5f5;
+	cursor: pointer;
+	
+	&:active {
+		background: #f8f9fa;
 	}
 }
 </style>
