@@ -26,7 +26,7 @@ class ModuleRegistry:
     def load_config(self):
         """加载模块配置"""
         try:
-            with open(self.config_path, 'r') as f:
+            with open(self.config_path, 'r', encoding='utf-8') as f:
                 config_data = yaml.safe_load(f)
                 
             for module_name, module_info in config_data.get('modules', {}).items():

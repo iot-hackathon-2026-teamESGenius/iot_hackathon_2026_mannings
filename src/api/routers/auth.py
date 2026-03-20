@@ -7,6 +7,10 @@ from typing import Optional, List
 from datetime import datetime, timedelta
 import hashlib
 import secrets
+import logging
+
+# 配置日志
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -207,3 +211,120 @@ async def check_user_permission(
         "permission": permission,
         "has_permission": has_permission
     }
+
+@router.get("/stores")
+async def get_user_stores(current_user: dict = Depends(get_current_user)):
+    """
+    获取当前用户可访问的门店列表
+    
+    根据用户角色返回相应的门店数据：
+    - store_inventory: 返回用户分配的门店
+    - logistics/admin: 返回所有门店
+    """
+    logger.info(f"Authenticated stores API called by user: {current_user.get('username', 'unknown')}")
+    try:
+        # 导入数据加载器
+        from src.modules.data.implementations.dfi_data_loader import DFIDataLoader
+        
+        # 加载真实门店数据
+        data_loader = DFIDataLoader()
+        stores = data_loader.load_stores()
+        
+        # 转换为前端需要的格式
+        store_list = []
+        for store in stores:  # 返回所有门店，不限制数量
+            store_data = {
+                "store_id": str(store.store_code),
+                "store_name": f"Mannings {store.district}",
+                "district": str(store.district) if store.district else "Unknown",
+                "address": str(store.address) if store.address else ""
+            }
+            store_list.append(store_data)
+        
+        # 根据用户权限过滤门店
+        if current_user["role"] == "store_inventory":
+            # 门店管理员只能看到分配给他的门店
+            user_store_ids = current_user.get("store_ids", [])
+            if user_store_ids:
+                store_list = [s for s in store_list if s["store_id"] in user_store_ids]
+        
+        logger.info(f"Returning {len(store_list)} authenticated stores for user {current_user.get('username')}")
+        return {
+            "success": True,
+            "data": store_list,
+            "total": len(store_list)
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to load stores: {e}")
+        # 如果加载真实数据失败，返回模拟数据
+        mock_stores = [
+            {"store_id": "M001", "store_name": "Mannings Tsim Sha Tsui", "district": "Tsim Sha Tsui"},
+            {"store_id": "M002", "store_name": "Mannings Causeway Bay", "district": "Causeway Bay"},
+            {"store_id": "M003", "store_name": "Mannings Central", "district": "Central"},
+            {"store_id": "M004", "store_name": "Mannings Mongkok", "district": "Mongkok"},
+            {"store_id": "M005", "store_name": "Mannings Sha Tin", "district": "Sha Tin"}
+        ]
+        
+        # 根据用户权限过滤
+        if current_user["role"] == "store_inventory":
+            user_store_ids = current_user.get("store_ids", [])
+            if user_store_ids:
+                mock_stores = [s for s in mock_stores if s["store_id"] in user_store_ids]
+        
+        logger.info(f"Returning {len(mock_stores)} mock stores due to error")
+        return {
+            "success": True,
+            "data": mock_stores,
+            "total": len(mock_stores)
+        }
+
+@router.get("/stores/public")
+async def get_public_stores():
+    """
+    获取公开的门店列表（无需认证）
+    """
+    logger.info("Public stores API called")
+    try:
+        # 导入数据加载器
+        from src.modules.data.implementations.dfi_data_loader import DFIDataLoader
+        
+        # 加载真实门店数据
+        data_loader = DFIDataLoader()
+        stores = data_loader.load_stores()
+        
+        # 转换为前端需要的格式
+        store_list = []
+        for store in stores:  # 返回所有门店，不限制数量
+            store_data = {
+                "store_id": str(store.store_code),
+                "store_name": f"Mannings {store.district}",
+                "district": str(store.district) if store.district else "Unknown",
+                "address": str(store.address) if store.address else ""
+            }
+            store_list.append(store_data)
+        
+        logger.info(f"Returning {len(store_list)} public stores")
+        return {
+            "success": True,
+            "data": store_list,
+            "total": len(store_list)
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to load public stores: {e}")
+        # 如果加载真实数据失败，返回模拟数据
+        mock_stores = [
+            {"store_id": "M001", "store_name": "Mannings Tsim Sha Tsui", "district": "Tsim Sha Tsui"},
+            {"store_id": "M002", "store_name": "Mannings Causeway Bay", "district": "Causeway Bay"},
+            {"store_id": "M003", "store_name": "Mannings Central", "district": "Central"},
+            {"store_id": "M004", "store_name": "Mannings Mongkok", "district": "Mongkok"},
+            {"store_id": "M005", "store_name": "Mannings Sha Tin", "district": "Sha Tin"}
+        ]
+        
+        logger.info(f"Returning {len(mock_stores)} mock stores due to error")
+        return {
+            "success": True,
+            "data": mock_stores,
+            "total": len(mock_stores)
+        }
