@@ -1,13 +1,13 @@
 <template>
 	<view class="container">
-		<AppNavBar title="需求预测" :show-back="true" :show-menu="false" @back="goBack" />
+		<AppNavBar title="需求預測" :show-back="true" :show-menu="false" @back="goBack" />
 
 		<scroll-view scroll-y class="main-content">
-			<!-- 筛选区 -->
+			<!-- 篩選區 -->
 			<view class="filter-card">
 				<view class="filter-row">
 					<view class="filter-item half">
-						<text class="label">预测日期范围</text>
+						<text class="label">預測日期範圍</text>
 						<uni-datetime-picker
 							type="daterange"
 							v-model="filters.dateRange"
@@ -16,9 +16,9 @@
 						/>
 					</view>
 					<view class="filter-item half">
-						<text class="label">门店</text>
+						<text class="label">門店</text>
 						<view class="store-selector" @click="openStoreModal">
-							<text class="selector-text">{{ selectedStoreName || '全部门店' }}</text>
+							<text class="selector-text">{{ selectedStoreName || '全部門店' }}</text>
 							<uni-icons type="bottom" size="14" color="#666"></uni-icons>
 						</view>
 					</view>
@@ -34,11 +34,11 @@
 								placeholder="例如: SKU001,SKU002（必填）"
 								@confirm="fetchForecast"
 							/>
-							<button class="btn-mini" size="mini" @click="applyFilters">搜索</button>
+							<button class="btn-mini" size="mini" @click="applyFilters">搜尋</button>
 						</view>
 					</view>
 					<view class="filter-item one-third" v-if="displayMode !== 'chart'">
-						<text class="label">库存状态</text>
+						<text class="label">庫存狀態</text>
 						<view class="status-tabs">
 							<text
 								v-for="s in statusOptions"
@@ -72,20 +72,20 @@
 							:class="{ active: displayMode === 'chart' }"
 							@click="displayMode = 'chart'"
 						>
-							图表
+							圖表
 						</button>
-						<button class="btn-primary" size="mini" @click="exportReport">导出报表</button>
+						<button class="btn-primary" size="mini" @click="exportReport">導出報表</button>
 					</view>
 				</view>
 			</view>
 
-			<!-- 加载与错误提示 -->
-			<view v-if="loading" class="hint">加载中...</view>
+			<!-- 加載與錯誤提示 -->
+			<view v-if="loading" class="hint">加載中...</view>
 			<view v-else-if="errorMsg" class="hint error">{{ errorMsg }}</view>
 
-			<!-- 图表模式 -->
+			<!-- 圖表模式 -->
 			<view v-else-if="displayMode === 'chart'">
-				<uni-section title="需求趋势" type="line" padding>
+				<uni-section title="需求趨勢" type="line" padding>
 					<view class="chart-box">
 									<div class="chart-inner" :style="{ minWidth: chartInnerWidth + 'px' }">
 										<qiun-data-charts
@@ -102,16 +102,16 @@
 			<!-- 列表模式 -->
 			<template v-else>
 				<view class="stats-row" v-if="filteredForecasts.length">
-					<text>共 {{ filteredForecasts.length }} 条 · 需求合计 {{ totalForecast }} 件</text>
+					<text>共 {{ filteredForecasts.length }} 條 · 需求合計 {{ totalForecast }} 件</text>
 				</view>
 
 				<view class="table-wrapper" v-if="filteredForecasts.length">
 					<view class="table-header">
-						<text class="col store">门店</text>
+						<text class="col store">門店</text>
 						<text class="col sku">SKU</text>
 						<text class="col date">日期</text>
-						<text class="col qty" @click="toggleSort">预测量▼</text>
-						<text class="col status">状态</text>
+						<text class="col qty" @click="toggleSort">預測量▼</text>
+						<text class="col status">狀態</text>
 					</view>
 					<view
 						class="table-row"
@@ -148,18 +148,18 @@
 				</view>
 
 				<view v-if="!filteredForecasts.length && !loading && !errorMsg" class="hint">
-					暂无需求预测数据
+					暫無需求預測數據
 				</view>
 			</template>
 
 			<view class="tab-bar-placeholder"></view>
 		</scroll-view>
 
-		<!-- 门店选择模态框 -->
+		<!-- 門店選擇模態框 -->
 		<view v-if="showStoreModal" class="modal-overlay" @click.self="closeStoreModal">
 			<view class="store-modal" @click.stop>
 				<view class="modal-header">
-					<text class="modal-title">选择门店</text>
+					<text class="modal-title">選擇門店</text>
 					<view class="close-btn" @click="closeStoreModal">
 						<uni-icons type="close" size="20" color="#666"></uni-icons>
 					</view>
@@ -168,7 +168,7 @@
 					<input 
 						class="search-input" 
 						v-model="storeSearchText" 
-						placeholder="搜索门店名称、ID或地区"
+						placeholder="搜尋門店名稱、ID或地區"
 						@input="onStoreSearch"
 					/>
 					<uni-icons type="search" size="18" color="#999" class="search-icon"></uni-icons>
@@ -176,8 +176,8 @@
 				<scroll-view scroll-y class="store-list">
 					<view class="store-item" @click="selectAllStores">
 						<view class="store-info">
-							<text class="store-name">全部门店</text>
-							<text class="store-detail">显示所有门店的数据</text>
+							<text class="store-name">全部門店</text>
+							<text class="store-detail">顯示所有門店的數據</text>
 						</view>
 					</view>
 					<view 
@@ -188,30 +188,28 @@
 					>
 						<view class="store-info">
 							<text class="store-name">{{ store.store_name }}</text>
-							<text class="store-detail">ID: {{ store.store_id }} · {{ store.district || '未知地区' }}</text>
+							<text class="store-detail">ID: {{ store.store_id }} · {{ store.district || '未知地區' }}</text>
 						</view>
 					</view>
 					<view v-if="!displayedStores.length && storeSearchText" class="no-result">
-						<text>未找到匹配的门店</text>
+						<text>未找到匹配的門店</text>
 					</view>
 					<view v-if="hasMoreStores" class="load-more" @click="loadMoreStores">
-						<text>加载更多 ({{ filteredStoreList.length - displayedStores.length }} 个)</text>
+						<text>加載更多 ({{ filteredStoreList.length - displayedStores.length }} 個)</text>
 					</view>
 				</scroll-view>
 			</view>
 		</view>
-
-		<AppTabBar />
 	</view>
 </template>
 
 <script>
 import AppNavBar from '../../components/app-nav-bar.vue'
-import AppTabBar from '../../components/app-tab-bar.vue'
+
 import { apiGet, getSelectedStore } from '../../utils/api.js'
 
 export default {
-	components: { AppNavBar, AppTabBar },
+	components: { AppNavBar },
 	data() {
 		const today = new Date()
 		const end = new Date()
@@ -219,31 +217,31 @@ export default {
 		const format = (d) => d.toISOString().slice(0, 10)
 
 		return {
-			// 筛选条件
+			// 篩選條件
 			filters: {
 				dateRange: [format(today), format(end)],
 				storeId: '',
-				skuIds: 'SKU001', // 默认商品 SKU001
+				skuIds: 'SKU001', // 默認商品 SKU001
 				status: 'all' // all / normal / shortage / overstock
 			},
 			storeOptions: [],
 			statusOptions: [
 				{ value: 'all', text: '全部' },
 				{ value: 'normal', text: '正常' },
-				{ value: 'shortage', text: '缺货' },
-				{ value: 'overstock', text: '积压' }
+				{ value: 'shortage', text: '缺貨' },
+				{ value: 'overstock', text: '積壓' }
 			],
 
-			// 原始数据与过滤后数据
+			// 原始數據與過濾後數據
 			forecasts: [],
 
-			// 图表数据（混合：预测折线 + 实际柱状）
+			// 圖表數據（混合：預測折線 + 實際柱狀）
 			mixChartData: { categories: [], series: [] },
-			// 尝试这种方式
+			// 嘗試這種方式
 			mixChartOpts: {
-			  // 图表标题配置
+			  // 圖表標題配置
 			  title: {
-			    name: '需求趋势',
+			    name: '需求趨勢',
 			    fontSize: 16,
 			    color: '#333333',
 			    padding: [20, 0, 0, 0]  // 上右下左
@@ -264,9 +262,9 @@ export default {
 			    gridColor: '#F0F0F0',
 			    splitNumber: 5,
 			    
-			    // 添加轴标题
+			    // 添加軸標題
 			    title: {
-			      name: '数量(件)',
+			      name: '數量(件)',
 			      fontSize: 12,
 			      color: '#666666',
 			      offsetX: -10
@@ -283,22 +281,22 @@ export default {
 			    }]
 			  }
 			},
-			// 动态计算图表内部宽度（用于横向滚动）
+			// 動態計算圖表內部寬度（用於橫向滾動）
 			chartInnerWidth: 600,
 
-			// UI 状态
+			// UI 狀態
 			loading: false,
 			errorMsg: '',
-			displayMode: 'chart', // 默认以图表展示
+			displayMode: 'chart', // 默認以圖表展示
 			sortDesc: true,
-			// 门店选择模态框
+			// 門店選擇模態框
 			showStoreModal: false,
 			storeSearchText: '',
-			displayLimit: 20 // 初始显示的门店数量
+			displayLimit: 20 // 初始顯示的門店數量
 		}
 	},
 	computed: {
-		// 按筛选条件得到的列表
+		// 按篩選條件得到的列表
 		filteredForecasts() {
 			let list = this.forecasts.slice()
 			if (this.filters.status !== 'all') {
@@ -306,7 +304,7 @@ export default {
 			}
 			return list
 		},
-		// 排序后的列表（按预测量）
+		// 排序後的列表（按預測量）
 		sortedForecasts() {
 			const list = this.filteredForecasts.slice()
 			list.sort((a, b) =>
@@ -321,7 +319,7 @@ export default {
 				.reduce((sum, i) => sum + (i.forecast_demand || 0), 0)
 				.toFixed(1)
 		},
-		// 过滤后的门店列表（根据搜索文本）
+		// 過濾後的門店列表（根據搜尋文本）
 		filteredStoreList() {
 			if (!this.storeSearchText.trim()) {
 				return this.storeOptions
@@ -333,23 +331,23 @@ export default {
 					   (store.district && store.district.toLowerCase().includes(searchText))
 			})
 		},
-		// 当前显示的门店列表（分页显示）
+		// 當前顯示的門店列表（分頁顯示）
 		displayedStores() {
 			return this.filteredStoreList.slice(0, this.displayLimit)
 		},
-		// 是否还有更多门店
+		// 是否還有更多門店
 		hasMoreStores() {
 			return this.filteredStoreList.length > this.displayLimit
 		},
-		// 当前选中门店的显示名称
+		// 當前選中門店的顯示名稱
 		selectedStoreName() {
-			if (!this.filters.storeId) return '全部门店'
+			if (!this.filters.storeId) return '全部門店'
 			const store = this.storeOptions.find(s => s.store_id === this.filters.storeId)
-			return store ? store.store_name : '全部门店'
+			return store ? store.store_name : '全部門店'
 		}
 	},
 	onLoad() {
-		// 默认使用首页当前选择的门店
+		// 默認使用首頁當前選擇的門店
 		const selected = getSelectedStore && getSelectedStore()
 		if (selected && selected.store_id) {
 			this.filters.storeId = selected.store_id
@@ -363,8 +361,8 @@ export default {
 			uni.navigateBack()
 		},
 		onStoreSearch() {
-			// 搜索输入处理，computed属性会自动更新filteredStoreList
-			this.displayLimit = 20 // 重置显示限制
+			// 搜尋輸入處理，computed屬性會自動更新filteredStoreList
+			this.displayLimit = 20 // 重置顯示限制
 		},
 		openStoreModal() {
 			this.showStoreModal = true
@@ -372,7 +370,7 @@ export default {
 		closeStoreModal() {
 			this.showStoreModal = false
 			this.storeSearchText = ''
-			this.displayLimit = 20 // 重置显示限制
+			this.displayLimit = 20 // 重置顯示限制
 		},
 		selectStore(store) {
 			this.filters.storeId = store.store_id
@@ -385,7 +383,7 @@ export default {
 			this.fetchForecast()
 		},
 		loadMoreStores() {
-			this.displayLimit += 20 // 每次加载20个更多门店
+			this.displayLimit += 20 // 每次加載20個更多門店
 		},
 		onDateChange() {
 			this.fetchForecast()
@@ -396,7 +394,7 @@ export default {
 		resetFilters() {
 			this.filters.skuIds = ''
 			this.filters.status = 'all'
-			// 保留当前门店，只重置 SKU/状态
+			// 保留當前門店，只重置 SKU/狀態
 			this.fetchForecast()
 		},
 		applyFilters() {
@@ -408,23 +406,23 @@ export default {
 		statusText(s) {
 			const map = {
 				normal: '正常',
-				shortage: '缺货',
-				overstock: '积压'
+				shortage: '缺貨',
+				overstock: '積壓'
 			}
 			return map[s] || s || '正常'
 		},
 		async fetchForecast() {
 			const [start, end] = this.filters.dateRange || []
 			if (!start || !end) {
-				uni.showToast({ title: '请先选择日期范围', icon: 'none' })
+				uni.showToast({ title: '請先選擇日期範圍', icon: 'none' })
 				return
 			}
 			if (!this.filters.storeId) {
-				uni.showToast({ title: '请选择门店', icon: 'none' })
+				uni.showToast({ title: '請選擇門店', icon: 'none' })
 				return
 			}
 			if (!this.filters.skuIds || !this.filters.skuIds.trim()) {
-				uni.showToast({ title: '请输入 SKU ID 列表', icon: 'none' })
+				uni.showToast({ title: '請輸入 SKU ID 列表', icon: 'none' })
 				return
 			}
 			this.loading = true
@@ -439,7 +437,7 @@ export default {
 				if (this.filters.storeId) {
 					params.store_ids = this.filters.storeId
 				}
-				// SKU ID 列表，逗号分隔
+				// SKU ID 列表，逗號分隔
 				params.sku_ids = this.filters.skuIds
 				const res = await apiGet('/forecast/demand', { params })
 				if (res && res.success && res.data && res.data.forecasts) {
@@ -454,14 +452,14 @@ export default {
 					this.mixChartData = { categories: [], series: [] }
 				}
 			} catch (e) {
-				console.error('获取需求预测失败', e)
-				this.errorMsg = '加载失败，请确认后端已启动'
-				uni.showToast({ title: '加载失败', icon: 'none' })
+				console.error('獲取需求預測失敗', e)
+				this.errorMsg = '加載失敗，請確認後端已啟動'
+				uni.showToast({ title: '加載失敗', icon: 'none' })
 			} finally {
 				this.loading = false
 			}
 		},
-		// 通过预测值与上下界粗略推断库存状态
+		// 通過預測值與上下界粗略推斷庫存狀態
 		computeStatus(item) {
 			const p = Number(item.forecast_demand || 0)
 			const low = Number(item.lower_bound || 0)
@@ -473,11 +471,11 @@ export default {
 		buildCharts() {
             const list = this.filteredForecasts
             if (!list.length) {
-                this.mixChartData = { title: { name: '需求预测' }, categories: [], series: [] }
-                this.mixChartOpts.title.name = '需求预测'
+                this.mixChartData = { title: { name: '需求預測' }, categories: [], series: [] }
+                this.mixChartOpts.title.name = '需求預測'
                 return
             }
-            // 维度：日期 + SKU
+            // 維度：日期 + SKU
             const dateSet = new Set()
             const skuSet = new Set()
             list.forEach((i) => {
@@ -485,10 +483,10 @@ export default {
                 if (i.sku_id) skuSet.add(i.sku_id)
             })
             const dates = Array.from(dateSet).sort()
-            // 横坐标显示去掉年份，只保留 MM-DD
+            // 橫坐標顯示去掉年份，只保留 MM-DD
             const displayDates = dates.map(d => (typeof d === 'string' && d.length >= 5) ? d.slice(5) : d)
             let skus = Array.from(skuSet)
-            // 如果没有检测到 SKU，则使用 filters.skuIds（可能为逗号分隔）或回退到默认 SKU001
+            // 如果沒有檢測到 SKU，則使用 filters.skuIds（可能為逗號分隔）或回退到默認 SKU001
             if (!skus.length) {
                 if (this.filters.skuIds && this.filters.skuIds.trim()) {
                     skus = this.filters.skuIds.split(',').map(s => s.trim()).filter(Boolean)
@@ -507,38 +505,38 @@ export default {
                     forecastArr.push(Number(fSum.toFixed(1)))
                     actualArr.push(Number(aSum.toFixed(1)))
                 })
-                // 预测：折线，颜色 & 标签在上方
+                // 預測：折線，顏色 & 標籤在上方
                 series.push({
-                    name: `${skuId || 'SKU001'} 预测`,
+                    name: `${skuId || 'SKU001'} 預測`,
                     type: 'line',
                     data: forecastArr,
                     itemStyle: { color: '#FF7F50' }, // 橙色
                     label: { show: true, color: '#FF7F50', position: 'top' },
                     smooth: true
                 })
-                // 实际：柱状，颜色与标签位置不同，标签放在柱内避免与折线标签遮挡
+                // 實際：柱狀，顏色與標籤位置不同，標籤放在柱內避免與折線標籤遮擋
                 series.push({
-                    name: `${skuId || 'SKU001'} 实际`,
+                    name: `${skuId || 'SKU001'} 實際`,
                     type: 'column',
                     data: actualArr,
-                    itemStyle: { color: '#2F90FF' }, // 蓝色柱子
-                    label: { show: true, color: '#ffffff', position: 'inside' }, // 白色字体在柱内
+                    itemStyle: { color: '#2F90FF' }, // 藍色柱子
+                    label: { show: true, color: '#ffffff', position: 'inside' }, // 白色字體在柱內
                     barGap: '30%'
                 })
             })
 
-            // 计算标题：单 SKU 使用 sku_name（优先）或 skuId，否则回退到默认
-            let chartTitle = '需求趋势'
+            // 計算標題：單 SKU 使用 sku_name（優先）或 skuId，否則回退到默認
+            let chartTitle = '需求趨勢'
 			
             if (skus.length === 1) {
                 const skuIdPrimary = skus[0]
                 const skuNameItem = this.forecasts.find(i => i.sku_id === skuIdPrimary && i.sku_name)
                 const skuLabel = (skuNameItem && skuNameItem.sku_name) ? skuNameItem.sku_name : (skuIdPrimary || 'SKU001')
-                chartTitle = `${skuLabel} 需求趋势`
+                chartTitle = `${skuLabel} 需求趨勢`
             } else {
-                chartTitle = '需求趋势'
+                chartTitle = '需求趨勢'
             }
-            // 如果有门店筛选，加入门店名前缀（可选）
+            // 如果有門店篩選，加入門店名前綴（可選）
             if (this.filters.storeId) {
                 const store = this.storeOptions.find(s => s.value === this.filters.storeId)
                 if (store && store.text) {
@@ -546,51 +544,51 @@ export default {
                 }
             }
 
-            // 把标题写入 opts 和 data（组件可能从不同位置读取）
+            // 把標題寫入 opts 和 data（組件可能從不同位置讀取）
             this.mixChartOpts.title.name = chartTitle
-            // mixChartData.title 使用对象形式，避免字符串->对象访问导致 undefined
+            // mixChartData.title 使用對象形式，避免字符串->對象訪問導致 undefined
             this.mixChartData = {
                 title: { name: chartTitle },
                 categories: displayDates,
                 series
             }
 
-            // 给 x/y 轴添加 name（如果需要显示轴标题）
+            // 給 x/y 軸添加 name（如果需要顯示軸標題）
             this.mixChartOpts.xAxis.name = '日期'
-            this.mixChartOpts.yAxis.name = '数量'
+            this.mixChartOpts.yAxis.name = '數量'
 
-            // 计算并设置内部图表宽度以支持横向滚动：每个点至少占用 pxPerPoint 宽度
+            // 計算並設置內部圖表寬度以支持橫向滾動：每個點至少佔用 pxPerPoint 寬度
             const pxPerPoint = 60
             const minWidth = 300
             this.chartInnerWidth = Math.max(minWidth, displayDates.length * pxPerPoint)
 
-            // 设置 x 轴刻度间隔，目标是最多显示大约 6 个刻度标签
+            // 設置 x 軸刻度間隔，目標是最多顯示大約 6 個刻度標籤
             const maxVisibleTicks = 6
             const interval = Math.max(1, Math.ceil(displayDates.length / maxVisibleTicks))
             this.mixChartOpts.xAxis.interval = interval
         },
 		exportReport() {
-			// 简化实现：提示导出成功，真实项目可在此构造 CSV/Excel 并调用后端导出
+			// 簡化實現：提示導出成功，真實項目可在此構造 CSV/Excel 並調用後端導出
 			if (!this.filteredForecasts.length) {
-				return uni.showToast({ title: '当前无数据可导出', icon: 'none' })
+				return uni.showToast({ title: '當前無數據可導出', icon: 'none' })
 			}
 			uni.showModal({
 				title: '提示',
-				content: '需求预测报表已导出（示例：可接入后端生成 Excel 并发送邮件）。',
+				content: '需求預測報表已導出（示例：可接入後端生成Excel並發送郵件）。',
 				showCancel: false
 			})
 		},
 		async loadStoreOptions() {
 			try {
-				// 使用公开API获取门店列表
+				// 使用公開API獲取門店列表
 				const res = await apiGet('/auth/stores/public', { params: {} })
 				if (res && res.success && res.data && res.data.length) {
-					// 直接使用API返回的原始格式，与首页保持一致
+					// 直接使用API返回的原始格式，與首頁保持一致
 					this.storeOptions = res.data
 				}
 			} catch (e) {
-				console.error('加载门店列表失败', e)
-				// 保持空数组
+				console.error('加載門店列表失敗', e)
+				// 保持空數組
 				this.storeOptions = []
 			}
 		}
@@ -613,7 +611,7 @@ export default {
 	height: 120rpx;
 }
 
-/* 筛选卡片 */
+/* 篩選卡片 */
 .filter-card {
 	background: #fff;
 	border-radius: 16rpx;
@@ -747,7 +745,7 @@ export default {
 	}
 }
 
-/* 图表区域 */
+/* 圖表區域 */
 .chart-box {
 	width: 100%;
 	height: 650rpx;
@@ -758,7 +756,7 @@ export default {
 	overflow-x: auto; /* allow horizontal scroll when chart is wider than container */
 }
 
-/* 内部容器允许设置最小宽度以触发横向滚动 */
+/* 內部容器允許設置最小寬度以觸發橫向滾動 */
 .chart-inner {
     display: block;
     min-width: 800px;
@@ -869,7 +867,7 @@ export default {
 	}
 }
 
-/* 门店选择模态框样式 */
+/* 門店選擇模態框樣式 */
 .modal-overlay {
 	position: fixed;
 	top: 0;

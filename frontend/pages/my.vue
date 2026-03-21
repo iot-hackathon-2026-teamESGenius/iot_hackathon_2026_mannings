@@ -5,7 +5,7 @@
 		<scroll-view scroll-y class="main-content">
 			<view class="card" v-if="user">
 				<view class="row">
-					<text class="label">用户</text>
+						<text class="label">使用者</text>
 					<text class="value">{{ user.username }}</text>
 				</view>
 				<view class="row">
@@ -13,35 +13,35 @@
 					<text class="value">{{ user.role }}</text>
 				</view>
 				<view class="row" v-if="user.store_ids && user.store_ids.length">
-					<text class="label">门店</text>
+					<text class="label">門店</text>
 					<text class="value">{{ user.store_ids.join(', ') }}</text>
 				</view>
 			</view>
 
 			<view class="card" v-else-if="!loading">
-				<view class="hint">未登录或 Token 已过期</view>
-				<button class="btn" @click="goLogin">去登录</button>
+				<view class="hint">未登入或 Token 已過期</view>
+				<button class="btn" @click="goLogin">去登入</button>
 			</view>
 
 			<view class="card" v-if="user">
-				<button class="btn logout" :loading="loggingOut" @click="onLogout">退出登录</button>
+				<button class="btn logout" :loading="loggingOut" @click="onLogout">登出</button>
 			</view>
 
-			<view v-if="loading" class="hint">校验中...</view>
+			<view v-if="loading" class="hint">校驗中...</view>
 			<view class="tab-bar-placeholder"></view>
 		</scroll-view>
 
-		<AppTabBar />
+		<!-- <AppTabBar /> -->
 	</view>
 </template>
 
 <script>
 import AppNavBar from '../components/app-nav-bar.vue'
-import AppTabBar from '../components/app-tab-bar.vue'
+// import AppTabBar from '../components/app-tab-bar.vue'
 import { apiGet, apiPost, getToken, setToken } from '../utils/api.js'
 
 export default {
-	components: { AppNavBar, AppTabBar },
+	components: { AppNavBar },
 	data() {
 		return {
 			user: null,
@@ -87,7 +87,7 @@ export default {
 			}
 			setToken('')
 			this.user = null
-			uni.showToast({ title: '已退出', icon: 'none' })
+			uni.showToast({ title: '已登出', icon: 'none' })
 			this.loggingOut = false
 		}
 	}

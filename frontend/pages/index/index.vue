@@ -17,7 +17,7 @@
 			<view class="drawer-content">
 				<view class="drawer-header">
 					<view class="logo-box">DFI</view>
-					<text class="brand">万宁门店管理系统</text>
+					<text class="brand">萬寧門店管理系統</text>
 				</view>
 				<uni-list :border="false">
 					<uni-list-item
@@ -33,7 +33,7 @@
 		</uni-drawer>
 
 		<scroll-view scroll-y class="main-content">
-			<uni-section title="核心指标" type="line" padding>
+			<uni-section title="核心指標" type="line" padding>
 				<view class="stats-grid">
 					<view class="stat-card" v-for="(item, index) in stats" :key="index">
 						<text class="label">{{ item.label }}</text>
@@ -43,7 +43,7 @@
 				</view>
 			</uni-section>
 
-			<uni-section title="SLA 优化趋势预测" type="line" padding>
+			<uni-section title="SLA 優化趨勢預測" type="line" padding>
 				<view class="charts-box">
 					<qiun-data-charts 
 						type="area" 
@@ -54,7 +54,7 @@
 				</view>
 			</uni-section>
 
-			<uni-section title="实时预警" type="line" padding>
+			<uni-section title="即時預警" type="line" padding>
 				<view class="warn-box">
 					<uni-notice-bar 
 						v-for="(item, i) in warnings" 
@@ -70,13 +70,13 @@
 
 			<uni-section title="快捷入口" type="line" padding>
 				<view class="quick-entry">
-					<view class="entry-item blue shadow" @click="handleAction('导出报表')">
+					<view class="entry-item blue shadow" @click="handleAction('導出報表')">
 						<uni-icons type="download" size="32" color="#fff"></uni-icons>
-						<text>导出库存报表</text>
+						<text>導出庫存報表</text>
 					</view>
-					<view class="entry-item green shadow" @click="handleAction('查询SKU')">
+					<view class="entry-item green shadow" @click="handleAction('查詢SKU')">
 						<uni-icons type="search" size="32" color="#fff"></uni-icons>
-						<text>SKU 库存查询</text>
+						<text>SKU 庫存查詢</text>
 					</view>
 				</view>
 			</uni-section>
@@ -88,16 +88,16 @@
 		<view v-if="showStoreModal" class="modal-overlay" @click.self="closeStoreModal">
 			<view class="store-modal" @click.stop>
 				<view class="modal-header">
-					<text class="modal-title">选择门店</text>
+					<text class="modal-title">選擇門店</text>
 					<view class="close-btn" @click="closeStoreModal">
 						<uni-icons type="close" size="20" color="#666"></uni-icons>
 					</view>
 				</view>
 				<view class="search-box">
-					<input 
+						<input 
 						class="search-input" 
 						v-model="storeSearchText" 
-						placeholder="搜索门店名称、ID或地区"
+						placeholder="搜尋門店名稱、ID或地區"
 						@input="onStoreSearch"
 					/>
 					<uni-icons type="search" size="18" color="#999" class="search-icon"></uni-icons>
@@ -105,8 +105,8 @@
 				<scroll-view scroll-y class="store-list">
 					<view class="store-item" @click="selectAllStores">
 						<view class="store-info">
-							<text class="store-name">全部门店</text>
-							<text class="store-detail">显示所有门店的数据</text>
+							<text class="store-name">全部門店</text>
+							<text class="store-detail">顯示所有門店的數據</text>
 						</view>
 					</view>
 					<view 
@@ -117,24 +117,23 @@
 					>
 						<view class="store-info">
 							<text class="store-name">{{ store.store_name }}</text>
-							<text class="store-detail">ID: {{ store.store_id }} · {{ store.district || '未知地区' }}</text>
+							<text class="store-detail">ID: {{ store.store_id }} · {{ store.district || '未知地區' }}</text>
 						</view>
 					</view>
 					<view v-if="!displayedStores.length && storeSearchText" class="no-result">
-						<text>未找到匹配的门店</text>
+						<text>未找到匹配的門店</text>
 					</view>
 					<view v-if="hasMoreStores" class="load-more" @click="loadMoreStores">
-						<text>加载更多 ({{ filteredStoreList.length - displayedStores.length }} 个)</text>
+						<text>載入更多 ({{ filteredStoreList.length - displayedStores.length }} 個)</text>
 					</view>
 				</scroll-view>
 			</view>
 		</view>
 
-		<view class="tab-bar-placeholder"></view>
-		<AppTabBar />
+<!-- 		<view class="tab-bar-placeholder"></view>
+		<AppTabBar /> -->
 	</view>
 </template>
-
 <script>
 import { apiGet, getToken, getUserInfo, getSelectedStore, setSelectedStore, setUserInfo } from '../../utils/api.js'
 import { getVisibleMenuItems } from '../../utils/permission.js'
@@ -144,28 +143,28 @@ export default {
 	components: { AppTabBar },
 	data() {
 		return {
-			// 当前门店名（导航栏下拉选择）
-			currentShopName: '全部门店',
-			// 当前用户可访问的门店列表（用于下拉）
+			// 當前門店名（導航欄下拉選擇）
+			currentShopName: '全部門店',
+			// 當前使用者可訪問的門店列表（用於下拉）
 			storeList: [],
-			// 门店选择模态框
+			// 門店選擇模態框
 			showStoreModal: false,
 			storeSearchText: '',
-			displayLimit: 20, // 初始显示的门店数量
-			// 侧栏菜单项（按权限过滤）
+			displayLimit: 20, // 初始顯示的門店數量
+			// 側欄菜單項（按權限過濾）
 			menuItems: [],
 
-			// 首页核心指标（从 /api/dashboard/kpi 获取）
+			// 首頁核心指標（從 /api/dashboard/kpi 獲取）
 			stats: [],
 
-			// 实时预警文案（从 /api/dashboard/alerts-summary 获取）
+			// 實時預警文案（從 /api/dashboard/alerts-summary 獲取）
 			warnings: [],
 
-			// uCharts 图表配置与数据（从 /api/dashboard/trend 获取）
+			// uCharts 圖表配置與數據（從 /api/dashboard/trend 獲取）
 			localChartData: {
 				categories: [],
 				series: [
-					{ name: 'SLA 达成率', data: [] }
+					{ name: 'SLA 達成率', data: [] }
 				]
 			},
 			chartOpts: {
@@ -185,7 +184,7 @@ export default {
 		}
 	},
 	computed: {
-		// 过滤后的门店列表（根据搜索文本）
+		// 過濾後的門店列表（根據搜尋文本）
 		filteredStoreList() {
 			if (!this.storeSearchText.trim()) {
 				return this.storeList
@@ -197,11 +196,11 @@ export default {
 					   (store.district && store.district.toLowerCase().includes(searchText))
 			})
 		},
-		// 当前显示的门店列表（分页显示）
+		// 當前顯示的門店列表（分頁顯示）
 		displayedStores() {
 			return this.filteredStoreList.slice(0, this.displayLimit)
 		},
-		// 是否还有更多门店
+		// 是否還有更多門店
 		hasMoreStores() {
 			return this.filteredStoreList.length > this.displayLimit
 		}
@@ -209,15 +208,15 @@ export default {
 	onLoad() {
 		const userInfo = getUserInfo()
 		this.menuItems = getVisibleMenuItems(userInfo)
-		// 不要直接使用缓存的门店名称，等待fetchStoreListThenData()更新
-		this.currentShopName = '全部门店'
+		// 不要直接使用緩存的門店名稱，等待fetchStoreListThenData()更新
+		this.currentShopName = '全部門店'
 		this.fetchStoreListThenData()
 	},
 	onShow() {
-		// 从其他页返回时同步选中门店显示
+		// 從其他頁返回時同步選中門店顯示
 		const selected = getSelectedStore()
 		if (selected) {
-			// 检查选中的门店是否在当前门店列表中，如果不在则重新获取
+			// 檢查選中的門店是否在當前門店列表中，如果不在則重新獲取
 			if (this.storeList.length > 0) {
 				const foundStore = this.storeList.find(store => store.store_id === selected.store_id)
 				if (foundStore) {
@@ -232,21 +231,21 @@ export default {
 		this.menuItems = getVisibleMenuItems(getUserInfo())
 	},
 	methods: {
-		/** 拉取可访问门店列表（需已登录）；若无选中门店则选第一个，再拉首页数据 */
+		/** 拉取可訪問門店列表（需已登入）；若無選中門店則選第一個，再拉首頁數據 */
 		async fetchStoreListThenData() {
-			// 清除旧的门店缓存
+			// 清除舊的門店緩存
 			uni.removeStorageSync('mannings_selected_store')
 			
-			// 加载门店列表（与需求预测页面使用相同的逻辑）
+			// 加載門店列表（與需求預測頁面使用相同的邏輯）
 			await this.loadStoreOptions()
 			
-			// 默认选择"全部门店"，与需求预测页面保持一致
-			setSelectedStore('', '全部门店')
-			this.currentShopName = '全部门店'
+			// 默認選擇"全部門店"，與需求預測頁面保持一致
+			setSelectedStore('', '全部門店')
+			this.currentShopName = '全部門店'
 			
-			// 处理用户登录状态
+			// 處理使用者登入狀態
 			if (getToken()) {
-				// 若本地无用户信息（如清除过缓存），从 validate 恢复
+				// 若本地無使用者信息（如清除過緩存），從 validate 恢復
 				if (!getUserInfo()) {
 					try {
 						const res = await apiGet('/auth/validate')
@@ -258,10 +257,10 @@ export default {
 			
 			this.loadDashboardData()
 		},
-		/** 导航栏点击：弹出门店下拉选择 */
+		/** 導航欄點擊：彈出門店下拉選擇 */
 		openStorePicker() {
 			if (!this.storeList.length) {
-				uni.showToast({ title: '暂无可选门店', icon: 'none' })
+				uni.showToast({ title: '暫無可選門店', icon: 'none' })
 				return
 			}
 			this.showStoreModal = true
@@ -269,7 +268,7 @@ export default {
 		closeStoreModal() {
 			this.showStoreModal = false
 			this.storeSearchText = ''
-			this.displayLimit = 20 // 重置显示限制
+			this.displayLimit = 20 // 重置顯示限制
 		},
 		selectStore(store) {
 			setSelectedStore(store.store_id, store.store_name)
@@ -278,30 +277,30 @@ export default {
 			this.loadDashboardData()
 		},
 		selectAllStores() {
-			// 首页选择"全部门店"时，显示为"全部门店"但不设置具体门店ID
-			setSelectedStore('', '全部门店')
-			this.currentShopName = '全部门店'
+			// 首頁選擇"全部門店"時，顯示為"全部門店"但不設置具體門店ID
+			setSelectedStore('', '全部門店')
+			this.currentShopName = '全部門店'
 			this.closeStoreModal()
 			this.loadDashboardData()
 		},
 		onStoreSearch() {
-			// 搜索输入处理，computed属性会自动更新filteredStoreList
-			this.displayLimit = 20 // 重置显示限制
+			// 搜尋輸入處理，computed屬性會自動更新filteredStoreList
+			this.displayLimit = 20 // 重置顯示限制
 		},
 		loadMoreStores() {
-			this.displayLimit += 20 // 每次加载20个更多门店
+			this.displayLimit += 20 // 每次加載20個更多門店
 		},
 		async loadStoreOptions() {
 			try {
-				// 使用公开API获取门店列表（与需求预测页面完全相同的逻辑）
+				// 使用公開API獲取門店列表（與需求預測頁面完全相同的邏輯）
 				const res = await apiGet('/auth/stores/public', { params: {} })
 				if (res && res.success && res.data && res.data.length) {
 					// 直接使用API返回的原始格式
 					this.storeList = res.data
 				}
 			} catch (e) {
-				console.error('加载门店列表失败', e)
-				// 保持空数组，不使用模拟数据
+				console.error('加載門店列表失敗', e)
+				// 保持空數組，不使用模擬數據
 				this.storeList = []
 			}
 		},
@@ -320,10 +319,10 @@ export default {
 			uni.navigateTo({ url })
 		},
 		handleAction(name) {
-			uni.showModal({ title: '提示', content: '您点击了：' + name })
+			uni.showModal({ title: '提示', content: '您點擊了：' + name })
 		},
 
-		// ========== 首页数据拉取 ==========
+		// ========== 首頁數據拉取 ==========
 		async loadDashboardData() {
 			this.loading = true
 			this.errorMsg = ''
@@ -334,15 +333,15 @@ export default {
 					this.fetchAlertsSummary()
 				])
 			} catch (e) {
-				console.error('加载首页数据失败', e)
-				this.errorMsg = '首页数据加载失败，请确认后端服务是否已启动'
-				uni.showToast({ title: '首页数据加载失败', icon: 'none' })
+				console.error('加載首頁數據失敗', e)
+				this.errorMsg = '首頁數據加載失敗，請確認後端服務是否已啟動'
+				uni.showToast({ title: '首頁數據加載失敗', icon: 'none' })
 			} finally {
 				this.loading = false
 			}
 		},
 
-		// 2.1 KPI 卡片：/api/dashboard/kpi（支持 store_id 筛选当前门店）
+		// 2.1 KPI 卡片：/api/dashboard/kpi（支持 store_id 篩選當前門店）
 		async fetchKpiCards() {
 			const store = getSelectedStore()
 			const res = await apiGet('/dashboard/kpi', {
@@ -351,37 +350,37 @@ export default {
 			if (!res || !res.success || !res.data) return
 
 			const d = res.data
-			// 映射为前端展示结构（可按需增减字段）
+			// 映射為前端展示結構（可按需增減欄位）
 			this.stats = [
 				{
-					label: 'SLA 达成率',
+					label: 'SLA 達成率',
 					value: `${d.sla_achievement_rate.value}${d.sla_achievement_rate.unit}`,
-					sub: `较昨日 ${d.sla_achievement_rate.change}${d.sla_achievement_rate.unit}`,
+					sub: `較昨日 ${d.sla_achievement_rate.change}${d.sla_achievement_rate.unit}`,
 					type: d.sla_achievement_rate.trend === 'up' ? 'normal' : 'low'
 				},
 				{
-					label: '今日订单数',
+					label: '今日訂單數',
 					value: `${d.today_orders.value}${d.today_orders.unit}`,
-					sub: `较昨日 ${d.today_orders.change}${d.today_orders.unit}`,
+					sub: `較昨日 ${d.today_orders.change}${d.today_orders.unit}`,
 					type: 'normal'
 				},
 				{
-					label: '缺货率',
+					label: '缺貨率',
 					value: `${d.stockout_rate.value}${d.stockout_rate.unit}`,
-					sub: `变化 ${d.stockout_rate.change}${d.stockout_rate.unit}`,
-					// 缺货率下降是好事
+					sub: `變化 ${d.stockout_rate.change}${d.stockout_rate.unit}`,
+					// 缺貨率下降是好事
 					type: d.stockout_rate.trend === 'down' ? 'normal' : 'low'
 				},
 				{
-					label: '延迟配送次数',
+					label: '延遲配送次數',
 					value: `${d.delivery_delay_count.value}${d.delivery_delay_count.unit}`,
-					sub: `变化 ${d.delivery_delay_count.change}${d.delivery_delay_count.unit}`,
+					sub: `變化 ${d.delivery_delay_count.change}${d.delivery_delay_count.unit}`,
 					type: d.delivery_delay_count.trend === 'down' ? 'normal' : 'low'
 				}
 			]
 		},
 
-		// 2.2 趋势图：/api/dashboard/trend（支持 store_id 筛选）
+		// 2.2 趨勢圖：/api/dashboard/trend（支持 store_id 篩選）
 		async fetchTrendChart() {
 			const store = getSelectedStore()
 			const params = { metric: 'sla_rate', days: 7 }
@@ -391,17 +390,17 @@ export default {
 
 			const trends = res.data.trends || []
 			this.localChartData = {
-				categories: trends.map(item => (item.date || '').slice(5)), // 显示 MM-DD
+				categories: trends.map(item => (item.date || '').slice(5)), // 顯示 MM-DD
 				series: [
 					{
-						name: 'SLA 达成率',
+						name: 'SLA 達成率',
 						data: trends.map(item => item.value)
 					}
 				]
 			}
 		},
 
-		// 2.3 实时预警摘要：/api/dashboard/alerts-summary
+		// 2.3 實時預警摘要：/api/dashboard/alerts-summary
 		async fetchAlertsSummary() {
 			const store = getSelectedStore()
 			const res = await apiGet('/dashboard/alerts-summary', {
@@ -415,7 +414,7 @@ export default {
 					low: '低',
 					medium: '中',
 					high: '高',
-					critical: '严重'
+					critical: '嚴重'
 				}
 				const levelText = levelMap[a.risk_level] || a.risk_level
 				return {
@@ -427,7 +426,6 @@ export default {
 	}
 }
 </script>
-
 <style lang="scss" scoped>
 .container {
 	background-color: #f4f7f9;
