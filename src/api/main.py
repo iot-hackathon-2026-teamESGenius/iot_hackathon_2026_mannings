@@ -18,7 +18,7 @@ from typing import Optional
 import logging
 
 from src.core.module_registry import ModuleRegistry
-from src.api.routers import auth, forecast, planning, sla, dashboard
+from src.api.routers import auth, forecast, planning, sla, dashboard, orders
 
 # 配置日志
 logging.basicConfig(level=logging.INFO)
@@ -63,6 +63,7 @@ app.include_router(forecast.router, prefix="/api/forecast", tags=["预测服务"
 app.include_router(planning.router, prefix="/api/planning", tags=["决策规划"])
 app.include_router(sla.router, prefix="/api/sla", tags=["SLA服务"])
 app.include_router(dashboard.router, prefix="/api/dashboard", tags=["数据看板"])
+app.include_router(orders.router, prefix="/api/orders", tags=["订单服务"])
 
 @app.on_event("startup")
 async def startup_event():

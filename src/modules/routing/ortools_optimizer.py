@@ -47,6 +47,7 @@ except OSError as e:
         def __init__(self, manager):
             self.manager = manager
             self.objective_value = 1000
+            self._disjunctions = []
         
         def RegisterTransitCallback(self, callback):
             return 0
@@ -68,6 +69,11 @@ except OSError as e:
         
         def SetFixedCostOfVehicle(self, cost, vehicle_id):
             pass
+        
+        def AddDisjunction(self, indices, penalty=0):
+            """Mock AddDisjunction方法"""
+            self._disjunctions.append((indices, penalty))
+            return len(self._disjunctions) - 1
         
         def Start(self, vehicle_id):
             return 0

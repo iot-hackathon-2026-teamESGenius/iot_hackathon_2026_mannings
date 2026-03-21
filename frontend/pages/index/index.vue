@@ -70,6 +70,10 @@
 
 			<uni-section title="快捷入口" type="line" padding>
 				<view class="quick-entry">
+					<view class="entry-item orange shadow" @click="navTo('/pages/index/orders')">
+						<uni-icons type="list" size="32" color="#fff"></uni-icons>
+						<text>订单管理</text>
+					</view>
 					<view class="entry-item blue shadow" @click="handleAction('导出报表')">
 						<uni-icons type="download" size="32" color="#fff"></uni-icons>
 						<text>导出库存报表</text>
@@ -351,32 +355,31 @@ export default {
 			if (!res || !res.success || !res.data) return
 
 			const d = res.data
-			// 映射为前端展示结构（可按需增减字段）
+			// 映射为前端展示结构（兼容真实数据和模拟数据）
 			this.stats = [
 				{
 					label: 'SLA 达成率',
-					value: `${d.sla_achievement_rate.value}${d.sla_achievement_rate.unit}`,
-					sub: `较昨日 ${d.sla_achievement_rate.change}${d.sla_achievement_rate.unit}`,
-					type: d.sla_achievement_rate.trend === 'up' ? 'normal' : 'low'
+					value: `${d.sla_achievement_rate?.value || 0}${d.sla_achievement_rate?.unit || '%'}`,
+					sub: d.sla_achievement_rate?.change ? `较昨日 ${d.sla_achievement_rate.change}${d.sla_achievement_rate.unit}` : '历史数据',
+					type: d.sla_achievement_rate?.trend === 'up' ? 'normal' : 'low'
 				},
 				{
-					label: '今日订单数',
-					value: `${d.today_orders.value}${d.today_orders.unit}`,
-					sub: `较昨日 ${d.today_orders.change}${d.today_orders.unit}`,
+					label: '总订单数',
+					value: `${d.total_orders?.value || d.today_orders?.value || 0}${d.total_orders?.unit || d.today_orders?.unit || '单'}`,
+					sub: d.total_orders?.description || '历史累计',
 					type: 'normal'
 				},
 				{
-					label: '缺货率',
-					value: `${d.stockout_rate.value}${d.stockout_rate.unit}`,
-					sub: `变化 ${d.stockout_rate.change}${d.stockout_rate.unit}`,
-					// 缺货率下降是好事
-					type: d.stockout_rate.trend === 'down' ? 'normal' : 'low'
+					label: '完成订单',
+					value: `${d.completed_orders?.value || 0}${d.completed_orders?.unit || '单'}`,
+					sub: d.cancel_rate ? `取消率 ${d.cancel_rate.value}%` : '',
+					type: 'normal'
 				},
 				{
-					label: '延迟配送次数',
-					value: `${d.delivery_delay_count.value}${d.delivery_delay_count.unit}`,
-					sub: `变化 ${d.delivery_delay_count.change}${d.delivery_delay_count.unit}`,
-					type: d.delivery_delay_count.trend === 'down' ? 'normal' : 'low'
+					label: '平均履约时间',
+					value: `${d.avg_fulfillment_time?.value || d.avg_pickup_time?.value || 0}${d.avg_fulfillment_time?.unit || d.avg_pickup_time?.unit || '小时'}`,
+					sub: d.active_stores ? `活跃门店 ${d.active_stores.value} 家` : '',
+					type: d.avg_fulfillment_time?.trend === 'down' ? 'normal' : 'low'
 				}
 			]
 		},
@@ -560,6 +563,7 @@ export default {
 			color: #fff;
 			&.blue { background: linear-gradient(135deg, #0066CC 0%, #0088dd 100%); }
 			&.green { background: linear-gradient(135deg, #2e7d32 0%, #43a047 100%); }
+			&.orange { background: linear-gradient(135deg, #FD7E14 0%, #FF9500 100%); }
 			&.shadow { box-shadow: 0 8rpx 20rpx rgba(0,0,0,0.08); }
 			text { margin-top: 16rpx; font-size: 28rpx; font-weight: bold; }
 		}

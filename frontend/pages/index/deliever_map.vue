@@ -102,7 +102,9 @@
 					</view>
 					<view class="form-item">
 						<text class="label">新出发时间</text>
-						<uni-datetime-picker type="time" v-model="adjustForm.departure_time" :border="true" />
+						<picker mode="time" :value="adjustForm.departure_time" @change="onDepartureTimeChange">
+							<view class="uni-input input-border picker-input">{{ adjustForm.departure_time || '请选择时间' }}</view>
+						</picker>
 					</view>
 					<view class="form-item">
 						<text class="label">指派司机</text>
@@ -369,15 +371,20 @@ export default {
 
 		// API 4: 调整调度方案
 		openAdjustModal(item) {
-			// 从“明细列表每行按钮”进入：预填充该车信息
+			// 从"明细列表每行按钮"进入：预填充该车信息
 			if (item && item.vehicle_id) {
 				this.adjustForm.vehicle_id = item.vehicle_id
-				this.adjustForm.departure_time = item.departure_time || this.adjustForm.departure_time
+				this.adjustForm.departure_time = item.departure_time || '08:00'
 				// 后端字段是 driver_id，这里先用现有的 driver_name 兜底展示（如后端补充 driver_id 可直接替换）
 				this.adjustForm.driver_id = item.driver_id || item.driver_name || ''
 				this.adjustForm.store_list = Array.isArray(item.store_list) ? item.store_list : []
 			}
 			this.$refs.adjustPopup.open()
+		},
+				
+		// 时间选择器变更
+		onDepartureTimeChange(e) {
+			this.adjustForm.departure_time = e.detail.value
 		},
 		async submitAdjustment() {
 			if (!this.adjustForm.vehicle_id) return uni.showToast({title:'请选择车辆', icon:'none'})
@@ -662,6 +669,11 @@ export default {
 		}
 		.current-vehicle { font-size: 30rpx; font-weight: bold; color: #0066CC; }
 		.store-seq { font-size: 26rpx; color: #666; line-height: 40rpx; }
+		.picker-input { 
+			color: #333; 
+			cursor: pointer;
+			background: #f8f9fa;
+		}
 		.diff-box {
 			background: #f8fbff; padding: 20rpx; border-radius: 10rpx; margin-top: 30rpx;
 			.diff-title { font-weight: bold; font-size: 28rpx; display: block; margin-bottom: 10rpx; }

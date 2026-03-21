@@ -431,29 +431,28 @@ class ModuleFactory:
     @staticmethod
     def create_data_module(source: str = "dfi", **kwargs) -> IDataModule:
         """创建数据模块"""
-        if source == "dfi":
-            from src.modules.data.implementations.dfi_data_loader import DFIDataLoader
-            return DFIDataLoader(**kwargs)
-        else:
-            raise ValueError(f"Unknown data source: {source}")
+        from src.core.module_adapters import create_data_module
+        return create_data_module(kwargs)
     
     @staticmethod
     def create_forecast_module(model_type: str = "prophet", **kwargs) -> IForecastModule:
         """创建预测模块"""
-        # TODO: 实现Prophet预测模块
-        raise NotImplementedError("Forecast module not implemented yet")
+        from src.core.module_adapters import create_forecast_module
+        config = {'model_type': model_type, **kwargs}
+        return create_forecast_module(config)
     
     @staticmethod
     def create_routing_module(solver: str = "ortools", **kwargs) -> IRoutingModule:
         """创建路径优化模块"""
-        # TODO: 实现OR-Tools路径优化模块
-        raise NotImplementedError("Routing module not implemented yet")
+        from src.core.module_adapters import create_routing_module
+        config = {'solver': solver, **kwargs}
+        return create_routing_module(config)
     
     @staticmethod
     def create_sla_module(**kwargs) -> ISLAModule:
         """创建SLA模块"""
-        # TODO: 实现SLA预测模块
-        raise NotImplementedError("SLA module not implemented yet")
+        from src.core.module_adapters import create_sla_module
+        return create_sla_module(kwargs)
 
 
 # ==================== 测试函数 ====================

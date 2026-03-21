@@ -219,6 +219,21 @@ class IDataFetcher(ABC):
     def test_connection(self) -> bool:
         pass
 
+
+class WeatherDataFetcher(ABC):
+    """天气数据获取接口（兼容层）"""
+    
+    @abstractmethod
+    def get_weather(self, target_date: 'date') -> Optional[Dict[str, Any]]:
+        """获取指定日期的天气数据"""
+        pass
+    
+    @abstractmethod
+    def get_forecast(self, days: int = 7) -> List[Dict[str, Any]]:
+        """获取天气预报"""
+        pass
+
+
 class IDistanceCalculator(ABC):
     """距离计算接口"""
     @abstractmethod
