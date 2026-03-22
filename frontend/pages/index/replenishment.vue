@@ -1,13 +1,13 @@
 <template>
 	<view class="container">
-		<AppNavBar title="补货计划" :show-back="true" :show-menu="false" @back="goBack" />
+		<AppNavBar title="補貨計劃" :show-back="true" :show-menu="false" @back="goBack" />
 
 		<scroll-view scroll-y class="main-content">
 			<!-- 筛选区 -->
 			<view class="filter-card">
 				<view class="filter-row">
 					<view class="filter-item half">
-						<text class="label">补货日期范围</text>
+						<text class="label">補貨日期範圍</text>
 						<uni-datetime-picker
 							type="daterange"
 							v-model="filters.dateRange"
@@ -16,9 +16,9 @@
 						/>
 					</view>
 					<view class="filter-item half">
-						<text class="label">门店</text>
+						<text class="label">門店</text>
 						<view class="store-selector" @click="openStoreModal">
-							<text class="selector-text">{{ selectedStoreName || '全部门店' }}</text>
+							<text class="selector-text">{{ selectedStoreName || '所有門店' }}</text>
 							<uni-icons type="bottom" size="14" color="#666"></uni-icons>
 						</view>
 					</view>
@@ -29,7 +29,7 @@
 						<input
 							class="uni-input input-border"
 							v-model="filters.dcId"
-							placeholder="例如: DC01"
+							placeholder="例: DC01"
 							@confirm="fetchReplenishment"
 						/>
 					</view>
@@ -38,18 +38,18 @@
 						<input
 							class="uni-input input-border"
 							v-model="filters.skuId"
-							placeholder="例如: SKU001"
+							placeholder="例: SKU001"
 							@confirm="fetchReplenishment"
 						/>
 					</view>
 				</view>
 				<view class="filter-row">
 					<view class="filter-item half">
-						<text class="label">状态</text>
+						<text class="label">狀態</text>
 						<uni-data-select
 							v-model="filters.status"
 							:localdata="statusOptions"
-							placeholder="全部状态"
+							placeholder="所有狀態"
 							@change="fetchReplenishment"
 						/>
 					</view>
@@ -58,27 +58,27 @@
 						<input
 							class="uni-input input-border"
 							v-model="filters.ecdcId"
-							placeholder="例如: ECDC01"
+							placeholder="例: ECDC01"
 							@confirm="fetchReplenishment"
 						/>
 					</view>
 				</view>
 				<view class="filter-actions">
 					<view class="left">
-						<button class="btn-outline" size="mini" @click="resetFilters">重置</button>
+						<button class="btn-outline" size="mini" @click="resetFilters">重設</button>
 					</view>
 					<view class="right">
-						<button class="btn-primary" size="mini" @click="fetchReplenishment">搜索</button>
+						<button class="btn-primary" size="mini" @click="fetchReplenishment">搜尋</button>
 					</view>
 				</view>
 			</view>
 
-			<view v-if="loading" class="hint">加载中...</view>
+			<view v-if="loading" class="hint">載入中...</view>
 			<view v-else-if="errorMsg" class="hint error">{{ errorMsg }}</view>
 			<template v-else>
 				<view v-if="statistics.total" class="stats-row">
-					<text>共 {{ statistics.total }} 条</text>
-					<text>待审 {{ statistics.pending }} · 已批准 {{ statistics.approved }} · 不可行 {{ statistics.infeasible }}</text>
+					<text>共 {{ statistics.total }} 項</text>
+					<text>待審 {{ statistics.pending }} · 已批准 {{ statistics.approved }} · 不可行 {{ statistics.infeasible }}</text>
 				</view>
 				<view
 					v-for="(item, i) in plans"
@@ -95,110 +95,109 @@
 						<text class="value">{{ item.ecdc_name || item.ecdc_id }} · {{ item.sku_name || item.sku_id }}</text>
 					</view>
 					<view class="card-row">
-						<text class="label">建议数量 / 补货日期</text>
+						<text class="label">建議數量 / 補貨日期</text>
 						<text class="value">{{ item.recommended_qty }} / {{ item.replenishment_date }}</text>
 					</view>
 					<view v-if="item.actual_qty != null" class="card-row">
-						<text class="label">实际数量</text>
+						<text class="label">實際數量</text>
 						<text class="value">{{ item.actual_qty }}</text>
 					</view>
 					<view v-if="!item.is_feasible && item.infeasible_reason" class="reason">
-					<text>不可行原因：{{ item.infeasible_reason }}</text>
+						<text>不可行原因：{{ item.infeasible_reason }}</text>
+					</view>
+					<view class="card-actions" v-if="item.status === 'pending'">
+						<button class="btn-action adjust-btn" size="mini" @click="openAdjustModal(item)">調整</button>
+						<button class="btn-action approve-btn" size="mini" @click="openApproveModal(item)">審批</button>
+					</view>
 				</view>
-				<view class="card-actions" v-if="item.status === 'pending'">
-					<button class="btn-action adjust-btn" size="mini" @click="openAdjustModal(item)">调整</button>
-					<button class="btn-action approve-btn" size="mini" @click="openApproveModal(item)">审批</button>
-				</view>
-			</view>
-			<view v-if="!plans.length" class="hint">暂无补货计划</view>
+				<view v-if="!plans.length" class="hint">暫無補貨計劃</view>
 			</template>
 
-			<!-- 调整弹窗 (自定义居中模态) -->
+			<!-- 調整彈窗 -->
 			<view v-if="adjustModalVisible" class="modal-overlay" @click.self="closeAdjustModal">
 				<view class="modal-box" @click.stop>
-					<view class="modal-header">调整补货数量</view>
+					<view class="modal-header">調整補貨數量</view>
 					<view class="modal-body">
 						<view class="modal-row">
-							<text class="label">计划ID</text>
+							<text class="label">計劃 ID</text>
 							<text class="value">{{ currentPlan?.plan_id }}</text>
 						</view>
 						<view class="modal-row">
-							<text class="label">当前建议数量</text>
+							<text class="label">當前建議數量</text>
 							<text class="value">{{ currentPlan?.recommended_qty }}</text>
 						</view>
 						<view class="modal-row">
-							<text class="label">新数量</text>
+							<text class="label">新數量</text>
 							<input
 								class="uni-input input-border"
 								v-model.number="adjustment.new_qty"
 								type="number"
-								placeholder="请输入新的补货数量"
+								placeholder="輸入新補貨數量"
 							/>
 						</view>
 						<view class="modal-row">
-							<text class="label">调整原因</text>
+							<text class="label">調整原因</text>
 							<textarea
 								class="uni-textarea textarea-border"
 								v-model="adjustment.reason"
-								placeholder="请输入调整原因"
+								placeholder="輸入調整原因"
 								rows="3"
 							/>
 						</view>
 					</view>
 					<view class="modal-footer">
 						<button class="btn-action adjust-btn" @click="closeAdjustModal">取消</button>
-						<button class="btn-action approve-btn" @click="confirmAdjust">确定</button>
+						<button class="btn-action approve-btn" @click="confirmAdjust">確認</button>
 					</view>
 				</view>
 			</view>
 
-			<!-- 审批弹窗 (自定义居中模态) -->
+			<!-- 審批彈窗 -->
 			<view v-if="approveModalVisible" class="modal-overlay" @click.self="closeApproveModal">
 				<view class="modal-box" @click.stop>
-					<view class="modal-header">审批补货计划</view>
+					<view class="modal-header">審批補貨計劃</view>
 					<view class="modal-body">
 						<view class="modal-row">
-							<text class="label">计划ID</text>
+							<text class="label">計劃 ID</text>
 							<text class="value">{{ currentPlan?.plan_id }}</text>
 						</view>
 						<view class="modal-row">
-							<text class="label">审批结果</text>
+							<text class="label">審批結果</text>
 							<view class="approval-radio">
-								<radio-group v-model="approval.approved">
+								<radio-group  :value="approval.approved ">
 									<label>
 										<radio :value="true" /> 批准
 									</label>
 									<label>
-										<radio :value="false" /> 拒绝
+										<radio :value="false" /> 拒絕
 									</label>
 								</radio-group>
 							</view>
 						</view>
 						<view class="modal-row" v-if="!approval.approved">
-							<text class="label">拒绝原因</text>
+							<text class="label">拒絕原因</text>
 							<textarea
 								class="uni-textarea textarea-border"
 								v-model="approval.reject_reason"
-								placeholder="请输入拒绝原因"
+								placeholder="輸入拒絕原因"
 								rows="3"
 							/>
 						</view>
 					</view>
 					<view class="modal-footer">
 						<button class="btn-action adjust-btn" @click="closeApproveModal">取消</button>
-						<button class="btn-action approve-btn" @click="confirmApprove">确定</button>
+						<button class="btn-action approve-btn" @click="confirmApprove">確認</button>
 					</view>
 				</view>
 			</view>
 
-
 		</scroll-view>
 
-		<!-- 门店选择模态框 -->
+		<!-- 門店選擇模態框 -->
 		<view v-if="showStoreModal" class="modal-overlay" @click.self="closeStoreModal">
 			<view class="store-modal" @click.stop>
 				<view class="modal-header">
-					<text class="modal-title">选择门店</text>
+					<text class="modal-title">選擇門店</text>
 					<view class="close-btn" @click="closeStoreModal">
 						<uni-icons type="close" size="20" color="#666"></uni-icons>
 					</view>
@@ -207,7 +206,7 @@
 					<input 
 						class="search-input" 
 						v-model="storeSearchText" 
-						placeholder="搜索门店名称、ID或地区"
+						placeholder="搜尋門店名稱、ID或地區"
 						@input="onStoreSearch"
 					/>
 					<uni-icons type="search" size="18" color="#999" class="search-icon"></uni-icons>
@@ -215,8 +214,8 @@
 				<scroll-view scroll-y class="store-list">
 					<view class="store-item" @click="selectAllStores">
 						<view class="store-info">
-							<text class="store-name">全部门店</text>
-							<text class="store-detail">显示所有门店的数据</text>
+							<text class="store-name">所有門店</text>
+							<text class="store-detail">顯示所有門店數據</text>
 						</view>
 					</view>
 					<view 
@@ -227,31 +226,30 @@
 					>
 						<view class="store-info">
 							<text class="store-name">{{ store.store_name }}</text>
-							<text class="store-detail">ID: {{ store.store_id }} · {{ store.district || '未知地区' }}</text>
+							<text class="store-detail">ID: {{ store.store_id }} · {{ store.district || '未知地區' }}</text>
 						</view>
 					</view>
 					<view v-if="!displayedStores.length && storeSearchText" class="no-result">
-						<text>未找到匹配的门店</text>
+						<text>未找到匹配門店</text>
 					</view>
 					<view v-if="hasMoreStores" class="load-more" @click="loadMoreStores">
-						<text>加载更多 ({{ filteredStoreList.length - displayedStores.length }} 个)</text>
+						<text>載入更多 ({{ filteredStoreList.length - displayedStores.length }} 個)</text>
 					</view>
 				</scroll-view>
 			</view>
 		</view>
 
-		<AppTabBar />
+<!-- 		<AppTabBar /> -->
 	</view>
 </template>
 
 <script>
 import AppNavBar from '../../components/app-nav-bar.vue'
-import AppTabBar from '../../components/app-tab-bar.vue'
 import { apiGet, apiPut, getUserInfo, getSelectedStore } from '../../utils/api.js'
 import { canAccessPage } from '../../utils/permission.js'
 
 export default {
-	components: { AppNavBar, AppTabBar },
+	components: { AppNavBar },
 	data() {
 		const today = new Date()
 		const end = new Date()
@@ -259,7 +257,7 @@ export default {
 		const format = (d) => d.toISOString().slice(0, 10)
 
 		return {
-			// 筛选条件
+			// 篩選條件
 			filters: {
 				dateRange: [format(today), format(end)],
 				storeId: '',
@@ -270,21 +268,21 @@ export default {
 			},
 			storeOptions: [],
 			statusOptions: [
-				{ value: '', text: '全部状态' },
-				{ value: 'pending', text: '待审' },
+				{ value: '', text: '所有狀態' },
+				{ value: 'pending', text: '待審' },
 				{ value: 'approved', text: '已批准' },
-				{ value: 'rejected', text: '已拒绝' },
-				{ value: 'adjusted', text: '已调整' }
+				{ value: 'rejected', text: '已拒絕' },
+				{ value: 'adjusted', text: '已調整' }
 			],
 			plans: [],
 			statistics: { total: 0, pending: 0, approved: 0, adjusted: 0, infeasible: 0 },
 			loading: false,
 			errorMsg: '',
-			// 门店选择模态框
+			// 門店選擇模態框
 			showStoreModal: false,
 			storeSearchText: '',
-			displayLimit: 20, // 初始显示的门店数量
-			// 调整与审批相关
+			displayLimit: 20, // 初始顯示門店數量
+			// 調整與審批相關
 			adjustModalVisible: false,
 			approveModalVisible: false,
 			currentPlan: null,
@@ -299,7 +297,7 @@ export default {
 		}
 	},
 	computed: {
-		// 过滤后的门店列表（根据搜索文本）
+		// 過濾後門店列表（根據搜尋文本）
 		filteredStoreList() {
 			if (!this.storeSearchText.trim()) {
 				return this.storeOptions
@@ -311,29 +309,29 @@ export default {
 					   (store.district && store.district.toLowerCase().includes(searchText))
 			})
 		},
-		// 当前显示的门店列表（分页显示）
+		// 當前顯示門店列表（分頁顯示）
 		displayedStores() {
 			return this.filteredStoreList.slice(0, this.displayLimit)
 		},
-		// 是否还有更多门店
+		// 是否還有更多門店
 		hasMoreStores() {
 			return this.filteredStoreList.length > this.displayLimit
 		},
-		// 当前选中门店的显示名称
+		// 當前選中門店顯示名稱
 		selectedStoreName() {
-			if (!this.filters.storeId) return '全部门店'
+			if (!this.filters.storeId) return '所有門店'
 			const store = this.storeOptions.find(s => s.store_id === this.filters.storeId)
-			return store ? store.store_name : '全部门店'
+			return store ? store.store_name : '所有門店'
 		}
 	},
 	onLoad() {
 		const userInfo = getUserInfo()
 		if (!canAccessPage('/pages/index/replenishment', userInfo)) {
-			uni.showToast({ title: '无访问权限', icon: 'none' })
+			uni.showToast({ title: '無訪問權限', icon: 'none' })
 			setTimeout(() => uni.switchTab({ url: '/pages/index/index' }), 800)
 			return
 		}
-		// 默认使用首页当前选择的门店
+		// 默認使用首頁當前選擇門店
 		const selected = getSelectedStore && getSelectedStore()
 		if (selected && selected.store_id) {
 			this.filters.storeId = selected.store_id
@@ -346,8 +344,8 @@ export default {
 			uni.navigateBack()
 		},
 		onStoreSearch() {
-			// 搜索输入处理，computed属性会自动更新filteredStoreList
-			this.displayLimit = 20 // 重置显示限制
+			// 搜尋輸入處理
+			this.displayLimit = 20 // 重設顯示限制
 		},
 		openStoreModal() {
 			this.showStoreModal = true
@@ -355,7 +353,7 @@ export default {
 		closeStoreModal() {
 			this.showStoreModal = false
 			this.storeSearchText = ''
-			this.displayLimit = 20 // 重置显示限制
+			this.displayLimit = 20 // 重設顯示限制
 		},
 		selectStore(store) {
 			this.filters.storeId = store.store_id
@@ -368,7 +366,7 @@ export default {
 			this.fetchReplenishment()
 		},
 		loadMoreStores() {
-			this.displayLimit += 20 // 每次加载20个更多门店
+			this.displayLimit += 20 // 每次載入20個更多門店
 		},
 		async fetchReplenishment() {
 			this.loading = true
@@ -390,24 +388,24 @@ export default {
 					this.statistics = res.data.statistics || this.statistics
 				}
 			} catch (e) {
-				console.error('加载补货计划失败', e)
-				this.errorMsg = '加载失败，请确认后端已启动'
-				uni.showToast({ title: '加载失败', icon: 'none' })
+				console.error('載入補貨計劃失敗', e)
+				this.errorMsg = '載入失敗，請確認後端已啟動'
+				uni.showToast({ title: '載入失敗', icon: 'none' })
 			} finally {
 				this.loading = false
 			}
 		},
 		async loadStoreOptions() {
 			try {
-				// 使用公开API获取门店列表
+				// 使用公開API獲取門店列表
 				const res = await apiGet('/auth/stores/public', { params: {} })
 				if (res && res.success && res.data && res.data.length) {
-					// 直接使用API返回的原始格式，与首页保持一致
+					// 直接使用API返回原始格式
 					this.storeOptions = res.data
 				}
 			} catch (e) {
-				console.error('加载门店列表失败', e)
-				// 保持空数组
+				console.error('載入門店列表失敗', e)
+				// 保持空數組
 				this.storeOptions = []
 			}
 		},
@@ -419,23 +417,23 @@ export default {
 			
 			this.filters = {
 				dateRange: [format(today), format(end)],
-				storeId: this.filters.storeId, // 保留当前门店
+				storeId: this.filters.storeId, // 保留當前門店
 				dcId: '',
-				ecdcId:'', // 保留门店作为 ECDC ID
+				ecdcId:'', // 保留門店作為 ECDC ID
 				skuId: '',
 				status: ''
 			}
 			this.fetchReplenishment()
 		},
 		statusText(s) {
-			const map = { pending: '待审', approved: '已批准', adjusted: '已调整', rejected: '已拒绝' }
+			const map = { pending: '待審', approved: '已批准', adjusted: '已調整', rejected: '已拒絕' }
 			return map[s] || s
 		},
-		// 调整相关方法
+		// 調整相關方法
 		openAdjustModal(plan) {
 			if (!plan) return
 			if (plan.status !== 'pending') {
-				uni.showToast({ title: '只有待审计划可以调整', icon: 'none' })
+				uni.showToast({ title: '只有待審計劃可以調整', icon: 'none' })
 				return
 			}
 			this.currentPlan = plan
@@ -457,12 +455,12 @@ export default {
 			if (!this.currentPlan) return
 			
 			if (this.adjustment.new_qty <= 0) {
-				uni.showToast({ title: '新数量必须大于0', icon: 'none' })
+				uni.showToast({ title: '新數量必須大於0', icon: 'none' })
 				return
 			}
 			
 			if (!this.adjustment.reason.trim()) {
-				uni.showToast({ title: '请输入调整原因', icon: 'none' })
+				uni.showToast({ title: '請輸入調整原因', icon: 'none' })
 				return
 			}
 			
@@ -474,30 +472,30 @@ export default {
 					operator: 'system'
 				}
 				await apiPut(`/planning/replenishment/${this.currentPlan.plan_id}/adjust`, data)
-				// 标记为待审批状态以便界面立即反映
-				uni.showToast({ title: '调整成功，已提交待审批', icon: 'success' })
-				// 更新本地当前计划状态为 pending（待审）
+				// 標記為待審批狀態以便界面立即反映
+				uni.showToast({ title: '調整成功，已提交待審批', icon: 'success' })
+				// 更新本地當前計劃狀態為 pending（待審）
 				if (this.currentPlan) {
 					this.currentPlan.status = 'pending'
-					// 同步更新 plans 列表中的对应项
+					// 同步更新 plans 列表中對應項
 					const idx = this.plans.findIndex(p => p.plan_id === this.currentPlan.plan_id)
 					if (idx !== -1) this.$set(this.plans, idx, Object.assign({}, this.plans[idx], { status: 'pending' }))
 				}
 				this.closeAdjustModal()
-				// 如需从后端再次拉取最新数据，可保留下面一行；目前保留以确保服务器端状态一致
+				// 如需從後端再次拉取最新數據，可保留下面一行
 				this.fetchReplenishment()
 			} catch (e) {
-				console.error('调整补货计划失败', e)
-				uni.showToast({ title: '调整失败', icon: 'none' })
+				console.error('調整補貨計劃失敗', e)
+				uni.showToast({ title: '調整失敗', icon: 'none' })
 			} finally {
 				this.loading = false
 			}
 		},
-		// 审批相关方法
+		// 審批相關方法
 		openApproveModal(plan) {
 			if (!plan) return
 			if (plan.status !== 'pending') {
-				uni.showToast({ title: '只有待审计划可以审批', icon: 'none' })
+				uni.showToast({ title: '只有待審計劃可以審批', icon: 'none' })
 				return
 			}
 			this.currentPlan = plan
@@ -519,7 +517,7 @@ export default {
 			if (!this.currentPlan) return
 			
 			if (!this.approval.approved && !this.approval.reject_reason.trim()) {
-				uni.showToast({ title: '请输入拒绝原因', icon: 'none' })
+				uni.showToast({ title: '請輸入拒絕原因', icon: 'none' })
 				return
 			}
 			
@@ -531,12 +529,12 @@ export default {
 					reject_reason: this.approval.reject_reason
 				}
 				await apiPut(`/planning/replenishment/${this.currentPlan.plan_id}/approve`, data)
-				uni.showToast({ title: '审批成功', icon: 'success' })
+				uni.showToast({ title: '審批成功', icon: 'success' })
 				this.closeApproveModal()
 				this.fetchReplenishment()
 			} catch (e) {
-				console.error('审批补货计划失败', e)
-				uni.showToast({ title: '审批失败', icon: 'none' })
+				console.error('審批補貨計劃失敗', e)
+				uni.showToast({ title: '審批失敗', icon: 'none' })
 			} finally {
 				this.loading = false
 			}
@@ -546,6 +544,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+/* 樣式保持不變，僅修改文字部分 */
 .container {
 	background: #f4f7f9;
 	min-height: 100vh;
@@ -560,7 +559,7 @@ export default {
 	height: 120rpx;
 }
 
-/* 筛选卡片样式 */
+/* 篩選卡片樣式 */
 .filter-card {
 	background: #fff;
 	border-radius: 16rpx;
@@ -652,7 +651,7 @@ export default {
 	}
 }
 
-/* 统计行样式 */
+/* 統計行樣式 */
 .stats-row {
 	display: flex;
 	justify-content: space-between;
@@ -666,7 +665,7 @@ export default {
 	color: #666;
 }
 
-/* 卡片样式 */
+/* 卡片樣式 */
 .card {
 	background: #fff;
 	border-radius: 20rpx;
@@ -705,7 +704,7 @@ export default {
 	color: #DC3545;
 }
 
-/* 卡片操作按钮 */
+/* 卡片操作按鈕 */
 .card-actions {
 	display: flex;
 	gap: 12rpx;
@@ -730,15 +729,6 @@ export default {
 	color: #fff;
 }
 
-.modal-content {
-	background-color: #f9f9f9;
-	max-width: 90%;
-	  max-height: 90%;
-	position: fixed;
-	align-items: center;
-	padding: 30rpx;
-	max-width: 90vw;
-}
 .modal-overlay {
 	position: fixed;
 	inset: 0;
@@ -808,7 +798,7 @@ export default {
 	}
 }
 
-/* 弹窗动画 */
+/* 彈窗動畫 */
 @keyframes modalFadeIn {
 	from {
 		opacity: 0;
@@ -820,7 +810,7 @@ export default {
 	}
 }
 
-/* 遮罩层样式 */
+/* 遮罩層樣式 */
 :deep(.uni-modal__mask) {
 	background: rgba(0, 0, 0, 0.5);
 	animation: maskFadeIn 0.3s ease-out;
@@ -844,14 +834,14 @@ export default {
 	&.error { color: #DC3545; }
 }
 
-/* 响应式设计 */
+/* 響應式設計 */
 @media screen and (max-width: 960px) {
 	.filter-item.half {
 		flex-basis: 100%;
 	}
 }
 
-/* 门店选择模态框样式 */
+/* 門店選擇模態框樣式 */
 .modal-overlay {
 	position: fixed;
 	top: 0;

@@ -2,6 +2,20 @@
 	<view class="tab-bar-placeholder"></view>
 	<view class="custom-tab-bar">
 		<view class="tab-item" :class="{ active: isActive('/pages/index/index') }" @click="navTo('/pages/index/index')">
+			<uni-icons type="home" size="24" :color="isActive('/pages/index/index') ? '#0066CC' : '#999'"></uni-icons>
+			<text>{{ isActive('/pages/index/index') ? '首頁' : '首頁' }}</text>
+		</view>
+		<view class="tab-item" :class="{ active: isActive('/pages/index/forcast') }" @click="navTo('/pages/index/forcast')">
+			<uni-icons type="eye" size="24" :color="isActive('/pages/index/forcast') ? '#0066CC' : '#999'"></uni-icons>
+			<text>{{ isActive('/pages/index/forcast') ? '需求預測' : '需求預測' }}</text>
+		</view>
+		<view class="tab-item" :class="{ active: isActive('/pages/index/replenishment') }" @click="navTo('/pages/index/replenishment')">
+			<uni-icons type="cart" size="24" :color="isActive('/pages/index/replenishment') ? '#0066CC' : '#999'"></uni-icons>
+			<text>{{ isActive('/pages/index/replenishment') ? '補貨' : '補貨' }}</text>
+		</view>
+		<view class="tab-item" :class="{ active: isActive('/pages/index/deliever_map') }" @click="navTo('/pages/index/deliever_map')">
+			<uni-icons type="location" size="24" :color="isActive('/pages/index/deliever_map') ? '#0066CC' : '#999'"></uni-icons>
+			<text>{{ isActive('/pages/index/deliever_map') ? '調度' : '調度' }}</text>
 			<uni-icons :type="isActive('/pages/index/index') ? 'home-filled' : 'home'" size="24" :color="isActive('/pages/index/index') ? '#0066CC' : '#999'"></uni-icons>
 			<text>首页</text>
 		</view>

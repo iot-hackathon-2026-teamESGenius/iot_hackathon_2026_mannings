@@ -10,7 +10,7 @@
         <uni-icons type="search" size="18" color="#999"></uni-icons>
         <input 
           type="text" 
-          placeholder="请输入关键词" 
+          placeholder="請輸入關鍵字" 
           v-model="keyword"
           @confirm="onSearch"
         />

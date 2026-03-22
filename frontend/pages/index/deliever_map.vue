@@ -1,6 +1,6 @@
 <template>
 	<view class="container">
-		<AppNavBar title="车队调度与路径规划" :show-back="true" :show-menu="false" @back="goBack" />
+		<AppNavBar title="車隊調度與路徑規劃" :show-back="true" :show-menu="false" @back="goBack" />
 
 
 		<view class="main-layout">
@@ -22,7 +22,7 @@
 
 			<view class="layout-right panel-box" :class="{ collapsed: !isListOpen }">
 				<view class="panel-header panel-header-clickable" @click="toggleList">
-					<text class="title">调度明细列表</text>
+					<text class="title">調度明細列表</text>
 					<view class="sort-icons">
 						<uni-icons type="list" size="20" color="#666" @click.stop="sortList('status')"></uni-icons>
 						<uni-icons :type="isListOpen ? 'top' : 'bottom'" size="18" color="#666"></uni-icons>
@@ -30,9 +30,9 @@
 				</view>
 				<scroll-view v-show="isListOpen" scroll-y class="panel-content list-content">
 					<view class="table-header desktop-only">
-						<text class="col-1">车辆</text>
-						<text class="col-2">司机/时间</text>
-						<text class="col-3">状态</text>
+						<text class="col-1">車輛</text>
+						<text class="col-2">司機/時間</text>
+						<text class="col-3">狀態</text>
 					</view>
 
 					<view
@@ -49,24 +49,24 @@
 							</view>
 							<view class="driver-info">
 								<text class="name">{{ item.driver_name }}</text>
-								<text class="time">出发: {{ item.departure_time }}</text>
-								<text class="stores">配送门店: {{ item.store_list.length }}家</text>
+								<text class="time">出發: {{ item.departure_time }}</text>
+								<text class="stores">配送門店: {{ item.store_list.length }}家</text>
 							</view>
 							<view class="status-info">
 								<uni-tag :text="formatStatus(item.status)" :type="getStatusType(item.status)" size="small" />
 								<text class="cost">HK${{ item.estimated_cost }}</text>
-								<button class="mini-adjust" @click.stop="openAdjustModal(item)">调整</button>
+								<button class="mini-adjust" @click.stop="openAdjustModal(item)">調整</button>
 							</view>
 						</view>
 
 						<view class="abnormal-bar" v-if="item.status === 'abnormal'" @click.stop="showAbnormalDetail(item)">
 							<uni-icons type="info-filled" color="#dc3545" size="14"></uni-icons>
-							<text>点击查看异常原因</text>
+							<text>點擊查看異常原因</text>
 						</view>
 					</view>
 
 					<uni-load-more v-if="loading" status="loading"></uni-load-more>
-					<view v-if="scheduleList.length === 0 && !loading" class="empty-tip">暂无调度数据</view>
+					<view v-if="scheduleList.length === 0 && !loading" class="empty-tip">暫無調度數據</view>
 				</scroll-view>
 			</view>
 
@@ -75,50 +75,50 @@
 
 		<uni-popup ref="abnormalPopup" type="center">
 			<view class="popup-card warning">
-				<view class="popup-title">异常详情</view>
+					<view class="popup-title">異常詳情</view>
 				<view class="popup-content">
-					<view class="row"><text class="label">车辆编号：</text>{{ abnormalItem.vehicle_id }}</view>
-					<view class="row"><text class="label">异常原因：</text>{{ abnormalItem.abnormal_reason || '交通拥堵导致预计延迟30分钟' }}</view>
+					<view class="row"><text class="label">車輛編號：</text>{{ abnormalItem.vehicle_id }}</view>
+					<view class="row"><text class="label">異常原因：</text>{{ abnormalItem.abnormal_reason || '交通擁堵導致預計延遲30分鐘' }}</view>
 					<view class="advice-box">
-						<text class="advice-title">系统建议：</text>
-						<text>建议重新规划路线或分配临近车辆 (V005) 分担部分门店。</text>
+						<text class="advice-title">系統建議：</text>
+						<text>建議重新規劃路線或分配鄰近車輛 (V005) 分擔部分門店。</text>
 					</view>
 				</view>
-				<button class="btn-primary full-width" @click="$refs.abnormalPopup.close()">关闭</button>
+					<button class="btn-primary full-width" @click="$refs.abnormalPopup.close()">關閉</button>
 			</view>
 		</uni-popup>
 
 		<uni-popup ref="adjustPopup" type="center" :is-mask-click="false">
 			<view class="popup-card">
-				<view class="popup-title">调整调度方案</view>
+					<view class="popup-title">調整調度方案</view>
 				<scroll-view scroll-y class="adjust-form">
 					<view v-if="adjustForm.vehicle_id" class="form-item">
-						<text class="label">当前车辆</text>
+						<text class="label">當前車輛</text>
 						<view class="current-vehicle">{{ adjustForm.vehicle_id }}</view>
 					</view>
 					<view class="form-item">
-						<text class="label">选择车辆</text>
+						<text class="label">選擇車輛</text>
 						<uni-data-select v-model="adjustForm.vehicle_id" :localdata="vehicleSelectData"></uni-data-select>
 					</view>
 					<view class="form-item">
-						<text class="label">新出发时间</text>
+						<text class="label">新出發時間</text>
 						<picker mode="time" :value="adjustForm.departure_time" @change="onDepartureTimeChange">
 							<view class="uni-input input-border picker-input">{{ adjustForm.departure_time || '请选择时间' }}</view>
 						</picker>
 					</view>
 					<view class="form-item">
-						<text class="label">指派司机</text>
-						<input class="uni-input input-border" v-model="adjustForm.driver_id" placeholder="输入司机ID" />
+						<text class="label">指派司機</text>
+						<input class="uni-input input-border" v-model="adjustForm.driver_id" placeholder="輸入司機ID" />
 					</view>
 					<view v-if="adjustForm.store_list && adjustForm.store_list.length" class="form-item">
-						<text class="label">当前门店顺序</text>
+						<text class="label">當前門店順序</text>
 						<view class="store-seq">{{ adjustForm.store_list.join(' → ') }}</view>
 					</view>
 				</scroll-view>
-				<view class="btn-group">
-					<button class="btn-outline" @click="$refs.adjustPopup.close()">取消</button>
-					<button class="btn-primary" @click="submitAdjustment">确认调整</button>
-				</view>
+					<view class="btn-group">
+						<button class="btn-outline" @click="$refs.adjustPopup.close()">取消</button>
+						<button class="btn-primary" @click="submitAdjustment">確認調整</button>
+					</view>
 			</view>
 		</uni-popup>
 
