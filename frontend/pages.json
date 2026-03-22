@@ -1,16 +1,16 @@
 {
   "easycom": {
     "autoscan": true,
-    "^uni-(.*)": "@/uni_modules/uni-1/components/uni-1/uni-$1.vue",
-	"^qiun-(.*)": "@/uni_modules/qiun-1/components/qiun-1/qiun-$1.vue"
+    "^uni-(.*)": "@/uni_modules/uni-$1/components/uni-$1/uni-$1.vue",
+    "^qiun-(.*)": "@/uni_modules/qiun-$1/components/qiun-$1/qiun-$1/qiun-$1.vue"
   },
   "pages": [
-	  {
-	  		"path": "pages/login",
-	  		"style": {
-	  			"navigationBarTitleText": "LOGIN IN"
-	  		}
-	},
+    {
+      "path": "pages/login",
+      "style": {
+        "navigationBarTitleText": "登入"
+      }
+    },
     {
       "path": "pages/index/index",
       "style": {
@@ -19,37 +19,44 @@
       }
     },
     {
-      "path": "pages/my", 
+      "path": "pages/index/orders",
       "style": {
-        "navigationBarTitleText": "個人中心",
-		"navigationStyle": "custom"
+        "navigationBarTitleText": "訂單管理",
+        "navigationStyle": "custom"
       }
     },
     {
       "path": "pages/index/replenishment",
-      "style": { 
-		  "navigationBarTitleText": "補貨管理" ,
-		  "navigationStyle": "custom"
-		  }
-	},
-	{
-	"path": "pages/index/deliever_map",
-	"style": {
-		"navigationBarTitleText": "配送地圖",
-		"navigationStyle": "custom"
-	}
-},
-{
-	"path": "pages/index/forcast",
-	"style": {
-		"navigationBarTitleText": "需求預測",
-		"navigationStyle": "custom"
-	}
-}
-],
+      "style": {
+        "navigationBarTitleText": "補貨管理",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/index/deliever_map",
+      "style": {
+        "navigationBarTitleText": "配送地圖",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/index/forcast",
+      "style": {
+        "navigationBarTitleText": "需求預測",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/my",
+      "style": {
+        "navigationBarTitleText": "個人中心",
+        "navigationStyle": "custom"
+      }
+    }
+  ],
   "globalStyle": {
     "navigationBarTextStyle": "black",
-    "navigationBarTitleText": "uni-app",
+    "navigationBarTitleText": "萬寧營運系統",
     "navigationBarBackgroundColor": "#F8F8F8",
     "backgroundColor": "#F8F8F8"
   },

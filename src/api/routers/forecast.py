@@ -1,13 +1,16 @@
 """
 预测服务路由 - 适配前端需求预测和库存展望页面
+整合真实DFI门店数据
 """
 from fastapi import APIRouter, HTTPException, Query, Depends
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional, List, Dict
 from datetime import datetime, date, timedelta
 import numpy as np
 import pandas as pd
+import logging
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 # ==================== 请求/响应模型 ====================
@@ -39,16 +42,9 @@ class InventoryOutlookItem(BaseModel):
     projected_available: float
     stock_status: str  # normal / shortage / overstock
 
-# ==================== 模拟数据生成 ====================
+# ==================== 数据配置 ====================
 
-MOCK_STORES = {
-    "M001": "Mannings Tsim Sha Tsui",
-    "M002": "Mannings Causeway Bay",
-    "M003": "Mannings Central",
-    "M004": "Mannings Mongkok",
-    "M005": "Mannings Sha Tin"
-}
-
+# SKU数据 (暂无真实数据)
 MOCK_SKUS = {
     "SKU001": "维他命C 1000mg",
     "SKU002": "感冒灵颗粒",
@@ -57,10 +53,37 @@ MOCK_SKUS = {
     "SKU005": "消毒湿巾"
 }
 
+# ECDC数据 (暂无真实数据)
 MOCK_ECDCS = {
     "ECDC01": "Kwai Chung DC",
     "ECDC02": "Tsuen Wan ECDC"
 }
+
+# 门店缓存
+_stores_cache: Dict[str, str] = {}
+
+def load_store_names() -> Dict[str, str]:
+    """加载真实门店名称"""
+    global _stores_cache
+    if _stores_cache:
+        return _stores_cache
+    
+    try:
+        from src.api.services.data_service import get_data_service
+        service = get_data_service()
+        stores = service.get_active_stores()  # 只获取活跃门店
+        _stores_cache = {str(s["store_code"]): s["store_name"] for s in stores}
+        logger.info(f"Loaded {len(_stores_cache)} stores for forecast")
+        return _stores_cache
+    except Exception as e:
+        logger.warning(f"Failed to load stores, using fallback: {e}")
+        return {
+            "10001": "Mannings Yau Tsim Mong",
+            "10002": "Mannings Wan Chai",
+            "10003": "Mannings Central and Western",
+            "10004": "Mannings Kwun Tong",
+            "10005": "Mannings Sha Tin"
+        }
 
 def generate_demand_forecasts(
     start_date: date,
@@ -68,9 +91,12 @@ def generate_demand_forecasts(
     store_ids: List[str] = None,
     sku_ids: List[str] = None
 ) -> List[DemandForecastItem]:
-    """生成模拟需求预测数据"""
+    """生成需求预测数据 - 使用真实门店"""
     results = []
-    stores = store_ids or list(MOCK_STORES.keys())
+    
+    # 加载真实门店
+    store_names = load_store_names()
+    stores = store_ids or list(store_names.keys())[:10]  # 最多取10家门店
     skus = sku_ids or list(MOCK_SKUS.keys())
     
     current = start_date
@@ -91,7 +117,7 @@ def generate_demand_forecasts(
                 
                 results.append(DemandForecastItem(
                     store_id=store_id,
-                    store_name=MOCK_STORES.get(store_id, store_id),
+                    store_name=store_names.get(store_id, f"Store {store_id}"),
                     sku_id=sku_id,
                     sku_name=MOCK_SKUS.get(sku_id, sku_id),
                     date=current.isoformat(),
@@ -217,11 +243,14 @@ async def get_demand_trend(
         if f.actual_demand:
             trend_data[f.date]["actual"] += f.actual_demand
     
+    # 获取真实门店名称
+    store_names = load_store_names()
+    
     return {
         "success": True,
         "data": {
             "store_id": store_id,
-            "store_name": MOCK_STORES.get(store_id, store_id),
+            "store_name": store_names.get(store_id, f"Store {store_id}"),
             "trend": list(trend_data.values())
         }
     }
