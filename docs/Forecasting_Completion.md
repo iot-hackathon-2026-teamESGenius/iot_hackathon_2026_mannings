@@ -2,8 +2,8 @@
 
 ## 1. Responsibility Scope / 负责范围
 
-This document summarizes the forecasting work completed by Simin Xian, focusing only on the forecasting domain and the exposed interfaces to other modules.
-本文总结冼思敏同学已完成的预测模块工作，仅覆盖预测领域本身以及对其他模块暴露的接口。
+This document summarizes the forecasting work, focusing only on the forecasting domain and the exposed interfaces to other modules.
+本文总结预测模块工作，仅覆盖预测领域本身以及对其他模块暴露的接口。
 
 The responsibility boundary includes:
 负责边界包括：
