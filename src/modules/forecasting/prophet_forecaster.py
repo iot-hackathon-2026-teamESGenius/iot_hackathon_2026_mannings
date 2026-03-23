@@ -37,6 +37,90 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+
+class _FallbackProphetModel:
+    """Minimal Prophet-compatible fallback for offline environments."""
+
+    def __init__(self, interval_width: float = 0.8, **_: Any):
+        self.interval_width = interval_width
+        self.history = pd.DataFrame()
+        self.last_date = None
+        self.base_level = 0.0
+        self.trend_slope = 0.0
+        self.weekday_effects = {day: 0.0 for day in range(7)}
+        self.residual_std = 1.0
+        self.regressor_weights: Dict[str, float] = {}
+        self.holidays = pd.DataFrame()
+
+    def add_seasonality(self, **_: Any) -> None:
+        return None
+
+    def add_regressor(self, name: str, prior_scale: float = 0.1) -> None:
+        self.regressor_weights[name] = min(0.05, max(0.005, prior_scale * 0.02))
+
+    def fit(self, prophet_data: pd.DataFrame) -> None:
+        history = prophet_data.sort_values("ds").reset_index(drop=True).copy()
+        if history.empty:
+            raise ValueError("训练数据不能为空")
+
+        history["t"] = np.arange(len(history), dtype=float)
+        self.history = history
+        self.last_date = history["ds"].max()
+        self.base_level = float(history["y"].mean())
+
+        if len(history) > 1:
+            coeffs = np.polyfit(history["t"], history["y"], deg=1)
+            self.trend_slope = float(coeffs[0])
+
+        history["weekday"] = history["ds"].dt.dayofweek
+        weekday_mean = history.groupby("weekday")["y"].mean()
+        self.weekday_effects = {
+            day: float(weekday_mean.get(day, self.base_level) - self.base_level)
+            for day in range(7)
+        }
+
+        fitted = self._predict_core(history)
+        residuals = history["y"].to_numpy(dtype=float) - fitted
+        residual_std = float(np.std(residuals)) if len(residuals) > 1 else 0.0
+        self.residual_std = max(1.0, residual_std, self.base_level * 0.05)
+
+    def make_future_dataframe(self, periods: int) -> pd.DataFrame:
+        if self.last_date is None:
+            raise ValueError("模型尚未训练")
+        dates = pd.date_range(end=self.last_date + pd.Timedelta(days=periods), periods=len(self.history) + periods, freq="D")
+        return pd.DataFrame({"ds": dates})
+
+    def predict(self, future_df: pd.DataFrame) -> pd.DataFrame:
+        if self.last_date is None:
+            raise ValueError("模型尚未训练")
+
+        future = future_df.copy()
+        yhat = np.maximum(1.0, self._predict_core(future))
+        margin = np.minimum(1.28 * self.residual_std, yhat * 0.8)
+        future["yhat"] = yhat
+        future["yhat_lower"] = np.maximum(0.0, yhat - margin)
+        future["yhat_upper"] = np.maximum(future["yhat"], yhat + margin)
+        return future
+
+    def _predict_core(self, df: pd.DataFrame) -> np.ndarray:
+        ds = pd.to_datetime(df["ds"])
+        if self.history.empty:
+            offsets = np.arange(len(df), dtype=float)
+        else:
+            min_date = self.history["ds"].min()
+            offsets = (ds - min_date).dt.days.to_numpy(dtype=float)
+
+        values = np.full(len(df), self.base_level, dtype=float)
+        values += offsets * self.trend_slope
+        values += np.array([self.weekday_effects.get(int(day), 0.0) for day in ds.dt.dayofweek], dtype=float)
+
+        for regressor, weight in self.regressor_weights.items():
+            if regressor in df.columns:
+                series = pd.to_numeric(df[regressor], errors="coerce").fillna(0.0).to_numpy(dtype=float)
+                values += (series - float(np.mean(series) if len(series) else 0.0)) * weight
+
+        return np.maximum(0.0, values)
+
 class ProphetForecaster(DemandForecaster):
     """基于Prophet的需求预测器"""
     
@@ -45,9 +129,10 @@ class ProphetForecaster(DemandForecaster):
         self.models = {}  # store_code -> model
         self.is_trained = False
         self.feature_columns = []
-        
+        self.backend = "prophet" if PROPHET_AVAILABLE else "fallback"
+
         if not PROPHET_AVAILABLE:
-            raise ImportError("Prophet is required but not installed. Run: pip install prophet")
+            logger.warning("Prophet未安装，使用内置统计回退模型")
     
     def _get_default_config(self) -> Dict[str, Any]:
         """获取默认配置"""
@@ -88,7 +173,8 @@ class ProphetForecaster(DemandForecaster):
                     continue
                 
                 # 创建和配置Prophet模型
-                model = Prophet(
+                model_cls = Prophet if PROPHET_AVAILABLE else _FallbackProphetModel
+                model = model_cls(
                     seasonality_mode=self.config['seasonality_mode'],
                     yearly_seasonality=self.config['yearly_seasonality'],
                     weekly_seasonality=self.config['weekly_seasonality'],
@@ -279,24 +365,41 @@ class ProphetForecaster(DemandForecaster):
         try:
             for store_code, model in self.models.items():
                 logger.info(f"评估门店 {store_code} 的模型...")
-                
-                # 交叉验证
-                df_cv = cross_validation(
-                    model, 
-                    initial='30 days', 
-                    period='7 days', 
-                    horizon='7 days'
-                )
-                
-                # 计算性能指标
-                df_p = performance_metrics(df_cv)
-                
-                metrics[store_code] = {
-                    'mape': df_p['mape'].mean(),
-                    'mae': df_p['mae'].mean(),
-                    'rmse': df_p['rmse'].mean(),
-                    'coverage': df_p['coverage'].mean()
-                }
+
+                if PROPHET_AVAILABLE:
+                    df_cv = cross_validation(
+                        model,
+                        initial='30 days',
+                        period='7 days',
+                        horizon='7 days'
+                    )
+
+                    df_p = performance_metrics(df_cv)
+
+                    metrics[store_code] = {
+                        'mape': df_p['mape'].mean(),
+                        'mae': df_p['mae'].mean(),
+                        'rmse': df_p['rmse'].mean(),
+                        'coverage': df_p['coverage'].mean()
+                    }
+                else:
+                    processed = self._preprocess_training_data(test_data)
+                    store_test = processed[processed['store_code'] == store_code].copy()
+                    if store_test.empty:
+                        continue
+
+                    prediction_input = self._prepare_prophet_data(store_test)
+                    prediction = model.predict(prediction_input)
+                    actual = store_test['y'].to_numpy(dtype=float)
+                    pred = prediction['yhat'].to_numpy(dtype=float)
+                    denom = np.maximum(np.abs(actual), 1.0)
+
+                    metrics[store_code] = {
+                        'mape': float(np.mean(np.abs(actual - pred) / denom)),
+                        'mae': float(np.mean(np.abs(actual - pred))),
+                        'rmse': float(np.sqrt(np.mean((actual - pred) ** 2))),
+                        'coverage': float(np.mean((actual >= prediction['yhat_lower']) & (actual <= prediction['yhat_upper'])))
+                    }
             
             # 计算总体指标
             overall_metrics = {
@@ -313,6 +416,16 @@ class ProphetForecaster(DemandForecaster):
         except Exception as e:
             logger.error(f"模型评估失败: {str(e)}")
             return {'error': str(e)}
+
+    def get_model_info(self) -> Dict[str, Any]:
+        """获取模型元信息"""
+        return {
+            'backend': self.backend,
+            'is_trained': self.is_trained,
+            'store_count': len(self.models),
+            'feature_columns': list(self.feature_columns),
+            'config': self.config
+        }
     
     def save_model(self, filepath: str) -> None:
         """保存模型"""

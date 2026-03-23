@@ -25,6 +25,76 @@ except ImportError:
     SKLEARN_AVAILABLE = False
     logging.warning("Scikit-learn not available. Install with: pip install scikit-learn")
 
+    class StandardScaler:
+        def fit_transform(self, X):
+            return np.asarray(X, dtype=float)
+
+        def transform(self, X):
+            return np.asarray(X, dtype=float)
+
+    class LabelEncoder:
+        def fit_transform(self, values):
+            self.classes_ = np.array(sorted({str(v) for v in values}))
+            mapping = {value: index for index, value in enumerate(self.classes_)}
+            return np.array([mapping[str(v)] for v in values], dtype=int)
+
+        def transform(self, values):
+            mapping = {value: index for index, value in enumerate(self.classes_)}
+            return np.array([mapping[str(v)] for v in values], dtype=int)
+
+    class _FallbackRegressor:
+        def __init__(self, **_: Any):
+            self.mean_ = 0.95
+            self.feature_importances_ = np.array([])
+
+        def fit(self, X, y):
+            X = np.asarray(X, dtype=float)
+            y = np.asarray(y, dtype=float)
+            self.mean_ = float(np.mean(y)) if len(y) else 0.95
+            self.feature_importances_ = np.full(X.shape[1], 1.0 / max(1, X.shape[1])) if X.ndim == 2 else np.array([])
+            self.estimators_ = []
+            return self
+
+        def predict(self, X):
+            X = np.asarray(X, dtype=float)
+            return np.full(len(X), self.mean_, dtype=float)
+
+        def score(self, X, y):
+            y = np.asarray(y, dtype=float)
+            if len(y) == 0:
+                return 0.0
+            pred = self.predict(X)
+            ss_res = float(np.sum((y - pred) ** 2))
+            ss_tot = float(np.sum((y - np.mean(y)) ** 2))
+            return 0.0 if ss_tot == 0 else 1.0 - ss_res / ss_tot
+
+    RandomForestRegressor = _FallbackRegressor
+    GradientBoostingRegressor = _FallbackRegressor
+
+    def train_test_split(X, y, test_size=0.2, random_state=None):
+        X = np.asarray(X)
+        y = np.asarray(y)
+        split_idx = max(1, int(len(X) * (1 - test_size)))
+        split_idx = min(split_idx, len(X) - 1) if len(X) > 1 else len(X)
+        return X[:split_idx], X[split_idx:], y[:split_idx], y[split_idx:]
+
+    def mean_absolute_error(y_true, y_pred):
+        y_true = np.asarray(y_true, dtype=float)
+        y_pred = np.asarray(y_pred, dtype=float)
+        return float(np.mean(np.abs(y_true - y_pred)))
+
+    def mean_squared_error(y_true, y_pred):
+        y_true = np.asarray(y_true, dtype=float)
+        y_pred = np.asarray(y_pred, dtype=float)
+        return float(np.mean((y_true - y_pred) ** 2))
+
+    def r2_score(y_true, y_pred):
+        y_true = np.asarray(y_true, dtype=float)
+        y_pred = np.asarray(y_pred, dtype=float)
+        ss_res = float(np.sum((y_true - y_pred) ** 2))
+        ss_tot = float(np.sum((y_true - np.mean(y_true)) ** 2))
+        return 0.0 if ss_tot == 0 else 1.0 - ss_res / ss_tot
+
 import sys
 project_root = Path(__file__).parent.parent.parent
 sys.path.append(str(project_root))
@@ -50,6 +120,8 @@ class MLSLAPredictor(SLAPredictor):
         self.feature_columns = []
         self.is_trained = False
         self.feature_importance = {}
+        self.reference_date = date.today()
+        self.store_baseline_map: Dict[str, float] = {}
         
         if not SKLEARN_AVAILABLE:
             logger.warning("Scikit-learn不可用，将使用简化的预测方法")
@@ -91,6 +163,16 @@ class MLSLAPredictor(SLAPredictor):
             
             if processed_data.empty:
                 raise ValueError("预处理后的训练数据为空")
+
+            self.reference_date = pd.to_datetime(processed_data['order_date']).max().date()
+            self.store_baseline_map = (
+                processed_data.assign(
+                    fulfillment_store_code=processed_data['fulfillment_store_code'].astype(str)
+                ).groupby('fulfillment_store_code')['sla_rate']
+                .mean()
+                .astype(float)
+                .to_dict()
+            )
             
             # 特征工程
             features_df = self._engineer_features(processed_data)
@@ -152,8 +234,8 @@ class MLSLAPredictor(SLAPredictor):
             store_codes = kwargs.get('store_codes', ['417', '331', '213'])  # 默认门店
             
             for store_code in store_codes:
-                for days_ahead in range(forecast_horizon):
-                    forecast_date = date.today() + timedelta(days=days_ahead)
+                for days_ahead in range(1, forecast_horizon + 1):
+                    forecast_date = self.reference_date + timedelta(days=days_ahead)
                     
                     # 预测单店SLA
                     sla_forecast = self.predict_sla_performance(store_code, forecast_date)
@@ -289,19 +371,66 @@ class MLSLAPredictor(SLAPredictor):
         except Exception as e:
             logger.error(f"模型评估失败: {str(e)}")
             return {'error': str(e)}
+
+    def get_model_info(self) -> Dict[str, Any]:
+        """获取模型元信息"""
+        return {
+            'backend': 'sklearn' if SKLEARN_AVAILABLE else 'fallback',
+            'is_trained': self.is_trained,
+            'feature_columns': list(self.feature_columns),
+            'reference_date': self.reference_date.isoformat() if isinstance(self.reference_date, date) else None,
+            'feature_importance': self.feature_importance,
+        }
+
+    def predict_pickup_time(self, order_info: Dict[str, Any], route_plan: Any, store_processing_time_model: Any = None) -> Dict[str, Any]:
+        """根据订单和路径信息估算取货时间。"""
+        order_time = order_info.get('order_time', datetime.now())
+        if isinstance(order_time, str):
+            order_time = datetime.fromisoformat(order_time)
+
+        route_minutes = float(order_info.get('route_minutes', 30))
+        processing_minutes = float(order_info.get('processing_minutes', 45))
+        if store_processing_time_model is not None and hasattr(store_processing_time_model, 'predict'):
+            try:
+                processing_minutes = float(store_processing_time_model.predict([order_info])[0])
+            except Exception:
+                pass
+
+        predicted_time = order_time + timedelta(minutes=route_minutes + processing_minutes)
+        return {
+            'predicted_pickup_time': predicted_time,
+            'processing_minutes': processing_minutes,
+            'route_minutes': route_minutes,
+        }
+
+    def calculate_sla_probability(self, promised_time: datetime, predicted_time: datetime, uncertainty: float = 0.1) -> float:
+        """根据承诺时间、预测时间和不确定性估算SLA达成概率。"""
+        delta_hours = (promised_time - predicted_time).total_seconds() / 3600.0
+        scaled = delta_hours / max(0.25, uncertainty * 24)
+        probability = 1.0 / (1.0 + np.exp(-scaled))
+        return float(max(0.0, min(1.0, probability)))
     
     def save_model(self, filepath: str) -> None:
         """保存模型"""
         import pickle
-        
+
+        model = self.model
+        model_serialized = True
+        try:
+            pickle.dumps(model)
+        except Exception:
+            model = None
+            model_serialized = False
+
         model_data = {
-            'model': self.model,
+            'model': model,
             'scaler': self.scaler,
             'label_encoders': self.label_encoders,
             'feature_columns': self.feature_columns,
             'config': self.config,
             'is_trained': self.is_trained,
-            'feature_importance': self.feature_importance
+            'feature_importance': self.feature_importance,
+            'model_serialized': model_serialized,
         }
         
         with open(filepath, 'wb') as f:
@@ -343,7 +472,7 @@ class MLSLAPredictor(SLAPredictor):
         if 'sla_rate' not in processed.columns:
             # 模拟SLA计算
             processed['sla_rate'] = 0.95 + np.random.normal(0, 0.05, len(processed))
-            processed['sla_rate'] = processed['sla_rate'].clip(0, 1)
+        processed['sla_rate'] = processed['sla_rate'].clip(0, 1)
         
         return processed
     
@@ -411,7 +540,7 @@ class MLSLAPredictor(SLAPredictor):
         
         # 准备目标变量
         if 'sla_rate' in features_df.columns:
-            y = features_df['sla_rate'].values
+            y = features_df['sla_rate'].clip(0, 1).values
         else:
             # 如果没有真实SLA数据，生成模拟数据
             y = 0.95 + np.random.normal(0, 0.05, len(X))
@@ -495,6 +624,10 @@ class MLSLAPredictor(SLAPredictor):
     
     def _get_historical_baseline_sla(self, store_code: str) -> float:
         """获取历史基准SLA率"""
+        if store_code in self.store_baseline_map:
+            baseline = float(self.store_baseline_map[store_code])
+            return max(0.0, min(1.0, baseline))
+
         # 模拟基于门店的历史表现
         store_baselines = {
             '417': 0.94,

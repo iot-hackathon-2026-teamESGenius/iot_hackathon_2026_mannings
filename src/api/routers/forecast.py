@@ -2,16 +2,16 @@
 预测服务路由 - 适配前端需求预测和库存展望页面
 整合真实DFI门店数据
 """
-from fastapi import APIRouter, HTTPException, Query, Depends
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 from typing import Optional, List, Dict
 from datetime import datetime, date, timedelta
-import numpy as np
-import pandas as pd
 import logging
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+
+from src.api.services.forecasting_service import get_forecasting_service
 
 # ==================== 请求/响应模型 ====================
 
@@ -91,86 +91,24 @@ def generate_demand_forecasts(
     store_ids: List[str] = None,
     sku_ids: List[str] = None
 ) -> List[DemandForecastItem]:
-    """生成需求预测数据 - 使用真实门店"""
-    results = []
-    
-    # 加载真实门店
-    store_names = load_store_names()
-    stores = store_ids or list(store_names.keys())[:10]  # 最多取10家门店
-    skus = sku_ids or list(MOCK_SKUS.keys())
-    
-    current = start_date
-    while current <= end_date:
-        for store_id in stores:
-            for sku_id in skus:
-                # 基础需求 + 周末效应 + 随机波动
-                base_demand = 50 + np.random.normal(0, 10)
-                weekend_effect = 20 if current.weekday() >= 5 else 0
-                forecast = max(0, base_demand + weekend_effect + np.random.normal(0, 5))
-                
-                # 模拟实际需求（仅历史日期）
-                actual = None
-                deviation = None
-                if current < date.today():
-                    actual = forecast + np.random.normal(0, forecast * 0.1)
-                    deviation = (actual - forecast) / forecast * 100 if forecast > 0 else 0
-                
-                results.append(DemandForecastItem(
-                    store_id=store_id,
-                    store_name=store_names.get(store_id, f"Store {store_id}"),
-                    sku_id=sku_id,
-                    sku_name=MOCK_SKUS.get(sku_id, sku_id),
-                    date=current.isoformat(),
-                    forecast_demand=round(forecast, 1),
-                    actual_demand=round(actual, 1) if actual else None,
-                    deviation_rate=round(deviation, 2) if deviation else None,
-                    lower_bound=round(forecast * 0.8, 1),
-                    upper_bound=round(forecast * 1.2, 1)
-                ))
-        current += timedelta(days=1)
-    
-    return results
+    """生成需求预测数据。"""
+    service = get_forecasting_service()
+    return [
+        DemandForecastItem(**row)
+        for row in service.get_demand_forecasts(start_date, end_date, store_ids, sku_ids)
+    ]
 
 def generate_inventory_outlook(
     forecast_days: int = 7,
-    ecdc_ids: List[str] = None
+    ecdc_ids: List[str] = None,
+    sku_ids: List[str] = None,
 ) -> List[InventoryOutlookItem]:
-    """生成模拟库存展望数据"""
-    results = []
-    ecdcs = ecdc_ids or list(MOCK_ECDCS.keys())
-    
-    for ecdc_id in ecdcs:
-        for sku_id, sku_name in MOCK_SKUS.items():
-            for day_offset in range(forecast_days):
-                forecast_date = date.today() + timedelta(days=day_offset)
-                
-                current_stock = np.random.randint(50, 200)
-                expected_arrival = np.random.randint(0, 50) if day_offset > 0 else 0
-                committed_demand = np.random.randint(30, 80)
-                projected = current_stock + expected_arrival - committed_demand
-                
-                # 判断库存状态
-                if projected < 20:
-                    status = "shortage"
-                elif projected > 150:
-                    status = "overstock"
-                else:
-                    status = "normal"
-                
-                results.append(InventoryOutlookItem(
-                    ecdc_id=ecdc_id,
-                    ecdc_name=MOCK_ECDCS.get(ecdc_id, ecdc_id),
-                    sku_id=sku_id,
-                    sku_name=sku_name,
-                    forecast_date=forecast_date.isoformat(),
-                    current_stock=current_stock,
-                    expected_arrival=expected_arrival,
-                    committed_demand=committed_demand,
-                    projected_available=max(0, projected),
-                    stock_status=status
-                ))
-    
-    return results
+    """生成ATP库存展望数据。"""
+    service = get_forecasting_service()
+    return [
+        InventoryOutlookItem(**row)
+        for row in service.get_inventory_outlook(forecast_days, ecdc_ids, sku_ids)
+    ]
 
 # ==================== API端点 ====================
 
@@ -266,11 +204,10 @@ async def get_inventory_outlook(
     获取可售库存展望数据
     """
     ecdc_ids = [ecdc_id] if ecdc_id else None
-    outlook = generate_inventory_outlook(forecast_days, ecdc_ids)
+    sku_ids = [sku_id] if sku_id else None
+    outlook = generate_inventory_outlook(forecast_days, ecdc_ids, sku_ids)
     
     # 筛选
-    if sku_id:
-        outlook = [o for o in outlook if o.sku_id == sku_id]
     if status:
         outlook = [o for o in outlook if o.stock_status == status]
     
@@ -295,21 +232,18 @@ async def get_forecast_model_info():
     """
     获取预测模型信息
     """
+    model_info = get_forecasting_service().get_model_info()
     return {
         "success": True,
         "data": {
-            "model_name": "Prophet + LightGBM Ensemble",
-            "last_trained": "2026-01-24T10:00:00",
-            "training_samples": 50000,
-            "features": [
-                "historical_sales", "day_of_week", "is_weekend",
-                "is_holiday", "weather_condition", "promotion_flag",
-                "store_type", "sku_category"
-            ],
+            "model_name": "ProphetForecaster + MLSLAPredictor",
+            "last_reference_date": model_info["demand_model"].get("config", {}).get("last_trained"),
+            "training_samples": model_info.get("training_samples", 0),
+            "features": model_info["demand_model"].get("feature_columns", []),
             "metrics": {
-                "mape": 8.5,
-                "rmse": 12.3,
-                "r2": 0.92
-            }
+                "backend": model_info["demand_model"].get("backend"),
+                "stores": model_info["demand_model"].get("store_count", 0),
+            },
+            "sla_model": model_info["sla_model"],
         }
     }

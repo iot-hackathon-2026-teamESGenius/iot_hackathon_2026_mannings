@@ -2,7 +2,7 @@
 SLA服务路由 - 适配前端自提订单和风险预警页面
 整合真实DFI履约数据
 """
-from fastapi import APIRouter, HTTPException, Query, Depends
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 from datetime import datetime, date, timedelta
@@ -12,6 +12,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+
+from src.api.services.forecasting_service import get_forecasting_service
 
 # ==================== 请求/响应模型 ====================
 
@@ -384,34 +386,12 @@ async def get_pickup_promise(
     """
     获取自提承诺时间窗口
     """
-    store_name = MOCK_STORES.get(store_id, store_id)
-    now = datetime.now()
-    
-    # 模拟承诺时间计算
-    base_hours = 4
-    # 周末加时
-    if now.weekday() >= 5:
-        base_hours += 1
-    # 高峰时段加时
-    if 12 <= now.hour <= 14 or 17 <= now.hour <= 19:
-        base_hours += 0.5
-    
-    promised_time = now + timedelta(hours=base_hours)
-    
+    service = get_forecasting_service()
+    promise = service.get_pickup_promise(store_id, [sku.strip() for sku in sku_ids.split(",") if sku.strip()])
+
     return {
         "success": True,
-        "data": {
-            "store_id": store_id,
-            "store_name": store_name,
-            "order_time": now.isoformat(),
-            "promised_ready_time": promised_time.isoformat(),
-            "confidence": 0.92,
-            "risk_factors": [
-                {"factor": "周末高峰", "impact_hours": 1.0} if now.weekday() >= 5 else None,
-                {"factor": "用餐高峰", "impact_hours": 0.5} if 12 <= now.hour <= 14 else None
-            ],
-            "window_description": f"预计 {promised_time.strftime('%H:%M')} 前可取"
-        }
+        "data": promise
     }
 
 # ==================== 预警API ====================
@@ -428,7 +408,8 @@ async def get_alerts(
     """
     获取SLA预警列表
     """
-    alerts = list(ALERTS.values())
+    service_alerts = [SLAAlertItem(**item) for item in get_forecasting_service().get_sla_alerts()]
+    alerts = list(ALERTS.values()) + service_alerts
     
     # 筛选
     if risk_level:
@@ -483,7 +464,7 @@ async def get_bottleneck_analysis(
     """
     获取瓶颈分析数据
     """
-    alerts = list(ALERTS.values())
+    alerts = list(ALERTS.values()) + [SLAAlertItem(**item) for item in get_forecasting_service().get_sla_alerts()]
     
     # 瓶颈分布
     distribution = {
@@ -536,7 +517,7 @@ async def get_sla_statistics(
     获取SLA统计数据
     """
     orders = list(ORDERS.values())
-    alerts = list(ALERTS.values())
+    alerts = list(ALERTS.values()) + [SLAAlertItem(**item) for item in get_forecasting_service().get_sla_alerts()]
     
     completed = [o for o in orders if o.status == "completed"]
     achieved = [o for o in completed if o.sla_achieved == True]
