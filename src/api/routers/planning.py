@@ -72,6 +72,7 @@ class ApprovalRequest(BaseModel):
 class ScheduleItem(BaseModel):
     """调度计划条目"""
     vehicle_id: str
+    driver_id: Optional[str] = None  # 司机ID，用于关联drivers模块
     driver_name: str
     driver_phone: str
     departure_time: str
@@ -105,12 +106,47 @@ MOCK_SKUS = {
     "SKU005": "消毒湿巾"
 }
 
-# 车辆数据 (暂无真实数据，保留配置)
+# 车辆数据 - 默认模拟数据（用于演示）
 MOCK_VEHICLES = {
-    "V001": {"driver": "陈大文", "phone": "9123****"},
-    "V002": {"driver": "李小明", "phone": "9456****"},
-    "V003": {"driver": "王志强", "phone": "9789****"}
+    "V001": {"driver": "陈大文", "phone": "9123****", "driver_id": "MOCK-001"},
+    "V002": {"driver": "李小明", "phone": "9456****", "driver_id": "MOCK-002"},
+    "V003": {"driver": "王志强", "phone": "9789****", "driver_id": "MOCK-003"}
 }
+
+def get_drivers_for_scheduling() -> Dict[str, Dict]:
+    """
+    获取可用于调度的司机数据
+    优先从 drivers 模块获取真实数据，如果没有则使用模拟数据
+    """
+    try:
+        from src.api.routers.drivers import DRIVERS
+        
+        if not DRIVERS:
+            logger.info("No drivers found, using mock data")
+            return MOCK_VEHICLES
+        
+        # 构建车辆-司机映射
+        vehicles = {}
+        for driver_id, driver in DRIVERS.items():
+            if driver.vehicle_id:  # 只包含已分配车辆的司机
+                vehicles[driver.vehicle_id] = {
+                    "driver": driver.name,
+                    "phone": driver.phone,
+                    "driver_id": driver_id,
+                    "status": driver.status,
+                    "license": driver.license_number
+                }
+        
+        if not vehicles:
+            logger.info("No vehicles assigned to drivers, using mock data")
+            return MOCK_VEHICLES
+        
+        logger.info(f"Loaded {len(vehicles)} driver-vehicle mappings for scheduling")
+        return vehicles
+        
+    except Exception as e:
+        logger.warning(f"Failed to load drivers, using mock data: {e}")
+        return MOCK_VEHICLES
 
 # 门店数据缓存
 _stores_cache: Dict[str, Dict] = {}
@@ -130,6 +166,11 @@ def get_store_coordinates(district: str) -> Tuple[float, float]:
     
     # 默认返回香港中心
     return (22.3193, 114.1694)
+
+def get_dc_location() -> Tuple[float, float]:
+    """获取配送中心坐标"""
+    # 香港葵涌配送中心坐标
+    return (22.3560, 114.1300)
 
 def load_real_stores() -> Dict[str, Dict]:
     """
@@ -280,22 +321,39 @@ def init_mock_data():
                     infeasible_reason="超出ECDC处理能力" if not is_feasible else None
                 )
     
-    # 生成调度计划 - 使用真实门店
-    if len(store_ids) >= 5:
+    # 生成调度计划 - 使用真实门店，确保每个司机分配不同的门店
+    if len(store_ids) >= 9:
+        # 充足门店时，每个司机分配不同的门店
         routes = [
-            (store_ids[0:3], "08:00", "08:00-10:00"),
-            (store_ids[3:5], "09:00", "09:00-11:00"),
-            (store_ids[0:2] + store_ids[4:5], "14:00", "14:00-16:00")
+            (store_ids[0:3], "08:00", "08:00-10:00"),    # V001: 前3家
+            (store_ids[3:6], "09:00", "09:00-11:00"),    # V002: 中间3家
+            (store_ids[6:9], "14:00", "14:00-16:00")     # V003: 后3家
+        ]
+    elif len(store_ids) >= 6:
+        routes = [
+            (store_ids[0:2], "08:00", "08:00-10:00"),    # V001: 2家
+            (store_ids[2:4], "09:00", "09:00-11:00"),    # V002: 2家
+            (store_ids[4:6], "14:00", "14:00-16:00")     # V003: 2家
+        ]
+    elif len(store_ids) >= 3:
+        routes = [
+            ([store_ids[0]], "08:00", "08:00-10:00"),
+            ([store_ids[1]], "09:00", "09:00-11:00"),
+            ([store_ids[2]], "14:00", "14:00-16:00")
         ]
     else:
         routes = [(store_ids, "08:00", "08:00-10:00")]
     
+    # 获取司机数据
+    vehicles_data = get_drivers_for_scheduling()
+    
     for i, (route_stores, dep_time, window) in enumerate(routes):
         vehicle_id = f"V00{i+1}"
-        vehicle = MOCK_VEHICLES.get(vehicle_id, {"driver": f"司机{i+1}", "phone": "9XXX****"})
+        vehicle = vehicles_data.get(vehicle_id, {"driver": f"司机{i+1}", "phone": "9XXX****", "driver_id": f"MOCK-{i+1}"})
         
         SCHEDULES[vehicle_id] = ScheduleItem(
             vehicle_id=vehicle_id,
+            driver_id=vehicle.get("driver_id"),
             driver_name=vehicle["driver"],
             driver_phone=vehicle["phone"],
             departure_time=dep_time,
@@ -434,11 +492,16 @@ async def get_schedules(
 
 @router.get("/routes/map-data")
 async def get_route_map_data(
-    route_ids: Optional[str] = Query(None, description="路线ID列表，逗号分隔")
+    route_ids: Optional[str] = Query(None, description="路线ID列表，逗号分隔"),
+    real_path: bool = Query(True, description="是否获取真实道路路径")
 ):
     """
     获取路线地图数据（用于地图可视化）
-    使用真实门店数据
+    使用真实门店数据和真实道路路径
+    
+    Args:
+        route_ids: 可选，指定要获取的路线ID
+        real_path: 是否获取真实道路路径（需要Google Maps API Key）
     """
     # DC位置 (葵涌配送中心)
     dc_location = (22.3700, 114.1130)
@@ -452,21 +515,58 @@ async def get_route_map_data(
         for store_id, info in stores.items()
     }
     
+    # 获取道路路径服务
+    directions_service = None
+    if real_path:
+        try:
+            from src.api.services.directions_service import get_directions_service
+            directions_service = get_directions_service()
+        except Exception as e:
+            logger.warning(f"Failed to load directions service: {e}")
+    
     # 路线数据
     routes = []
     for schedule in SCHEDULES.values():
-        route_coords = [dc_location]
+        # 收集站点坐标
+        stop_coords = [dc_location]
         for store_id in schedule.store_list:
             if store_id in stores:
-                route_coords.append((stores[store_id]["lat"], stores[store_id]["lng"]))
+                stop_coords.append((stores[store_id]["lat"], stores[store_id]["lng"]))
+        
+        # 获取真实道路路径
+        road_polyline = None
+        route_info = {
+            "distance_meters": 0,
+            "duration_seconds": 0,
+            "source": "direct"  # direct=直线, google=Google API, fallback=插值
+        }
+        
+        if directions_service and len(stop_coords) >= 2:
+            try:
+                # 异步获取真实路径
+                import asyncio
+                result = await directions_service.get_multi_stop_route(stop_coords)
+                
+                if result.get("success") and result.get("polyline"):
+                    road_polyline = result["polyline"]
+                    route_info["distance_meters"] = result.get("distance_meters", 0)
+                    route_info["duration_seconds"] = result.get("duration_seconds", 0)
+                    route_info["source"] = result.get("source", "unknown")
+            except Exception as e:
+                logger.warning(f"Failed to get road path for {schedule.vehicle_id}: {e}")
+        
+        # 如果没有真实路径，使用站点坐标（直线）
+        final_coords = road_polyline if road_polyline else stop_coords
         
         routes.append({
             "vehicle_id": schedule.vehicle_id,
             "driver": schedule.driver_name,
             "store_sequence": schedule.store_list,
-            "coordinates": route_coords,
+            "coordinates": final_coords,  # 真实道路路径或直线
+            "stop_points": stop_coords,    # 原始站点（用于标记）
             "departure_time": schedule.departure_time,
-            "status": schedule.status
+            "status": schedule.status,
+            "route_info": route_info
         })
     
     # GeoJSON格式
@@ -540,35 +640,80 @@ async def adjust_schedule(
 @router.get("/vehicles/realtime")
 async def get_realtime_vehicle_positions():
     """
-    获取车辆实时位置（基于真实门店位置模拟）
+    获取车辆实时位置（模拟司机沿路线移动）
+    支持pending状态的车辆也显示在起点
     """
-    # 获取真实门店数据
     stores = load_real_stores()
+    dc_location = get_dc_location()
     positions = []
     
     for vehicle_id, schedule in SCHEDULES.items():
-        if schedule.status in ["in_progress"]:
-            # 模拟当前位置（在路线上随机位置）
+        # 根据状态决定位置
+        if schedule.status in ["in_progress", "active"]:
+            # 在执行中：沿路线移动
             if schedule.store_list:
-                current_store_idx = np.random.randint(0, len(schedule.store_list))
-                current_store = schedule.store_list[current_store_idx]
-                if current_store in stores:
+                # 计算当前应该在哪个位置（模拟）
+                progress = (datetime.now().second % 60) / 60  # 60秒一个循环
+                total_stops = len(schedule.store_list)
+                current_idx = int(progress * total_stops) % total_stops
+                next_idx = (current_idx + 1) % total_stops
+                
+                current_store = schedule.store_list[current_idx]
+                next_store = schedule.store_list[next_idx]
+                
+                if current_store in stores and next_store in stores:
+                    # 在两个站点之间插值
+                    lat1, lng1 = stores[current_store]["lat"], stores[current_store]["lng"]
+                    lat2, lng2 = stores[next_store]["lat"], stores[next_store]["lng"]
+                    t = (progress * total_stops) % 1.0  # 当前段进度
+                    
+                    lat = lat1 + t * (lat2 - lat1)
+                    lng = lng1 + t * (lng2 - lng1)
+                elif current_store in stores:
                     lat = stores[current_store]["lat"]
                     lng = stores[current_store]["lng"]
-                    # 添加随机偏移模拟移动
-                    lat += np.random.normal(0, 0.005)
-                    lng += np.random.normal(0, 0.005)
-                    
-                    positions.append({
-                        "vehicle_id": vehicle_id,
-                        "driver": schedule.driver_name,
-                        "lat": lat,
-                        "lng": lng,
-                        "heading_to": current_store,
-                        "heading_to_name": stores[current_store]["name"],
-                        "eta_min": np.random.randint(5, 20),
-                        "last_update": datetime.now().isoformat()
-                    })
+                else:
+                    lat, lng = dc_location
+                
+                positions.append({
+                    "vehicle_id": vehicle_id,
+                    "driver": schedule.driver_name,
+                    "lat": lat,
+                    "lng": lng,
+                    "status": "moving",
+                    "heading_to": next_store,
+                    "heading_to_name": stores.get(next_store, {}).get("name", next_store),
+                    "progress": round(progress * 100),
+                    "eta_min": np.random.randint(5, 20),
+                    "last_update": datetime.now().isoformat()
+                })
+        elif schedule.status == "pending":
+            # 待执行：在DC起点
+            positions.append({
+                "vehicle_id": vehicle_id,
+                "driver": schedule.driver_name,
+                "lat": dc_location[0],
+                "lng": dc_location[1],
+                "status": "waiting",
+                "heading_to": schedule.store_list[0] if schedule.store_list else None,
+                "heading_to_name": stores.get(schedule.store_list[0], {}).get("name") if schedule.store_list else None,
+                "progress": 0,
+                "eta_min": 0,
+                "last_update": datetime.now().isoformat()
+            })
+        elif schedule.status == "completed":
+            # 已完成：回到DC
+            positions.append({
+                "vehicle_id": vehicle_id,
+                "driver": schedule.driver_name,
+                "lat": dc_location[0],
+                "lng": dc_location[1],
+                "status": "completed",
+                "heading_to": None,
+                "progress": 100,
+                "eta_min": 0,
+                "last_update": datetime.now().isoformat()
+            })
     
     return {
         "success": True,
@@ -577,6 +722,105 @@ async def get_realtime_vehicle_positions():
 
 
 # ==================== 门店列表API (新增) ====================
+
+# ==================== 单个调度路径规划 ====================
+
+class RouteOptimizeRequest(BaseModel):
+    """路径优化请求"""
+    vehicle_id: str
+    store_ids: List[str]
+    optimize: bool = True
+
+@router.post("/routes/optimize")
+async def optimize_route_for_schedule(request: RouteOptimizeRequest):
+    """
+    为单个调度计算优化路径
+    使用高德地图 API 计算真实道路路径
+    """
+    logger.info(f"路径规划请求: vehicle_id={request.vehicle_id}, store_ids={request.store_ids}")
+    
+    try:
+        from src.api.services.directions_service import get_directions_service
+        
+        # DC位置 (葵涌配送中心)
+        dc_location = (22.3700, 114.1130)
+        
+        # 加载真实门店数据
+        stores = load_real_stores()
+        logger.info(f"加载了 {len(stores)} 个门店，可用ID示例: {list(stores.keys())[:5]}")
+        
+        # 获取请求的门店坐标
+        waypoints = []
+        matched_stores = []
+        for store_id in request.store_ids:
+            # 尝试多种格式匹配
+            store = stores.get(store_id) or stores.get(str(store_id))
+            if store:
+                coord = (store["lat"], store["lng"])
+                waypoints.append(coord)
+                matched_stores.append(store_id)
+                logger.info(f"匹配门店: {store_id} -> ({store['lat']}, {store['lng']})")
+            else:
+                logger.warning(f"未找到门店: {store_id}")
+        
+        if not waypoints:
+            logger.error(f"未找到任何有效门店坐标，请求的store_ids: {request.store_ids}")
+            return {
+                "success": False,
+                "error": f"未找到有效门店坐标，可用门店ID: {list(stores.keys())[:10]}"
+            }
+        
+        # 调用路径规划服务
+        directions_service = get_directions_service()
+        logger.info(f"调用高德地图API，起点: {dc_location}，途经点: {waypoints}")
+        
+        # 计算路径: DC -> 所有门店 -> DC
+        route_result = await directions_service.get_route(
+            origin=dc_location,
+            destination=dc_location,
+            waypoints=waypoints
+        )
+        
+        logger.info(f"路径规划结果: success={route_result.get('success')}, source={route_result.get('source')}, points={len(route_result.get('polyline', []))}")
+        
+        if route_result.get("success") and route_result.get("polyline"):
+            # 返回真实路线数据
+            return {
+                "success": True,
+                "data": {
+                    "vehicle_id": request.vehicle_id,
+                    "coordinates": route_result["polyline"],
+                    "distance_meters": route_result.get("distance_meters", 0),
+                    "duration_seconds": route_result.get("duration_seconds", 0),
+                    "source": route_result.get("source", "amap"),
+                    "store_ids": matched_stores
+                }
+            }
+        else:
+            # 回退到直线路径
+            logger.warning("高德API失败，使用直线路径")
+            coordinates = [dc_location]
+            for wp in waypoints:
+                coordinates.append(wp)
+            coordinates.append(dc_location)
+            
+            return {
+                "success": True,
+                "data": {
+                    "vehicle_id": request.vehicle_id,
+                    "coordinates": coordinates,
+                    "distance_meters": 0,
+                    "duration_seconds": 0,
+                    "source": "direct",
+                    "store_ids": matched_stores
+                }
+            }
+    except Exception as e:
+        logger.error(f"路径规划失败: {e}", exc_info=True)
+        return {
+            "success": False,
+            "error": str(e)
+        }
 
 @router.get("/stores")
 async def get_available_stores():

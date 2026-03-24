@@ -160,9 +160,13 @@ class ProphetForecaster(DemandForecaster):
             # 按门店分组训练
             store_codes = processed_data['store_code'].unique()
             
+            # 限制训练的门店数量，避免太慢
+            max_stores = 10
+            if len(store_codes) > max_stores:
+                logger.info(f"门店数量({len(store_codes)})超过限制，只训练前{max_stores}个门店")
+                store_codes = store_codes[:max_stores]
+            
             for store_code in store_codes:
-                logger.info(f"训练门店 {store_code} 的预测模型...")
-                
                 store_data = processed_data[processed_data['store_code'] == store_code].copy()
                 
                 # 准备Prophet数据格式
@@ -195,10 +199,9 @@ class ProphetForecaster(DemandForecaster):
                 if not holidays.empty:
                     model.holidays = holidays
                 
-                # 添加外部回归变量
+                # 添加外部回归变量（简化日志输出）
                 for col in self.feature_columns:
                     if col in prophet_data.columns:
-                        # 根据特征类型设置不同的prior_scale
                         if 'weather' in col:
                             prior_scale = 0.5
                         elif 'holiday' in col or 'weekend' in col:
@@ -207,15 +210,11 @@ class ProphetForecaster(DemandForecaster):
                             prior_scale = 0.3
                         else:
                             prior_scale = 0.1
-                        
                         model.add_regressor(col, prior_scale=prior_scale)
-                        logger.info(f"   添加外部回归变量: {col} (prior_scale={prior_scale})")
                 
                 # 训练模型
                 model.fit(prophet_data)
                 self.models[store_code] = model
-                
-                logger.info(f"✅ 门店 {store_code} 模型训练完成 (数据点: {len(prophet_data)})")
             
             self.is_trained = True
             logger.info(f"✅ 所有模型训练完成，共训练 {len(self.models)} 个门店模型")

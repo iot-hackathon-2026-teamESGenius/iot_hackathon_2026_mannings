@@ -74,13 +74,13 @@
 						<uni-icons type="list" size="32" color="#fff"></uni-icons>
 						<text>订单管理</text>
 					</view>
+					<view class="entry-item purple shadow" @click="navTo('/pages/index/demo')">
+						<uni-icons type="star-filled" size="32" color="#fff"></uni-icons>
+						<text>演示控制台</text>
+					</view>
 					<view class="entry-item blue shadow" @click="handleAction('导出报表')">
 						<uni-icons type="download" size="32" color="#fff"></uni-icons>
-						<text>导出库存报表</text>
-					</view>
-					<view class="entry-item green shadow" @click="handleAction('查询SKU')">
-						<uni-icons type="search" size="32" color="#fff"></uni-icons>
-						<text>SKU 库存查询</text>
+						<text>导出报表</text>
 					</view>
 				</view>
 			</uni-section>
@@ -564,6 +564,7 @@ export default {
 			&.blue { background: linear-gradient(135deg, #0066CC 0%, #0088dd 100%); }
 			&.green { background: linear-gradient(135deg, #2e7d32 0%, #43a047 100%); }
 			&.orange { background: linear-gradient(135deg, #FD7E14 0%, #FF9500 100%); }
+			&.purple { background: linear-gradient(135deg, #9C27B0 0%, #AB47BC 100%); }
 			&.shadow { box-shadow: 0 8rpx 20rpx rgba(0,0,0,0.08); }
 			text { margin-top: 16rpx; font-size: 28rpx; font-weight: bold; }
 		}

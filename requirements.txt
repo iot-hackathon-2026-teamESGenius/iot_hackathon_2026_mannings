@@ -28,6 +28,7 @@ streamlit-folium>=0.15.0
 # REST API Services
 fastapi>=0.100.0
 uvicorn>=0.22.0
+httpx>=0.24.0  # AWS Bedrock AI服务
 python-multipart>=0.0.6
 
 # Geographic Processing

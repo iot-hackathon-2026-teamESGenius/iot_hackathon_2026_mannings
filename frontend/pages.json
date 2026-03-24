@@ -52,6 +52,13 @@
         "navigationBarTitleText": "需求预测",
         "navigationStyle": "custom"
       }
+    },
+    {
+      "path": "pages/index/demo",
+      "style": {
+        "navigationBarTitleText": "演示控制台",
+        "navigationStyle": "custom"
+      }
     }
   ],
   "globalStyle": {

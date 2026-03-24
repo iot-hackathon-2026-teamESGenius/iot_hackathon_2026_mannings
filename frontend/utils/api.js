@@ -157,3 +157,30 @@ export function apiPut(path, data = {}, options = {}) {
   })
 }
 
+/**
+ * DELETE 请求封装
+ * @param {string} path
+ * @param {Object} options
+ * @returns {Promise<any>}
+ */
+export function apiDelete(path, options = {}) {
+  const { header = {} } = options
+
+  return new Promise((resolve, reject) => {
+    uni.request({
+      url: API_BASE_URL + path,
+      method: 'DELETE',
+      header: { ..._headers(), ...header },
+      success: (res) => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          resolve(res.data)
+        } else {
+          reject(res)
+        }
+      },
+      fail: (err) => {
+        reject(err)
+      }
+    })
+  })
+}

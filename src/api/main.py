@@ -11,6 +11,10 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
+# 加载环境变量
+from dotenv import load_dotenv
+load_dotenv(project_root / ".env")
+
 from fastapi import FastAPI, HTTPException, Depends, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -18,7 +22,7 @@ from typing import Optional
 import logging
 
 from src.core.module_registry import ModuleRegistry
-from src.api.routers import auth, forecast, planning, sla, dashboard, orders
+from src.api.routers import auth, forecast, planning, sla, dashboard, orders, ai, drivers
 
 # 配置日志
 logging.basicConfig(level=logging.INFO)
@@ -64,6 +68,8 @@ app.include_router(planning.router, prefix="/api/planning", tags=["决策规划"
 app.include_router(sla.router, prefix="/api/sla", tags=["SLA服务"])
 app.include_router(dashboard.router, prefix="/api/dashboard", tags=["数据看板"])
 app.include_router(orders.router, prefix="/api/orders", tags=["订单服务"])
+app.include_router(ai.router, prefix="/api/ai", tags=["AI智能服务"])
+app.include_router(drivers.router, prefix="/api/drivers", tags=["派送员管理"])
 
 @app.on_event("startup")
 async def startup_event():

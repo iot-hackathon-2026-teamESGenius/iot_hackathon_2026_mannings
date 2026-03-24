@@ -1,6 +1,13 @@
 <template>
 	<view class="container">
-		<AppNavBar title="车队调度与路径规划" :show-back="true" :show-menu="false" @back="goBack" />
+		<AppNavBar title="车队调度与路径规划" :show-back="true" :show-menu="false" @back="goBack">
+			<template #right>
+				<view class="nav-btn" @click="openDriverManage">
+					<uni-icons type="person" size="20" color="#fff"></uni-icons>
+					<text class="btn-text">管理司机</text>
+				</view>
+			</template>
+		</AppNavBar>
 
 
 		<view class="main-layout">
@@ -23,9 +30,19 @@
 			<view class="layout-right panel-box" :class="{ collapsed: !isListOpen }">
 				<view class="panel-header panel-header-clickable" @click="toggleList">
 					<text class="title">调度明细列表</text>
-					<view class="sort-icons">
-						<uni-icons type="list" size="20" color="#666" @click.stop="sortList('status')"></uni-icons>
-						<uni-icons :type="isListOpen ? 'top' : 'bottom'" size="18" color="#666"></uni-icons>
+					<view class="header-actions">
+						<button class="add-driver-btn" @click.stop="openAddSchedule">
+							<uni-icons type="plusempty" size="14" color="#0066CC"></uni-icons>
+							<text>添加调度</text>
+						</button>
+						<button class="add-driver-btn secondary" @click.stop="openDriverManage">
+							<uni-icons type="person" size="14" color="#666"></uni-icons>
+							<text>管理司机</text>
+						</button>
+						<view class="sort-icons">
+							<uni-icons type="list" size="20" color="#666" @click.stop="sortList('status')"></uni-icons>
+							<uni-icons :type="isListOpen ? 'top' : 'bottom'" size="18" color="#666"></uni-icons>
+						</view>
 					</view>
 				</view>
 				<scroll-view v-show="isListOpen" scroll-y class="panel-content list-content">
@@ -44,18 +61,25 @@
 					>
 						<view class="item-main">
 							<view class="vehicle-info">
-								<text class="v-id">{{ item.vehicle_id }}</text>
+								<view class="v-id-row">
+									<view class="route-color-dot" :style="{ background: getRouteColor(item.vehicle_id) }"></view>
+									<text class="v-id">{{ item.vehicle_id }}</text>
+								</view>
 								<text class="v-type">{{ item.vehicle_type || 'HGV' }}</text>
 							</view>
 							<view class="driver-info">
 								<text class="name">{{ item.driver_name }}</text>
 								<text class="time">出发: {{ item.departure_time }}</text>
 								<text class="stores">配送门店: {{ item.store_list.length }}家</text>
+								<text v-if="getRouteInfo(item.vehicle_id)" class="route-source">
+									{{ formatRouteInfo(getRouteInfo(item.vehicle_id)) }}
+								</text>
 							</view>
 							<view class="status-info">
 								<uni-tag :text="formatStatus(item.status)" :type="getStatusType(item.status)" size="small" />
 								<text class="cost">HK${{ item.estimated_cost }}</text>
 								<button class="mini-adjust" @click.stop="openAdjustModal(item)">调整</button>
+																<button class="mini-delete" @click.stop="deleteSchedule(item)">删除</button>
 							</view>
 						</view>
 
@@ -108,7 +132,7 @@
 					</view>
 					<view class="form-item">
 						<text class="label">指派司机</text>
-						<input class="uni-input input-border" v-model="adjustForm.driver_id" placeholder="输入司机ID" />
+						<uni-data-select v-model="adjustForm.driver_id" :localdata="driverSelectData" placeholder="请选择司机"></uni-data-select>
 					</view>
 					<view v-if="adjustForm.store_list && adjustForm.store_list.length" class="form-item">
 						<text class="label">当前门店顺序</text>
@@ -122,12 +146,146 @@
 			</view>
 		</uni-popup>
 
+		<!-- 添加调度弹窗 -->
+		<uni-popup ref="addSchedulePopup" type="center" :is-mask-click="false">
+			<view class="popup-card add-schedule-card">
+				<view class="popup-title">
+					<text>添加新调度任务</text>
+					<uni-icons type="closeempty" size="20" color="#999" @click="$refs.addSchedulePopup.close()"></uni-icons>
+				</view>
+				
+				<view class="schedule-form">
+					<view class="form-item">
+						<text class="label">车辆编号 <text class="required">*</text></text>
+						<uni-easyinput 
+							v-model="newSchedule.vehicle_id" 
+							placeholder="输入车辆编号，如 V004"
+							:clearable="true"
+						/>
+					</view>
+					<view class="form-item">
+						<text class="label">车辆类型</text>
+						<uni-data-select v-model="newSchedule.vehicle_type" :localdata="vehicleTypeOptions" placeholder="选择车辆类型"></uni-data-select>
+					</view>
+					<view class="form-item">
+						<text class="label">指派司机</text>
+						<uni-data-select v-model="newSchedule.driver_id" :localdata="driverSelectData" placeholder="选择司机"></uni-data-select>
+					</view>
+					<view class="form-item">
+						<text class="label">出发时间 <text class="required">*</text></text>
+						<picker mode="time" :value="newSchedule.departure_time" @change="onNewDepartureChange">
+							<view class="form-input picker-input">{{ newSchedule.departure_time || '请选择时间' }}</view>
+						</picker>
+					</view>
+					<view class="form-item">
+						<text class="label">配送门店 <text class="required">*</text></text>
+						<view class="store-selector">
+							<!-- 搜索框 -->
+							<input 
+								class="store-search" 
+								type="text" 
+								v-model="storeSearchKey"
+								placeholder="搜索门店..."
+							/>
+							<!-- 门店列表 -->
+							<scroll-view scroll-y class="store-chips">
+								<view 
+									v-for="store in filteredStores" 
+									:key="store.store_code"
+									class="store-chip"
+									:class="{ selected: newSchedule.store_list.includes(store.store_code) }"
+									@click="toggleStoreSelection(store.store_code)"
+								>
+									<view class="store-main">
+										<text class="store-code">{{ store.store_code }}</text>
+										<text class="store-name">{{ store.store_name || store.store_code }}</text>
+									</view>
+									<text v-if="store.district" class="store-district">{{ store.district }}</text>
+								</view>
+								<view v-if="filteredStores.length === 0" class="no-stores">
+									未找到匹配的门店
+								</view>
+							</scroll-view>
+							<view class="store-summary">
+								<text class="selected-count">已选: {{ newSchedule.store_list.length }} 家</text>
+								<text class="total-count">共 {{ availableStores.length }} 家可选</text>
+							</view>
+						</view>
+					</view>
+				</view>
+				
+				<view class="popup-actions">
+					<button class="btn-outline" @click="$refs.addSchedulePopup.close()">取消</button>
+					<button class="btn-primary" @click="submitNewSchedule">创建并规划路径</button>
+				</view>
+			</view>
+		</uni-popup>
+
+		<!-- 司机管理弹窗 -->
+		<uni-popup ref="driverManagePopup" type="center" :is-mask-click="false">
+			<view class="popup-card driver-manage-card">
+				<view class="popup-title">
+					<text>司机管理</text>
+					<view class="title-actions">
+						<button class="btn-small btn-primary" @click="showAddDriverForm = !showAddDriverForm">
+							{{ showAddDriverForm ? '取消' : '+ 新增' }}
+						</button>
+					</view>
+				</view>
+				
+				<!-- 新增司机表单 -->
+				<view v-if="showAddDriverForm" class="add-driver-form">
+					<view class="form-row">
+						<input class="form-input" v-model="newDriver.name" placeholder="姓名" />
+						<input class="form-input" v-model="newDriver.phone" placeholder="电话" />
+					</view>
+					<view class="form-row">
+						<input class="form-input" v-model="newDriver.license_number" placeholder="驾驶证号" />
+						<input class="form-input" v-model="newDriver.vehicle_id" placeholder="车辆ID(如V001)" />
+					</view>
+					<button class="btn-primary full-width" @click="addNewDriver">确认添加</button>
+				</view>
+				
+				<!-- 司机列表 -->
+				<scroll-view scroll-y class="driver-list">
+					<view class="driver-list-header">
+						<text class="col">姓名</text>
+						<text class="col">电话</text>
+						<text class="col">车辆</text>
+						<text class="col">状态</text>
+						<text class="col">操作</text>
+					</view>
+					<view v-for="driver in driverList" :key="driver.driver_id" class="driver-item">
+						<text class="col name">{{ driver.name }}</text>
+						<text class="col">{{ driver.phone }}</text>
+						<text class="col vehicle">{{ driver.vehicle_id || '-' }}</text>
+						<view class="col">
+							<uni-tag :text="formatDriverStatus(driver.status)" :type="getDriverStatusType(driver.status)" size="small" />
+						</view>
+						<view class="col actions">
+							<text class="action-btn" @click="editDriver(driver)">编辑</text>
+							<text class="action-btn delete" @click="deleteDriver(driver)">删除</text>
+						</view>
+					</view>
+					<view v-if="driverList.length === 0" class="empty-tip">暂无司机数据</view>
+				</scroll-view>
+				
+				<view class="driver-stats">
+					<text>可用: {{ driverStats.available }}</text>
+					<text>值班: {{ driverStats.on_duty }}</text>
+					<text>休息: {{ driverStats.off_duty }}</text>
+				</view>
+				
+				<button class="btn-outline full-width" @click="$refs.driverManagePopup.close()">关闭</button>
+			</view>
+		</uni-popup>
+
 	</view>
 </template>
 
 <script>
 
-import { apiGet, apiPut } from '../../utils/api.js'
+import { apiGet, apiPut, apiPost, apiDelete } from '../../utils/api.js'
 import AppNavBar from '../../components/app-nav-bar.vue'
 import AppTabBar from '../../components/app-tab-bar.vue'
 
@@ -144,7 +302,7 @@ export default {
 			mapPolylines: [], // 路径规划线 [cite: 219]
 			currentVehicleId: '', // 当前选中的车辆
 			loading: false,
-			isTracking: false, // 是否开启实时追踪
+			isTracking: true, // 是否开启实时追踪（默认开启）
 			timer: null,      // 实时追踪定时器
 
 			// 缓存从后端返回的 routes 数据，便于根据 vehicle_id 查找
@@ -164,6 +322,18 @@ export default {
 				carActive: true
 			},
 
+			// 路线颜色配置
+			routeColors: [
+				'#E63946', // 鲜红 - 醒目
+				'#2D6A4F', // 深绿 - 与地图浅绿区分
+				'#7B2CBF', // 紫色 - 独特
+				'#F77F00', // 橙色 - 醒目
+				'#0077B6', // 深蓝 - 与浅蓝水域区分
+				'#D62828', // 暗红 - 备用
+				'#9D4EDD', // 浅紫 - 备用
+				'#06D6A0'  // 青绿 - 备用
+			],
+
 			// 3. 地图配置
 			mapCenter: { lat: 22.3193, lng: 114.1694 }, // 香港中心坐标
 			mapScale: 11,
@@ -175,10 +345,57 @@ export default {
 				departure_time: '08:00',
 				driver_id: '',
 				store_list: []
-			}
+			},
+			
+			// 5. 司机管理数据
+			driverList: [],
+			driverStats: { available: 0, on_duty: 0, off_duty: 0 },
+			showAddDriverForm: false,
+			newDriver: {
+				name: '',
+				phone: '',
+				license_number: '',
+				vehicle_id: ''
+			},
+			
+			// 新调度任务表单
+			newSchedule: {
+				vehicle_id: '',
+				vehicle_type: 'HGV',
+				driver_id: '',
+				departure_time: '',
+				store_list: []
+			},
+			
+			// 车辆类型选项
+			vehicleTypeOptions: [
+				{ value: 'HGV', text: 'HGV - 重型货车' },
+				{ value: 'LGV', text: 'LGV - 轻型货车' },
+				{ value: 'VAN', text: 'VAN - 厂车' }
+			],
+			
+			// 可选门店列表
+			availableStores: [],
+			
+			// 门店搜索关键词
+			storeSearchKey: ''
 		}
 	},
 	computed: {
+		// 过滤后的门店列表
+		filteredStores() {
+			if (!this.storeSearchKey) {
+				return this.availableStores
+			}
+			const key = this.storeSearchKey.toLowerCase()
+			return this.availableStores.filter(store => {
+				const name = (store.store_name || '').toLowerCase()
+				const code = (store.store_code || '').toLowerCase()
+				const district = (store.district || '').toLowerCase()
+				return name.includes(key) || code.includes(key) || district.includes(key)
+			})
+		},
+		
 		// 参考 pure_map.vue：给地图一个“显式高度”，避免在 flex/scroll 布局里高度塌陷导致地图不显示
 		mapHeightCom() {
 			const systemInfo = uni.getSystemInfoSync()
@@ -190,11 +407,18 @@ export default {
 			const h = Math.max(320, systemInfo.windowHeight - navBarPx - tabBarPx - paddings)
 			return `${h}px`
 		},
-		// 将 scheduleList 转换为下拉选框数据
+		// 将 scheduleList 转换为下拉框数据
 		vehicleSelectData() {
 			return this.scheduleList.map(item => ({
 				value: item.vehicle_id,
 				text: `${item.vehicle_id} - ${item.driver_name}`
+			}))
+		},
+		// 司机下拉框数据
+		driverSelectData() {
+			return this.driverList.map(driver => ({
+				value: driver.driver_id,
+				text: `${driver.name}${driver.vehicle_id ? ' (' + driver.vehicle_id + ')' : ''}`
 			}))
 		}
 	},
@@ -207,6 +431,10 @@ export default {
 			}
 		} catch (e) {}
 		this.fetchSchedules()
+		this.fetchDrivers() // 加载司机数据
+		
+		// 启动实时追踪
+		this.startRealtimeTracking()
 	},
 	onUnload() {
 		this.stopTracking()
@@ -227,26 +455,41 @@ export default {
 		async fetchSchedules() {
 			this.loading = true
 			try {
-				// 构造查询参数
-				// const params = {
-				// 	schedule_date: this.filters.date,
-				// 	vehicle_type: this.filters.vehicleType || null,
-				// 	status: null // 可根据需要添加状态筛选
-				// }
-                
-				// const res = await apiGet('/planning/schedules', { params })
 				const res = await apiGet('/planning/schedules')
 				if (res && res.success) {
 					this.scheduleList = res.data.schedules || []
+					
+					// 合并本地存储的自定义调度
+					const localSchedules = this.loadLocalSchedules()
+					if (localSchedules.length > 0) {
+						// 过滤掉已存在的（以vehicle_id为准）
+						const existingIds = new Set(this.scheduleList.map(s => s.vehicle_id))
+						const newLocalSchedules = localSchedules.filter(s => !existingIds.has(s.vehicle_id))
+						this.scheduleList = [...this.scheduleList, ...newLocalSchedules]
+					}
+					
 					// 获取列表后，加载地图上的门店/DC和默认路线（cachedRoutes）
 					await this.fetchMapData()
+					
+					// 恢复本地存储的路线（新添加的调度路线）
+					const localRoutes = this.loadLocalRoutes()
+					if (localRoutes.length > 0) {
+						for (const localRoute of localRoutes) {
+							const exists = this.cachedRoutes.some(r => r.vehicle_id === localRoute.vehicle_id)
+							if (!exists) {
+								this.cachedRoutes.push(localRoute)
+							}
+						}
+						console.log(`恢复了 ${localRoutes.length} 条本地路线`)
+					}
+					
 					// 同步获取一次实时位置以标注车辆
 					await this.fetchRealTimePositions()
 				}
 			} catch (e) {
 				console.error('获取调度列表失败', e)
-				// // 模拟数据用于展示 UI 效果
-				// this.mockData() 
+				// 尝试加载本地数据
+				this.scheduleList = this.loadLocalSchedules()
 			} finally {
 				this.loading = false
 			}
@@ -293,8 +536,18 @@ export default {
 						const selected = this.currentVehicleId
 						const route = this.cachedRoutes.find(r => r.vehicle_id === selected)
 						if (route) {
-							this.mapPolylines = [{ points: route.coordinates.map(c => ({ latitude: c[0], longitude: c[1] })), color: '#0066CC', width: 4 }]
+							const colorIdx = this.cachedRoutes.findIndex(r => r.vehicle_id === selected)
+							this.mapPolylines = [{ points: route.coordinates.map(c => ({ latitude: c[0], longitude: c[1] })), color: this.routeColors[colorIdx % this.routeColors.length], width: 4 }]
 						}
+					} else {
+						// 没有选中车辆时，显示所有路线
+						this.mapPolylines = this.cachedRoutes.map((route, idx) => ({
+							points: route.coordinates.map(c => ({ latitude: c[0], longitude: c[1] })),
+							color: this.routeColors[idx % this.routeColors.length],
+							width: 3,
+							dottedLine: false,
+							arrowLine: true
+						}))
 					}
 				}
 			} catch (e) {
@@ -368,6 +621,15 @@ export default {
 				this.timer = null
 			}
 		},
+		
+		// 启动实时追踪
+		startRealtimeTracking() {
+			if (this.timer) return // 避免重复启动
+			this.fetchRealTimePositions() // 立即执行一次
+			this.timer = setInterval(() => {
+				this.fetchRealTimePositions()
+			}, 3000) // 每3秒更新
+		},
 
 		// API 4: 调整调度方案
 		openAdjustModal(item) {
@@ -394,19 +656,32 @@ export default {
 				departure_time: this.adjustForm.departure_time,
 				driver_id: this.adjustForm.driver_id,
 				operator: 'Admin', // 当前用户
-				// store_list: ... 需要完整的逻辑来处理重新分配
+			}
+			
+			// 先本地更新，确保立即反映
+			const idx = this.scheduleList.findIndex(s => s.vehicle_id === vehicleId)
+			if (idx >= 0) {
+				// 更新出发时间
+				if (payload.departure_time) {
+					this.scheduleList[idx].departure_time = payload.departure_time
+				}
+				// 更新司机
+				if (payload.driver_id) {
+					const driver = this.driverList.find(d => d.driver_id === payload.driver_id)
+					this.scheduleList[idx].driver_id = payload.driver_id
+					this.scheduleList[idx].driver_name = driver ? driver.name : this.scheduleList[idx].driver_name
+				}
 			}
 
 			try {
-				const res = await apiPut(`/planning/schedules/${vehicleId}/adjust`, payload)
-				if (res) { // 假设 200 OK
-					uni.showToast({ title: '调整方案已提交', icon: 'success' })
-					this.$refs.adjustPopup.close()
-					this.fetchSchedules() // 刷新列表
-				}
+				await apiPut(`/planning/schedules/${vehicleId}/adjust`, payload)
+				uni.showToast({ title: '调整方案已提交', icon: 'success' })
 			} catch (e) {
-				uni.showToast({ title: '提交失败', icon: 'none' })
+				// API失败，但本地已更新
+				uni.showToast({ title: '本地已更新', icon: 'success' })
 			}
+			
+			this.$refs.adjustPopup.close()
 		},
 
 		// 辅助：处理地图点击
@@ -420,10 +695,12 @@ export default {
 			if (!marker) return
 			if (marker.entity && typeof marker.entity === 'string' && marker.entity.startsWith('V')) {
 				this.currentVehicleId = marker.entity
-				// 选中车辆时同时展示对应路线
-				const route = this.cachedRoutes.find(r => r.vehicle_id === marker.entity)
+				// 选中车辆时同时展示对应路线（使用对应颜色）
+				const routeIdx = this.cachedRoutes.findIndex(r => r.vehicle_id === marker.entity)
+				const route = this.cachedRoutes[routeIdx]
 				if (route && route.coordinates) {
-					this.mapPolylines = [{ points: route.coordinates.map(c => ({ latitude: c[0], longitude: c[1] })), color: '#0066CC', width: 4 }]
+					const color = this.routeColors[routeIdx % this.routeColors.length]
+					this.mapPolylines = [{ points: route.coordinates.map(c => ({ latitude: c[0], longitude: c[1] })), color: color, width: 5 }]
 				}
 			}
 		},
@@ -432,14 +709,46 @@ export default {
 			this.currentVehicleId = item.vehicle_id
 
 			// 找到对应 route（优先使用已缓存的 route）
-			let route = this.cachedRoutes.find(r => r.vehicle_id === item.vehicle_id)
+			let routeIdx = this.cachedRoutes.findIndex(r => r.vehicle_id === item.vehicle_id)
+			let route = routeIdx >= 0 ? this.cachedRoutes[routeIdx] : null
+			
+			// 如果找不到路线，先从本地存储查找
 			if (!route) {
+				const localRoutes = this.loadLocalRoutes()
+				const localRoute = localRoutes.find(r => r.vehicle_id === item.vehicle_id)
+				if (localRoute) {
+					// 添加到缓存
+					this.cachedRoutes.push(localRoute)
+					routeIdx = this.cachedRoutes.length - 1
+					route = localRoute
+				}
+			}
+			
+			// 如果还是找不到，调用fetchMapData
+			if (!route) {
+				// 保存当前所有本地路线
+				const existingLocalRoutes = this.cachedRoutes.filter(r => r.source === 'amap' || r.source === 'direct')
+				
 				await this.fetchMapData()
-				route = this.cachedRoutes.find(r => r.vehicle_id === item.vehicle_id)
+				
+				// 合并本地路线
+				for (const lr of existingLocalRoutes) {
+					const exists = this.cachedRoutes.some(r => r.vehicle_id === lr.vehicle_id)
+					if (!exists) {
+						this.cachedRoutes.push(lr)
+					}
+				}
+				
+				routeIdx = this.cachedRoutes.findIndex(r => r.vehicle_id === item.vehicle_id)
+				route = routeIdx >= 0 ? this.cachedRoutes[routeIdx] : null
 			}
 
 			if (route && route.coordinates && route.coordinates.length > 0) {
-				this.mapPolylines = [ { points: route.coordinates.map(c => ({ latitude: c[0], longitude: c[1] })), color: '#0066CC', width: 4 } ]
+				const color = this.routeColors[routeIdx % this.routeColors.length]
+				this.mapPolylines = [ { points: route.coordinates.map(c => ({ latitude: c[0], longitude: c[1] })), color: color, width: 5 } ]
+				
+				// 添加途经门店标记
+				await this.addStoreMarkersForRoute(item, color)
 			}
 
 			// 更新并居中到车辆实时位置（如果可用）
@@ -466,11 +775,567 @@ export default {
 			this.$refs.abnormalPopup.open()
 		},
 		
+		// 删除调度
+		deleteSchedule(item) {
+			uni.showModal({
+				title: '确认删除',
+				content: `确定要删除调度 ${item.vehicle_id} 吗？`,
+				success: (res) => {
+					if (res.confirm) {
+						// 从列表中删除
+						const idx = this.scheduleList.findIndex(s => s.vehicle_id === item.vehicle_id)
+						if (idx >= 0) {
+							this.scheduleList.splice(idx, 1)
+						}
+						
+						// 从缓存路线中删除
+						const routeIdx = this.cachedRoutes.findIndex(r => r.vehicle_id === item.vehicle_id)
+						if (routeIdx >= 0) {
+							this.cachedRoutes.splice(routeIdx, 1)
+						}
+						
+						// 从本地存储中删除
+						let localSchedules = this.loadLocalSchedules()
+						localSchedules = localSchedules.filter(s => s.vehicle_id !== item.vehicle_id)
+						this.saveLocalSchedules(localSchedules)
+						
+						let localRoutes = this.loadLocalRoutes()
+						localRoutes = localRoutes.filter(r => r.vehicle_id !== item.vehicle_id)
+						this.saveLocalRoutes(localRoutes)
+						
+						// 如果删除的是当前选中的车辆，清除选中状态
+						if (this.currentVehicleId === item.vehicle_id) {
+							this.currentVehicleId = null
+							// 显示所有路线
+							this.mapPolylines = this.cachedRoutes.map((route, idx) => ({
+								points: route.coordinates.map(c => ({ latitude: c[0], longitude: c[1] })),
+								color: this.routeColors[idx % this.routeColors.length],
+								width: 3,
+								arrowLine: true
+							}))
+						}
+						
+						uni.showToast({ title: '删除成功', icon: 'success' })
+					}
+				}
+			})
+		},
+		
+		// 为路线添加途经门店标记
+		async addStoreMarkersForRoute(item, color) {
+			// 获取该调度的门店列表
+			const storeList = item.store_list || []
+			if (storeList.length === 0) return
+			
+			// 优先使用调度中保存的门店详情
+			let storeDetails = item.store_details || []
+			
+			// 如果没有门店详情，从 API 获取
+			if (storeDetails.length === 0) {
+				try {
+					const res = await apiGet('/planning/stores')
+					if (res && res.success && res.data) {
+						const allStores = res.data.stores || res.data
+						storeDetails = storeList.map(storeId => {
+							const found = allStores.find(s => s.store_id === storeId || s.store_code === storeId)
+							return found ? { 
+								store_code: found.store_id,
+								store_name: found.name,
+								lat: found.lat,
+								lng: found.lng
+							} : null
+						}).filter(s => s && s.lat && s.lng)
+					}
+				} catch (e) {
+					console.warn('获取门店详情失败', e)
+				}
+			}
+			
+			// 移除旧的门店标记（保留 DC 和车辆标记）
+			this.mapMarkers = this.mapMarkers.filter(m => 
+				m.entity === 'DC' || 
+				(m.entity && m.entity.startsWith && m.entity.startsWith('V')) ||
+				m.customType !== 'route-store'
+			)
+			
+			// 添加新的门店标记
+			for (let i = 0; i < storeDetails.length; i++) {
+				const store = storeDetails[i]
+				if (!store.lat || !store.lng) continue
+				
+				const marker = {
+					id: this.getNextMarkerId(),
+					entity: store.store_code || store.store_id,
+					latitude: store.lat,
+					longitude: store.lng,
+					width: 28,
+					height: 28,
+					iconPath: '/static/img/store.png',
+					customType: 'route-store',
+					callout: {
+						content: `${i + 1}. ${store.store_name || store.store_code}`,
+						color: '#ffffff',
+						fontSize: 12,
+						borderRadius: 6,
+						bgColor: color,
+						padding: 6,
+						display: 'ALWAYS'
+					},
+					label: {
+						content: String(i + 1),
+						color: '#ffffff',
+						fontSize: 12,
+						bgColor: color,
+						padding: 4,
+						borderRadius: 10,
+						anchorX: -8,
+						anchorY: -8
+					}
+				}
+				this.mapMarkers.push(marker)
+			}
+			
+			// 确保 DC 标记存在
+			const dcMarker = this.mapMarkers.find(m => m.entity === 'DC')
+			if (!dcMarker) {
+				this.mapMarkers.push({
+					id: this.getNextMarkerId(),
+					entity: 'DC',
+					latitude: 22.3700,
+					longitude: 114.1130,
+					width: 34,
+					height: 34,
+					iconPath: '/static/img/DC.png',
+					callout: {
+						content: '配送中心 (DC)',
+						color: '#ffffff',
+						fontSize: 14,
+						borderRadius: 6,
+						bgColor: '#2e7d32',
+						padding: 8,
+						display: 'ALWAYS'
+					}
+				})
+			}
+		},
 
 		// Helper: generate next numeric marker id
 		getNextMarkerId() {
 			this.markerIdCounter = (this.markerIdCounter || 1000) + 1
 			return this.markerIdCounter
+		},
+		
+		// ==================== 司机管理方法 ====================
+		
+		async fetchDrivers() {
+			try {
+				const res = await apiGet('/drivers/list')
+				if (res && res.success && res.data) {
+					this.driverList = res.data.drivers || []
+					this.driverStats = res.data.statistics || { available: 0, on_duty: 0, off_duty: 0 }
+				}
+			} catch (e) {
+				console.error('获取司机列表失败', e)
+			}
+		},
+		
+		// ========== 本地存储管理 ==========
+		loadLocalSchedules() {
+			try {
+				const stored = uni.getStorageSync('custom_schedules')
+				return stored ? JSON.parse(stored) : []
+			} catch (e) {
+				return []
+			}
+		},
+		
+		saveLocalSchedules(schedules) {
+			try {
+				uni.setStorageSync('custom_schedules', JSON.stringify(schedules))
+			} catch (e) {
+				console.error('保存本地调度失败', e)
+			}
+		},
+		
+		// 保存本地路线数据
+		saveLocalRoutes(routes) {
+			try {
+				uni.setStorageSync('custom_routes', JSON.stringify(routes))
+			} catch (e) {
+				console.error('保存本地路线失败', e)
+			}
+		},
+		
+		// 加载本地路线数据
+		loadLocalRoutes() {
+			try {
+				const stored = uni.getStorageSync('custom_routes')
+				return stored ? JSON.parse(stored) : []
+			} catch (e) {
+				return []
+			}
+		},
+		
+		// ========== 添加调度任务 ==========
+				async openAddSchedule() {
+					// 加载可选门店
+					await this.fetchAvailableStores()
+					// 重置表单
+					this.newSchedule = {
+						vehicle_id: this.generateNextVehicleId(),
+						vehicle_type: 'HGV',
+						driver_id: '',
+						departure_time: '',
+						store_list: []
+					}
+					this.$refs.addSchedulePopup.open()
+				},
+				
+				// 生成下一个车辆ID
+				generateNextVehicleId() {
+					const existingIds = this.scheduleList.map(s => s.vehicle_id)
+					for (let i = 1; i <= 99; i++) {
+						const id = `V${String(i).padStart(3, '0')}`
+						if (!existingIds.includes(id)) return id
+					}
+					return `V${Date.now().toString().slice(-3)}`
+				},
+				
+				// 加载可选门店（使用真实门店数据）
+				async fetchAvailableStores() {
+					try {
+						// 使用 planning 路由的门店列表（包含经纬度）
+						const res = await apiGet('/planning/stores')
+						console.log('门店API响应:', res)
+						
+						if (res && res.success && res.data) {
+							const storeData = res.data.stores || res.data
+							
+							// 过滤掉已被分配的门店
+							const assignedStores = new Set()
+							this.scheduleList.forEach(s => {
+								if (s.store_list) s.store_list.forEach(st => assignedStores.add(st))
+							})
+							
+							this.availableStores = storeData
+								.filter(store => {
+									const storeId = store.store_id || store.store_code
+									return !assignedStores.has(storeId)
+								})
+								.map(store => ({
+									store_code: store.store_id || store.store_code,
+									store_name: store.name || store.store_name || `Mannings ${store.district}`,
+									district: store.district,
+									lat: store.lat,
+									lng: store.lng
+								}))
+							console.log(`加载了 ${this.availableStores.length} 个可选门店`)
+							return
+						}
+						
+						// 备选：尝试公开门店API
+						const publicRes = await apiGet('/stores/public')
+						if (publicRes && publicRes.data) {
+							this.availableStores = publicRes.data.map(store => ({
+								store_code: store.store_id,
+								store_name: store.store_name || `Mannings ${store.district}`,
+								district: store.district
+							}))
+							console.log(`从公开API加载了 ${this.availableStores.length} 个门店`)
+							return
+						}
+						
+						throw new Error('No store data from APIs')
+					} catch (e) {
+						console.warn('获取真实门店失败，使用备用数据', e)
+						// 备用数据 - 使用香港常见地区
+						this.availableStores = [
+							{ store_code: 'MN001', store_name: 'Mannings 尖沙咀', district: '油尖旺', lat: 22.2988, lng: 114.1722 },
+							{ store_code: 'MN002', store_name: 'Mannings 旺角', district: '油尖旺', lat: 22.3193, lng: 114.1694 },
+							{ store_code: 'MN003', store_name: 'Mannings 铜锣湾', district: '港岛', lat: 22.2800, lng: 114.1819 },
+							{ store_code: 'MN004', store_name: 'Mannings 观塘', district: '观塘', lat: 22.3111, lng: 114.2253 },
+							{ store_code: 'MN005', store_name: 'Mannings 沙田', district: '沙田', lat: 22.3814, lng: 114.1873 },
+							{ store_code: 'MN006', store_name: 'Mannings 大埔', district: '大埔', lat: 22.4513, lng: 114.1644 },
+							{ store_code: 'MN007', store_name: 'Mannings 元朗', district: '元朗', lat: 22.4445, lng: 114.0224 },
+							{ store_code: 'MN008', store_name: 'Mannings 屯门', district: '屯门', lat: 22.3908, lng: 113.9758 }
+						]
+					}
+				},
+				
+				// 切换门店选择
+				toggleStoreSelection(storeCode) {
+					const idx = this.newSchedule.store_list.indexOf(storeCode)
+					if (idx >= 0) {
+						this.newSchedule.store_list.splice(idx, 1)
+					} else {
+						this.newSchedule.store_list.push(storeCode)
+					}
+				},
+				
+				// 新调度出发时间变化
+				onNewDepartureChange(e) {
+					this.newSchedule.departure_time = e.detail.value
+				},
+				
+				// 提交新调度
+				async submitNewSchedule() {
+					const { vehicle_id, departure_time, store_list } = this.newSchedule
+					
+					if (!vehicle_id) return uni.showToast({ title: '请输入车辆编号', icon: 'none' })
+					if (!departure_time) return uni.showToast({ title: '请选择出发时间', icon: 'none' })
+					if (store_list.length === 0) return uni.showToast({ title: '请至少选择一个门店', icon: 'none' })
+					
+					// 检查车辆ID是否已存在
+					if (this.scheduleList.some(s => s.vehicle_id === vehicle_id)) {
+						return uni.showToast({ title: '车辆编号已存在', icon: 'none' })
+					}
+					
+					uni.showLoading({ title: '创建并规划路径中...' })
+					
+					try {
+						// 查找司机信息
+						const driver = this.driverList.find(d => d.driver_id === this.newSchedule.driver_id)
+						
+						// 获取选中门店的详细信息
+						const selectedStores = this.availableStores.filter(s => store_list.includes(s.store_code))
+						
+						const payload = {
+							vehicle_id: vehicle_id,
+							vehicle_type: this.newSchedule.vehicle_type,
+							driver_id: this.newSchedule.driver_id,
+							driver_name: driver ? driver.name : '待分配',
+							departure_time: departure_time,
+							store_list: [...store_list],
+							store_details: selectedStores, // 保存门店详情用于路径规划
+							status: 'pending',
+							estimated_cost: Math.round(50 + store_list.length * 25 + Math.random() * 50),
+							created_at: new Date().toISOString()
+						}
+						
+						// 本地添加到列表
+						this.scheduleList.push(payload)
+						
+						// 保存到本地存储（确保刷新后不丢失）
+						const localSchedules = this.loadLocalSchedules()
+						localSchedules.push(payload)
+						this.saveLocalSchedules(localSchedules)
+						
+						// 调用路径规划API并添加新路线
+						try {
+							const routePayload = {
+								vehicle_id: vehicle_id,
+								store_ids: store_list,
+								optimize: true
+							}
+							const routeRes = await apiPost('/planning/routes/optimize', routePayload)
+							console.log('路径规划结果:', routeRes)
+							
+							if (routeRes && routeRes.success && routeRes.data) {
+								// 将新路线添加到缓存
+								const newRoute = {
+									vehicle_id: vehicle_id,
+									coordinates: routeRes.data.coordinates,
+									distance_meters: routeRes.data.distance_meters,
+									duration_seconds: routeRes.data.duration_seconds,
+									source: routeRes.data.source,
+									store_ids: routeRes.data.store_ids
+								}
+								this.cachedRoutes.push(newRoute)
+								
+								// 立即显示新路线（使用新的颜色）
+								const routeIdx = this.cachedRoutes.length - 1
+								const color = this.routeColors[routeIdx % this.routeColors.length]
+								
+								// 添加新路线到地图
+								const newPolyline = {
+									points: newRoute.coordinates.map(c => ({ latitude: c[0], longitude: c[1] })),
+									color: color,
+									width: 4,
+									arrowLine: true
+								}
+								this.mapPolylines = [...this.mapPolylines, newPolyline]
+								
+								// 添加门店标记
+								for (const store of selectedStores) {
+									if (store.lat && store.lng) {
+										const marker = {
+											id: this.getNextMarkerId(),
+											entity: store.store_code,
+											latitude: store.lat,
+											longitude: store.lng,
+											width: 22,
+											height: 22,
+											callout: { content: store.store_name },
+											label: { content: 'S', color: '#fff', bgColor: color, padding: 6, borderRadius: 6 }
+										}
+										this.mapMarkers = [...this.mapMarkers, marker]
+									}
+								}
+								
+								console.log(`新路线已添加，颜色: ${color}`)
+								
+								// 保存本地路线到存储
+								const localRoutes = this.loadLocalRoutes()
+								localRoutes.push(newRoute)
+								this.saveLocalRoutes(localRoutes)
+							}
+						} catch (routeErr) {
+							console.warn('路径规划API调用失败', routeErr)
+							// 尝试使用门店坐标生成直线路径
+							if (selectedStores.length > 0) {
+								const dcLoc = { lat: 22.3700, lng: 114.1130 }
+								const coordinates = [[dcLoc.lat, dcLoc.lng]]
+								for (const store of selectedStores) {
+									if (store.lat && store.lng) {
+										coordinates.push([store.lat, store.lng])
+									}
+								}
+								coordinates.push([dcLoc.lat, dcLoc.lng])
+								
+								const newRoute = {
+									vehicle_id: vehicle_id,
+									coordinates: coordinates,
+									source: 'direct'
+								}
+								this.cachedRoutes.push(newRoute)
+								
+								const routeIdx = this.cachedRoutes.length - 1
+								const color = this.routeColors[routeIdx % this.routeColors.length]
+								
+								this.mapPolylines = [...this.mapPolylines, {
+									points: coordinates.map(c => ({ latitude: c[0], longitude: c[1] })),
+									color: color,
+									width: 4,
+									dottedLine: true
+								}]
+								
+								// 保存本地路线到存储
+								const localRoutes = this.loadLocalRoutes()
+								localRoutes.push(newRoute)
+								this.saveLocalRoutes(localRoutes)
+							}
+						}
+						
+						uni.showToast({ title: '调度创建成功', icon: 'success' })
+						this.$refs.addSchedulePopup.close()
+						
+						// 聚焦到新车辆
+						const newItem = this.scheduleList.find(s => s.vehicle_id === vehicle_id)
+						if (newItem) {
+							this.focusVehicle(newItem)
+						}
+					} catch (e) {
+						uni.showToast({ title: '创建失败', icon: 'none' })
+					} finally {
+						uni.hideLoading()
+					}
+				},
+				
+				// ========== 司机管理 ==========
+				openDriverManage() {
+			this.fetchDrivers()
+			this.$refs.driverManagePopup.open()
+		},
+		
+		async addNewDriver() {
+			if (!this.newDriver.name || !this.newDriver.phone) {
+				return uni.showToast({ title: '请填写姓名和电话', icon: 'none' })
+			}
+			
+			try {
+				const res = await apiPost('/drivers/create', this.newDriver)
+				if (res && res.success) {
+					uni.showToast({ title: '添加成功', icon: 'success' })
+					this.showAddDriverForm = false
+					this.newDriver = { name: '', phone: '', license_number: '', vehicle_id: '' }
+					await this.fetchDrivers()
+				}
+			} catch (e) {
+				uni.showToast({ title: '添加失败', icon: 'none' })
+			}
+		},
+		
+		editDriver(driver) {
+			// 简化编辑：使用弹窗输入新车辆ID
+			uni.showModal({
+				title: `编辑司机: ${driver.name}`,
+				editable: true,
+				placeholderText: '输入新车辆ID（如V001）',
+				success: async (res) => {
+					if (res.confirm && res.content) {
+						try {
+							await apiPut(`/drivers/${driver.driver_id}`, { vehicle_id: res.content })
+							uni.showToast({ title: '更新成功', icon: 'success' })
+							await this.fetchDrivers()
+						} catch (e) {
+							uni.showToast({ title: '更新失败', icon: 'none' })
+						}
+					}
+				}
+			})
+		},
+		
+		async deleteDriver(driver) {
+			uni.showModal({
+				title: '确认删除',
+				content: `确定要删除司机 "${driver.name}" 吗？`,
+				success: async (res) => {
+					if (res.confirm) {
+						try {
+							await apiDelete(`/drivers/${driver.driver_id}`)
+							uni.showToast({ title: '删除成功', icon: 'success' })
+							await this.fetchDrivers()
+						} catch (e) {
+							uni.showToast({ title: '删除失败', icon: 'none' })
+						}
+					}
+				}
+			})
+		},
+		
+		formatDriverStatus(status) {
+			const map = { available: '可用', on_duty: '值班', off_duty: '休息' }
+			return map[status] || status
+		},
+		
+		getDriverStatusType(status) {
+			const map = { available: 'success', on_duty: 'primary', off_duty: 'default' }
+			return map[status] || 'default'
+		},
+		
+		// 获取路径信息
+		getRouteInfo(vehicleId) {
+			const route = this.cachedRoutes.find(r => r.vehicle_id === vehicleId)
+			return route?.route_info || null
+		},
+		
+		// 获取路线颜色
+		getRouteColor(vehicleId) {
+			const idx = this.cachedRoutes.findIndex(r => r.vehicle_id === vehicleId)
+			if (idx >= 0) {
+				return this.routeColors[idx % this.routeColors.length]
+			}
+			// 默认根据 vehicle_id 的索引生成颜色
+			const schedIdx = this.scheduleList.findIndex(s => s.vehicle_id === vehicleId)
+			return this.routeColors[schedIdx >= 0 ? schedIdx % this.routeColors.length : 0]
+		},
+		
+		// 格式化路径信息
+		formatRouteInfo(info) {
+			if (!info) return ''
+			const source = {
+				'amap': '🛣️ 高德地图',
+				'google': '🛣️ 谷歌地图',
+				'fallback': '🛣️ 模拟路径',
+				'direct': '—— 直线'
+			}[info.source] || info.source
+			
+			if (info.distance_meters > 0) {
+				const km = (info.distance_meters / 1000).toFixed(1)
+				const min = Math.round(info.duration_seconds / 60)
+				return `${source} ${km}km/${min}分钟`
+			}
+			return source
 		}
 	}
 }
@@ -526,6 +1391,34 @@ export default {
 			border-bottom: 1px solid #eee;
 			display: flex; justify-content: space-between; align-items: center;
 			.title { font-weight: bold; font-size: 30rpx; color: #333; border-left: 8rpx solid #0066CC; padding-left: 12rpx; }
+			
+			.header-actions {
+				display: flex;
+				align-items: center;
+				gap: 16rpx;
+			}
+			
+			.add-driver-btn {
+				display: flex;
+				align-items: center;
+				gap: 6rpx;
+				padding: 8rpx 16rpx;
+				background: #e8f4fd;
+				border: 1px solid #0066CC;
+				border-radius: 8rpx;
+				font-size: 22rpx;
+				color: #0066CC;
+				
+				&:active {
+					background: #d0e8f9;
+				}
+			}
+			
+			.sort-icons {
+				display: flex;
+				align-items: center;
+				gap: 8rpx;
+			}
 		}
 		.panel-header-clickable { cursor: pointer; }
 		.panel-header-right { display: flex; align-items: center; gap: 12rpx; }
@@ -571,7 +1464,7 @@ export default {
 
 	/* 右侧：列表区 */
 	.layout-right {
-		width: 360rpx;
+		width: 480rpx;
 		flex-shrink: 0;
 
 		.table-header {
@@ -590,29 +1483,71 @@ export default {
 
 			.item-main {
 				display: flex; justify-content: space-between; align-items: flex-start;
+				gap: 16rpx;
 				
 				.vehicle-info {
-					display: flex; flex-direction: column; width: 25%;
-					.v-id { font-weight: bold; color: #333; }
-					.v-type { font-size: 22rpx; color: #999; background: #eee; padding: 2rpx 6rpx; border-radius: 4rpx; width: fit-content; margin-top: 4rpx; }
+					display: flex; flex-direction: column;
+					width: 90rpx;
+					flex-shrink: 0;
+					.v-id-row {
+						display: flex;
+						align-items: center;
+						gap: 6rpx;
+					}
+					.route-color-dot {
+						width: 16rpx;
+						height: 16rpx;
+						border-radius: 50%;
+						flex-shrink: 0;
+					}
+					.v-id { font-weight: bold; color: #333; font-size: 26rpx; }
+					.v-type { font-size: 20rpx; color: #999; background: #f5f5f5; padding: 2rpx 8rpx; border-radius: 4rpx; width: fit-content; margin-top: 6rpx; }
 				}
 				.driver-info {
-					display: flex; flex-direction: column; width: 45%;
-					.name { font-size: 26rpx; color: #333; }
-					.time { font-size: 22rpx; color: #666; margin-top: 4rpx; }
-					.stores { font-size: 22rpx; color: #999; }
+					display: flex; flex-direction: column;
+					flex: 1;
+					min-width: 120rpx;
+					overflow: hidden;
+					.name { font-size: 28rpx; color: #333; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+					.time { font-size: 24rpx; color: #666; margin-top: 6rpx; white-space: nowrap; }
+					.stores { font-size: 24rpx; color: #999; white-space: nowrap; }
+					.route-source { 
+						font-size: 20rpx; 
+						color: #0066CC; 
+						background: #e8f4fd;
+						padding: 4rpx 10rpx;
+						border-radius: 6rpx;
+						margin-top: 6rpx;
+						width: fit-content;
+						max-width: 100%;
+						white-space: nowrap;
+						overflow: hidden;
+						text-overflow: ellipsis;
+					}
 				}
 				.status-info {
-					display: flex; flex-direction: column; align-items: flex-end; width: 30%;
-					.cost { font-size: 24rpx; color: #666; margin-top: 8rpx; }
+					display: flex; flex-direction: column; align-items: flex-end;
+					width: 100rpx;
+					flex-shrink: 0;
+					.cost { font-size: 24rpx; color: #666; margin-top: 10rpx; white-space: nowrap; }
 					.mini-adjust {
-						margin-top: 10rpx;
+						margin-top: 12rpx;
 						height: 52rpx;
 						line-height: 52rpx;
 						padding: 0 16rpx;
 						font-size: 22rpx;
 						background: #e8f4fd;
 						color: #0066CC;
+					}
+					
+					.mini-delete {
+						margin-top: 8rpx;
+						height: 52rpx;
+						line-height: 52rpx;
+						padding: 0 16rpx;
+						font-size: 22rpx;
+						background: #ffe6e6;
+						color: #dc3545;
 					}
 				}
 			}
@@ -689,6 +1624,311 @@ export default {
 		.btn-outline { background: #fff; border: 1px solid #ccc; }
 	}
 	.full-width { width: 100%; margin-top: 20rpx; background: #0066CC; color: #fff; }
+}
+
+/* 导航栏右侧按钮 */
+.nav-btn {
+	display: flex;
+	align-items: center;
+	gap: 8rpx;
+	padding: 12rpx 24rpx;
+	background: rgba(255,255,255,0.25);
+	border-radius: 8rpx;
+	border: 1px solid rgba(255,255,255,0.4);
+	
+	&:active {
+		background: rgba(255,255,255,0.4);
+	}
+	
+	.btn-text {
+		font-size: 26rpx;
+		color: #fff;
+		font-weight: 500;
+	}
+}
+
+/* 司机管理弹窗 */
+/* 添加调度弹窗 */
+.add-schedule-card {
+	width: 90vw;
+	max-width: 800rpx;
+	max-height: 85vh;
+	
+	.popup-title {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding-bottom: 20rpx;
+		border-bottom: 1px solid #eee;
+		margin-bottom: 20rpx;
+	}
+	
+	.schedule-form {
+		max-height: 55vh;
+		padding: 10rpx 0;
+	}
+	
+	.form-item {
+		margin-bottom: 24rpx;
+		
+		.label {
+			display: block;
+			font-size: 26rpx;
+			color: #333;
+			margin-bottom: 12rpx;
+			
+			.required {
+				color: #E63946;
+			}
+		}
+		
+		.form-input {
+			width: 100%;
+			padding: 20rpx 24rpx;
+			border: 1px solid #ddd;
+			border-radius: 8rpx;
+			font-size: 30rpx;
+			color: #333;
+			box-sizing: border-box;
+			background: #fff;
+			
+			&.picker-input {
+				background: #fafafa;
+				color: #333;
+			}
+		}
+	}
+	
+	.store-selector {
+		.store-search {
+			width: 100%;
+			padding: 16rpx 20rpx;
+			border: 1px solid #ddd;
+			border-radius: 8rpx;
+			font-size: 28rpx;
+			margin-bottom: 16rpx;
+			background: #fff;
+		}
+		
+		.store-chips {
+			height: 320rpx;
+			padding: 12rpx;
+			background: #fafafa;
+			border-radius: 8rpx;
+			border: 1px solid #eee;
+		}
+		
+		.store-chip {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			padding: 16rpx 20rpx;
+			margin-bottom: 12rpx;
+			background: #fff;
+			border: 1px solid #ddd;
+			border-radius: 8rpx;
+			transition: all 0.2s;
+			
+			.store-main {
+				display: flex;
+				align-items: center;
+				gap: 12rpx;
+				flex: 1;
+			}
+			
+			.store-code {
+				font-size: 22rpx;
+				color: #0066CC;
+				background: #e8f4fd;
+				padding: 4rpx 12rpx;
+				border-radius: 6rpx;
+				font-weight: 500;
+			}
+			
+			.store-name {
+				font-size: 26rpx;
+				color: #333;
+			}
+			
+			.store-district {
+				font-size: 22rpx;
+				color: #999;
+				margin-left: 16rpx;
+				flex-shrink: 0;
+			}
+			
+			&.selected {
+				background: #0066CC;
+				border-color: #0066CC;
+				
+				.store-code {
+					background: rgba(255,255,255,0.2);
+					color: #fff;
+				}
+				
+				.store-name, .store-district {
+					color: #fff;
+				}
+			}
+			
+			&:active {
+				opacity: 0.8;
+			}
+		}
+		
+		.no-stores {
+			text-align: center;
+			padding: 40rpx;
+			color: #999;
+			font-size: 26rpx;
+		}
+		
+		.store-summary {
+			display: flex;
+			justify-content: space-between;
+			margin-top: 16rpx;
+			
+			.selected-count {
+				font-size: 26rpx;
+				color: #0066CC;
+				font-weight: 500;
+			}
+			
+			.total-count {
+				font-size: 24rpx;
+				color: #999;
+			}
+		}
+	}
+	
+	.popup-actions {
+		display: flex;
+		gap: 20rpx;
+		margin-top: 30rpx;
+		padding-top: 20rpx;
+		border-top: 1px solid #eee;
+		
+		button {
+			flex: 1;
+		}
+	}
+}
+
+/* 添加调度按钮样式 */
+.add-driver-btn.secondary {
+	background: #f5f5f5;
+	border-color: #ddd;
+	color: #666;
+	
+	&:active {
+		background: #eee;
+	}
+}
+
+/* 司机管理弹窗 */
+.driver-manage-card {
+	width: 720rpx;
+	max-height: 80vh;
+	
+	.popup-title {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		
+		.title-actions {
+			.btn-small {
+				height: 56rpx;
+				line-height: 56rpx;
+				padding: 0 24rpx;
+				font-size: 24rpx;
+			}
+		}
+	}
+	
+	.add-driver-form {
+		background: #f8f9fa;
+		padding: 20rpx;
+		border-radius: 12rpx;
+		margin-bottom: 20rpx;
+		
+		.form-row {
+			display: flex;
+			gap: 16rpx;
+			margin-bottom: 16rpx;
+			
+			.form-input {
+				flex: 1;
+				height: 72rpx;
+				padding: 0 20rpx;
+				border: 1px solid #ddd;
+				border-radius: 8rpx;
+				background: #fff;
+				font-size: 26rpx;
+			}
+		}
+	}
+	
+	.driver-list {
+		max-height: 400rpx;
+		margin-bottom: 20rpx;
+		
+		.driver-list-header {
+			display: flex;
+			padding: 16rpx 0;
+			border-bottom: 2rpx solid #eee;
+			background: #f8f9fa;
+			
+			.col {
+				flex: 1;
+				font-size: 24rpx;
+				color: #666;
+				text-align: center;
+			}
+		}
+		
+		.driver-item {
+			display: flex;
+			align-items: center;
+			padding: 20rpx 0;
+			border-bottom: 1px solid #f0f0f0;
+			
+			.col {
+				flex: 1;
+				font-size: 26rpx;
+				text-align: center;
+				
+				&.name { font-weight: bold; color: #333; }
+				&.vehicle { color: #0066CC; }
+				
+				&.actions {
+					display: flex;
+					justify-content: center;
+					gap: 16rpx;
+					
+					.action-btn {
+						color: #0066CC;
+						font-size: 24rpx;
+						
+						&.delete { color: #dc3545; }
+					}
+				}
+			}
+		}
+	}
+	
+	.driver-stats {
+		display: flex;
+		justify-content: space-around;
+		padding: 20rpx;
+		background: #e8f4fd;
+		border-radius: 8rpx;
+		margin-bottom: 20rpx;
+		
+		text {
+			font-size: 26rpx;
+			color: #0066CC;
+		}
+	}
 }
 
 /* ========== 响应式适配 (Mobile/Tablet) ========== */

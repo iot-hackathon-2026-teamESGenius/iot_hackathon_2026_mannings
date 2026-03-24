@@ -57,3 +57,5 @@
 2026-03-17 14:44:33,234 - src.core.data_pipeline - INFO - 使用缓存的交通数据
 2026-03-17 14:44:33,234 - src.core.data_pipeline - INFO - 使用缓存的门店位置数据
 2026-03-17 14:44:33,234 - src.core.data_pipeline - INFO - 使用缓存的订单数据
+2026-03-17 20:25:38,551 - src.core.data_pipeline - INFO - 数据管道初始化完成
+2026-03-17 20:25:58,689 - src.core.data_pipeline - INFO - 数据管道初始化完成

@@ -26,15 +26,17 @@
 
 				<view class="filter-row">
 					<view class="filter-item two-thirds">
-						<text class="label">SKU ID 列表</text>
-						<view class="sku-search">
-							<input
-								class="uni-input input-border"
-								v-model="filters.skuIds"
-								placeholder="例如: SKU001,SKU002（必填）"
-								@confirm="fetchForecast"
-							/>
-							<button class="btn-mini" size="mini" @click="applyFilters">搜索</button>
+						<text class="label">选择商品</text>
+						<view class="sku-selector">
+							<view 
+								v-for="sku in skuOptions" 
+								:key="sku.id"
+								class="sku-chip"
+								:class="{ active: selectedSkus.includes(sku.id) }"
+								@click="toggleSku(sku.id)"
+							>
+								{{ sku.name }}
+							</view>
 						</view>
 					</view>
 					<view class="filter-item one-third" v-if="displayMode !== 'chart'">
@@ -102,15 +104,16 @@
 			<!-- 列表模式 -->
 			<template v-else>
 				<view class="stats-row" v-if="filteredForecasts.length">
-					<text>共 {{ filteredForecasts.length }} 条 · 需求合计 {{ totalForecast }} 件</text>
+					<text>共 {{ filteredForecasts.length }} 条预测 · 需求合计 {{ totalForecast }} 件</text>
 				</view>
 
 				<view class="table-wrapper" v-if="filteredForecasts.length">
 					<view class="table-header">
 						<text class="col store">门店</text>
-						<text class="col sku">SKU</text>
+						<text class="col sku">商品</text>
 						<text class="col date">日期</text>
-						<text class="col qty" @click="toggleSort">预测量▼</text>
+						<text class="col qty" @click="toggleSort">预测量(件)▼</text>
+						<text class="col factors">影响因素</text>
 						<text class="col status">状态</text>
 					</view>
 					<view
@@ -125,8 +128,18 @@
 							<text class="sku-id">{{ item.sku_id }}</text>
 							<text class="sku-name">{{ item.sku_name }}</text>
 						</view>
-						<text class="col date">{{ item.date }}</text>
-						<text class="col qty">{{ item.forecast_demand }}</text>
+						<text class="col date">{{ formatDate(item.date) }}</text>
+						<text class="col qty">{{ item.forecast_demand }} 件</text>
+						<view class="col factors">
+							<view class="factor-tags" v-if="item.factors && item.factors.length">
+								<text 
+									v-for="(factor, fi) in item.factors" 
+									:key="fi"
+									class="factor-tag"
+								>{{ factor }}</text>
+							</view>
+							<text v-else class="no-factor">基础预测</text>
+						</view>
 						<view class="col status">
 							<view class="status-pill" :class="item._stock_status">
 								<uni-icons
@@ -174,22 +187,18 @@
 					<uni-icons type="search" size="18" color="#999" class="search-icon"></uni-icons>
 				</view>
 				<scroll-view scroll-y class="store-list">
-					<view class="store-item" @click="selectAllStores">
-						<view class="store-info">
-							<text class="store-name">全部门店</text>
-							<text class="store-detail">显示所有门店的数据</text>
-						</view>
-					</view>
 					<view 
 						v-for="store in displayedStores" 
 						:key="store.store_id"
 						class="store-item"
+						:class="{ selected: filters.storeId === store.store_id }"
 						@click="selectStore(store)"
 					>
 						<view class="store-info">
 							<text class="store-name">{{ store.store_name }}</text>
 							<text class="store-detail">ID: {{ store.store_id }} · {{ store.district || '未知地区' }}</text>
 						</view>
+						<uni-icons v-if="filters.storeId === store.store_id" type="checkmarkempty" size="18" color="#0066CC"></uni-icons>
 					</view>
 					<view v-if="!displayedStores.length && storeSearchText" class="no-result">
 						<text>未找到匹配的门店</text>
@@ -227,6 +236,15 @@ export default {
 				status: 'all' // all / normal / shortage / overstock
 			},
 			storeOptions: [],
+			// 商品选项
+			skuOptions: [
+				{ id: 'SKU001', name: '维他命C 1000mg' },
+				{ id: 'SKU002', name: '感冒灵颗粒' },
+				{ id: 'SKU003', name: '洗手液 500ml' },
+				{ id: 'SKU004', name: '口罩 50片装' },
+				{ id: 'SKU005', name: '消毒湿巾' }
+			],
+			selectedSkus: ['SKU001'], // 默认选中第一个
 			statusOptions: [
 				{ value: 'all', text: '全部' },
 				{ value: 'normal', text: '正常' },
@@ -343,9 +361,9 @@ export default {
 		},
 		// 当前选中门店的显示名称
 		selectedStoreName() {
-			if (!this.filters.storeId) return '全部门店'
+			if (!this.filters.storeId) return '请选择门店'
 			const store = this.storeOptions.find(s => s.store_id === this.filters.storeId)
-			return store ? store.store_name : '全部门店'
+			return store ? store.store_name : '请选择门店'
 		}
 	},
 	onLoad() {
@@ -355,8 +373,8 @@ export default {
 			this.filters.storeId = selected.store_id
 		}
 		this.displayMode = 'chart'
-		this.loadStoreOptions()
-		this.fetchForecast()
+		// 先加载门店列表，然后再决定是否预测
+		this.loadStoreOptionsAndFetch()
 	},
 	methods: {
 		goBack() {
@@ -379,13 +397,24 @@ export default {
 			this.closeStoreModal()
 			this.fetchForecast()
 		},
-		selectAllStores() {
-			this.filters.storeId = ''
-			this.closeStoreModal()
-			this.fetchForecast()
-		},
 		loadMoreStores() {
 			this.displayLimit += 20 // 每次加载20个更多门店
+		},
+		// 切换SKU选中状态
+		toggleSku(skuId) {
+			const idx = this.selectedSkus.indexOf(skuId)
+			if (idx >= 0) {
+				// 已选中，取消选中（但至少保留1个）
+				if (this.selectedSkus.length > 1) {
+					this.selectedSkus.splice(idx, 1)
+				}
+			} else {
+				// 未选中，添加
+				this.selectedSkus.push(skuId)
+			}
+			// 同步到 filters.skuIds
+			this.filters.skuIds = this.selectedSkus.join(',')
+			this.fetchForecast()
 		},
 		onDateChange() {
 			this.fetchForecast()
@@ -394,7 +423,8 @@ export default {
 			this.filters.status = v
 		},
 		resetFilters() {
-			this.filters.skuIds = ''
+			this.selectedSkus = ['SKU001']
+			this.filters.skuIds = 'SKU001'
 			this.filters.status = 'all'
 			// 保留当前门店，只重置 SKU/状态
 			this.fetchForecast()
@@ -413,6 +443,16 @@ export default {
 			}
 			return map[s] || s || '正常'
 		},
+		// 格式化日期，显示星期几
+		formatDate(dateStr) {
+			if (!dateStr) return ''
+			const d = new Date(dateStr)
+			const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+			const month = String(d.getMonth() + 1).padStart(2, '0')
+			const day = String(d.getDate()).padStart(2, '0')
+			const weekday = weekdays[d.getDay()]
+			return `${month}-${day} ${weekday}`
+		},
 		async fetchForecast() {
 			const [start, end] = this.filters.dateRange || []
 			if (!start || !end) {
@@ -423,8 +463,8 @@ export default {
 				uni.showToast({ title: '请选择门店', icon: 'none' })
 				return
 			}
-			if (!this.filters.skuIds || !this.filters.skuIds.trim()) {
-				uni.showToast({ title: '请输入 SKU ID 列表', icon: 'none' })
+			if (!this.selectedSkus.length) {
+				uni.showToast({ title: '请至少选择一个商品', icon: 'none' })
 				return
 			}
 			this.loading = true
@@ -497,7 +537,21 @@ export default {
             }
 
             const series = []
-            skus.forEach((skuId) => {
+            // 为不同SKU分配不同颜色
+            const skuColors = [
+                { forecast: '#FF7F50', actual: '#2F90FF' },  // 橙/蓝
+                { forecast: '#28a745', actual: '#6c757d' },  // 绿/灰
+                { forecast: '#dc3545', actual: '#17a2b8' },  // 红/青
+                { forecast: '#6f42c1', actual: '#fd7e14' },  // 紫/橙
+                { forecast: '#e83e8c', actual: '#20c997' }   // 粉/绿青
+            ]
+            
+            skus.forEach((skuId, idx) => {
+                // 获取产品名称
+                const skuItem = list.find(i => i.sku_id === skuId && i.sku_name)
+                const skuName = (skuItem && skuItem.sku_name) ? skuItem.sku_name : skuId
+                const colorPair = skuColors[idx % skuColors.length]
+                
                 const forecastArr = []
                 const actualArr = []
                 dates.forEach((d) => {
@@ -507,22 +561,22 @@ export default {
                     forecastArr.push(Number(fSum.toFixed(1)))
                     actualArr.push(Number(aSum.toFixed(1)))
                 })
-                // 预测：折线，颜色 & 标签在上方
+                // 预测：折线
                 series.push({
-                    name: `${skuId || 'SKU001'} 预测`,
+                    name: `${skuName} 预测`,
                     type: 'line',
                     data: forecastArr,
-                    itemStyle: { color: '#FF7F50' }, // 橙色
-                    label: { show: true, color: '#FF7F50', position: 'top' },
+                    itemStyle: { color: colorPair.forecast },
+                    label: { show: true, color: colorPair.forecast, position: 'top', formatter: '{c}件' },
                     smooth: true
                 })
-                // 实际：柱状，颜色与标签位置不同，标签放在柱内避免与折线标签遮挡
+                // 实际：柱状
                 series.push({
-                    name: `${skuId || 'SKU001'} 实际`,
+                    name: `${skuName} 实际`,
                     type: 'column',
                     data: actualArr,
-                    itemStyle: { color: '#2F90FF' }, // 蓝色柱子
-                    label: { show: true, color: '#ffffff', position: 'inside' }, // 白色字体在柱内
+                    itemStyle: { color: colorPair.actual },
+                    label: { show: true, color: '#ffffff', position: 'inside', formatter: '{c}件' },
                     barGap: '30%'
                 })
             })
@@ -557,7 +611,7 @@ export default {
 
             // 给 x/y 轴添加 name（如果需要显示轴标题）
             this.mixChartOpts.xAxis.name = '日期'
-            this.mixChartOpts.yAxis.name = '数量'
+            this.mixChartOpts.yAxis.name = '数量(件)'
 
             // 计算并设置内部图表宽度以支持横向滚动：每个点至少占用 pxPerPoint 宽度
             const pxPerPoint = 60
@@ -587,11 +641,27 @@ export default {
 				if (res && res.success && res.data && res.data.length) {
 					// 直接使用API返回的原始格式，与首页保持一致
 					this.storeOptions = res.data
+					return res.data
 				}
 			} catch (e) {
 				console.error('加载门店列表失败', e)
-				// 保持空数组
-				this.storeOptions = []
+			}
+			this.storeOptions = []
+			return []
+		},
+		
+		// 加载门店并决定是否预测
+		async loadStoreOptionsAndFetch() {
+			const stores = await this.loadStoreOptions()
+			
+			// 如果没有选中门店，默认选择第一个门店
+			if (!this.filters.storeId && stores.length > 0) {
+				this.filters.storeId = stores[0].store_id
+			}
+			
+			// 只有选中了门店才执行预测
+			if (this.filters.storeId) {
+				this.fetchForecast()
 			}
 		}
 	}
@@ -660,6 +730,34 @@ export default {
 		color: #333;
 	}
 }
+
+/* SKU选择器样式 */
+.sku-selector {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12rpx;
+}
+.sku-chip {
+	padding: 12rpx 24rpx;
+	border-radius: 999rpx;
+	font-size: 24rpx;
+	background: #f2f4f8;
+	color: #555;
+	border: 2rpx solid transparent;
+	cursor: pointer;
+	transition: all 0.2s;
+	
+	&:hover {
+		background: #e8f4fd;
+	}
+	
+	&.active {
+		background: #0066CC;
+		color: #fff;
+		border-color: #0066CC;
+	}
+}
+
 .sku-search {
 	display: flex;
 	align-items: center;
@@ -800,21 +898,43 @@ export default {
 }
 .col {
 	&.store {
-		width: 22%;
-	}
-	&.sku {
-		width: 30%;
-	}
-	&.date {
 		width: 18%;
 	}
+	&.sku {
+		width: 22%;
+	}
+	&.date {
+		width: 16%;
+	}
 	&.qty {
-		width: 15%;
+		width: 12%;
+	}
+	&.factors {
+		width: 20%;
 	}
 	&.status {
-		width: 15%;
+		width: 12%;
 		text-align: right;
 	}
+}
+
+/* 影响因素标签 */
+.factor-tags {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4rpx;
+}
+.factor-tag {
+	padding: 4rpx 10rpx;
+	border-radius: 6rpx;
+	font-size: 20rpx;
+	background: #e8f4fd;
+	color: #0066CC;
+	white-space: nowrap;
+}
+.no-factor {
+	font-size: 20rpx;
+	color: #999;
 }
 .sku-cell {
 	display: flex;
@@ -946,6 +1066,9 @@ export default {
 	padding: 24rpx 40rpx;
 	border-bottom: 1px solid #f5f5f5;
 	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
 	
 	&:hover {
 		background: #f8f9fa;
@@ -953,6 +1076,11 @@ export default {
 	
 	&:active {
 		background: #e9ecef;
+	}
+	
+	&.selected {
+		background: #e8f4fd;
+		border-left: 4rpx solid #0066CC;
 	}
 }
 

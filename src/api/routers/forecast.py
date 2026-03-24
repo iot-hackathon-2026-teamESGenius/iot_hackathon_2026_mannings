@@ -28,6 +28,8 @@ class DemandForecastItem(BaseModel):
     deviation_rate: Optional[float] = None
     lower_bound: float
     upper_bound: float
+    factors: Optional[List[str]] = []  # 影响因素
+    multiplier: Optional[float] = 1.0  # 调整系数
 
 class InventoryOutlookItem(BaseModel):
     """库存展望条目"""
@@ -61,11 +63,12 @@ MOCK_ECDCS = {
 
 # 门店缓存
 _stores_cache: Dict[str, str] = {}
+_stores_cache_loaded: bool = False
 
 def load_store_names() -> Dict[str, str]:
-    """加载真实门店名称"""
-    global _stores_cache
-    if _stores_cache:
+    """加载真实门店名称（带缓存）"""
+    global _stores_cache, _stores_cache_loaded
+    if _stores_cache_loaded:
         return _stores_cache
     
     try:
@@ -73,17 +76,20 @@ def load_store_names() -> Dict[str, str]:
         service = get_data_service()
         stores = service.get_active_stores()  # 只获取活跃门店
         _stores_cache = {str(s["store_code"]): s["store_name"] for s in stores}
+        _stores_cache_loaded = True
         logger.info(f"Loaded {len(_stores_cache)} stores for forecast")
         return _stores_cache
     except Exception as e:
         logger.warning(f"Failed to load stores, using fallback: {e}")
-        return {
+        _stores_cache_loaded = True  # 即使失败也标记已加载，避免重复尝试
+        _stores_cache = {
             "10001": "Mannings Yau Tsim Mong",
             "10002": "Mannings Wan Chai",
             "10003": "Mannings Central and Western",
             "10004": "Mannings Kwun Tong",
             "10005": "Mannings Sha Tin"
         }
+        return _stores_cache
 
 def generate_demand_forecasts(
     start_date: date,
