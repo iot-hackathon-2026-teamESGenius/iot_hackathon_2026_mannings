@@ -3,6 +3,7 @@
 		<AppNavBar title="我的" :show-back="true" :show-menu="false" />
 
 		<scroll-view scroll-y class="main-content">
+			<!-- 已登录用户 -->
 			<view class="card" v-if="user">
 				<view class="row">
 					<text class="label">用户</text>
@@ -17,8 +18,33 @@
 					<text class="value">{{ user.store_ids.join(', ') }}</text>
 				</view>
 			</view>
+			
+			<!-- 访客模式 -->
+			<view class="card guest-card" v-else-if="isGuest">
+				<view class="guest-icon">
+					<uni-icons type="person" size="48" color="#999"></uni-icons>
+				</view>
+				<view class="guest-title">访客模式</view>
+				<view class="guest-desc">您正在以访客身份浏览，登录后可解锁更多功能</view>
+				<view class="guest-features">
+					<view class="feature-item">
+						<uni-icons type="checkmarkempty" size="14" color="#0066CC"></uni-icons>
+						<text>选择门店查看详细数据</text>
+					</view>
+					<view class="feature-item">
+						<uni-icons type="checkmarkempty" size="14" color="#0066CC"></uni-icons>
+						<text>导出报表和数据</text>
+					</view>
+					<view class="feature-item">
+						<uni-icons type="checkmarkempty" size="14" color="#0066CC"></uni-icons>
+						<text>访问订单管理功能</text>
+					</view>
+				</view>
+				<button class="btn primary" @click="goLogin">登录解锁全部功能</button>
+			</view>
 
-			<view class="card" v-else-if="!loading">
+			<!-- 未登录且非访客 -->
+			<view class="card" v-else-if="!loading && !isGuest">
 				<view class="hint">未登录或 Token 已过期</view>
 				<button class="btn" @click="goLogin">去登录</button>
 			</view>
@@ -38,7 +64,7 @@
 <script>
 import AppNavBar from '../components/app-nav-bar.vue'
 import AppTabBar from '../components/app-tab-bar.vue'
-import { apiGet, apiPost, getToken, setToken } from '../utils/api.js'
+import { apiGet, apiPost, getToken, setToken, isGuestMode, setGuestMode } from '../utils/api.js'
 
 export default {
 	components: { AppNavBar, AppTabBar },
@@ -46,11 +72,17 @@ export default {
 		return {
 			user: null,
 			loading: true,
-			loggingOut: false
+			loggingOut: false,
+			isGuest: false
 		}
 	},
 	onShow() {
-		this.validateToken()
+		this.isGuest = isGuestMode()
+		if (!this.isGuest) {
+			this.validateToken()
+		} else {
+			this.loading = false
+		}
 	},
 	methods: {
 		async validateToken() {
@@ -76,7 +108,11 @@ export default {
 			}
 		},
 		goLogin() {
-			uni.navigateTo({ url: '/pages/login' })
+			// 如果是访客模式，先清除访客状态
+			if (this.isGuest) {
+				setGuestMode(false)
+			}
+			uni.reLaunch({ url: '/pages/login' })
 		},
 		async onLogout() {
 			this.loggingOut = true
@@ -146,6 +182,50 @@ export default {
 		&.logout {
 			background: #ffebee;
 			color: #DC3545;
+		}
+		&.primary {
+			background: linear-gradient(135deg, #0066CC 0%, #0088dd 100%);
+			color: #fff;
+			box-shadow: 0 8rpx 24rpx rgba(0,102,204,0.3);
+		}
+	}
+	&.guest-card {
+		text-align: center;
+		padding: 48rpx 32rpx;
+		
+		.guest-icon {
+			margin-bottom: 24rpx;
+		}
+		.guest-title {
+			font-size: 36rpx;
+			font-weight: bold;
+			color: #333;
+			margin-bottom: 16rpx;
+		}
+		.guest-desc {
+			font-size: 26rpx;
+			color: #666;
+			margin-bottom: 32rpx;
+		}
+		.guest-features {
+			text-align: left;
+			background: #f8fbff;
+			border-radius: 12rpx;
+			padding: 24rpx;
+			margin-bottom: 32rpx;
+			
+			.feature-item {
+				display: flex;
+				align-items: center;
+				gap: 12rpx;
+				margin-bottom: 16rpx;
+				font-size: 26rpx;
+				color: #333;
+				
+				&:last-child {
+					margin-bottom: 0;
+				}
+			}
 		}
 	}
 }

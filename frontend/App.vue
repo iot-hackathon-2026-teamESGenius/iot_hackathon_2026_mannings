@@ -1,6 +1,16 @@
 <script>
-import { getToken, getUserInfo, setToken, setUserInfo, apiGet } from './utils/api.js'
+import { getToken, getUserInfo, setToken, setUserInfo, apiGet, isGuestMode } from './utils/api.js'
 import { canAccessPage } from './utils/permission.js'
+
+// 访客模式允许访问的页面（只读）
+const GUEST_ALLOWED_PAGES = [
+	'/pages/login',
+	'/pages/index/index',
+	'/pages/index/forcast',
+	'/pages/index/replenishment',
+	'/pages/index/deliever_map',
+	'/pages/my'
+]
 
 export default {
 	onLaunch: function() {
@@ -19,6 +29,15 @@ export default {
 		async checkLoginStatus() {
 			const token = getToken()
 			const userInfo = getUserInfo()
+			const guestMode = isGuestMode()
+			
+			// 访客模式直接进入首页
+			if (guestMode) {
+				setTimeout(() => {
+					uni.reLaunch({ url: '/pages/index/index' })
+				}, 100)
+				return
+			}
 			
 			if (token && userInfo) {
 				// 已登录，验证token有效性
@@ -93,6 +112,16 @@ export default {
 			// 检查登录状态
 			const token = getToken()
 			const userInfo = getUserInfo()
+			const guestMode = isGuestMode()
+			
+			// 访客模式：只允许访问特定页面
+			if (guestMode) {
+				if (GUEST_ALLOWED_PAGES.some(p => path.includes(p))) {
+					return true
+				}
+				uni.showToast({ title: '请先登录后访问', icon: 'none' })
+				return false
+			}
 			
 			if (!token || !userInfo) {
 				uni.showToast({ title: '请先登录', icon: 'none' })

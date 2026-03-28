@@ -7,7 +7,8 @@
 				<view class="nav-title nav-title-btn" @click="openStorePicker">
 				<uni-icons type="location-filled" size="18" color="#fff"></uni-icons>
 				<text class="shop-name">{{ currentShopName }}</text>
-				<uni-icons type="bottom" size="14" color="#fff"></uni-icons>
+				<uni-icons v-if="!isGuest" type="bottom" size="14" color="#fff"></uni-icons>
+				<view v-if="isGuest" class="guest-badge">访客</view>
 			</view>
 			<view class="nav-right" @click="goMyPage">
 				<uni-icons type="person" size="24" color="#fff"></uni-icons>
@@ -146,7 +147,7 @@
 </template>
 
 <script>
-import { apiGet, getToken, getUserInfo, getSelectedStore, setSelectedStore, setUserInfo } from '../../utils/api.js'
+import { apiGet, getToken, getUserInfo, getSelectedStore, setSelectedStore, setUserInfo, isGuestMode } from '../../utils/api.js'
 import { getVisibleMenuItems } from '../../utils/permission.js'
 import AppTabBar from '../../components/app-tab-bar.vue'
 
@@ -154,6 +155,8 @@ export default {
 	components: { AppTabBar },
 	data() {
 		return {
+			// 访客模式状态
+			isGuest: false,
 			// 当前门店名（导航栏下拉选择）
 			currentShopName: '全部门店',
 			// 当前用户可访问的门店列表（用于下拉）
@@ -217,26 +220,30 @@ export default {
 		}
 	},
 	onLoad() {
+		this.isGuest = isGuestMode()
 		const userInfo = getUserInfo()
 		this.menuItems = getVisibleMenuItems(userInfo)
 		// 不要直接使用缓存的门店名称，等待fetchStoreListThenData()更新
-		this.currentShopName = '全部门店'
+		this.currentShopName = this.isGuest ? '访客模式 - 默认门店' : '全部门店'
 		this.fetchStoreListThenData()
 	},
 	onShow() {
+		this.isGuest = isGuestMode()
 		// 从其他页返回时同步选中门店显示
-		const selected = getSelectedStore()
-		if (selected) {
-			// 检查选中的门店是否在当前门店列表中，如果不在则重新获取
-			if (this.storeList.length > 0) {
-				const foundStore = this.storeList.find(store => store.store_id === selected.store_id)
-				if (foundStore) {
-					this.currentShopName = foundStore.store_name
+		if (!this.isGuest) {
+			const selected = getSelectedStore()
+			if (selected) {
+				// 检查选中的门店是否在当前门店列表中，如果不在则重新获取
+				if (this.storeList.length > 0) {
+					const foundStore = this.storeList.find(store => store.store_id === selected.store_id)
+					if (foundStore) {
+						this.currentShopName = foundStore.store_name
+					} else {
+						this.currentShopName = selected.store_name
+					}
 				} else {
 					this.currentShopName = selected.store_name
 				}
-			} else {
-				this.currentShopName = selected.store_name
 			}
 		}
 		this.menuItems = getVisibleMenuItems(getUserInfo())
@@ -270,6 +277,21 @@ export default {
 		},
 		/** 导航栏点击：弹出门店下拉选择 */
 		openStorePicker() {
+			// 访客模式下禁用门店选择
+			if (this.isGuest) {
+				uni.showModal({
+					title: '访客模式',
+					content: '登录后可选择门店查看详细数据',
+					confirmText: '去登录',
+					cancelText: '继续浏览',
+					success: (res) => {
+						if (res.confirm) {
+							uni.reLaunch({ url: '/pages/login' })
+						}
+					}
+				})
+				return
+			}
 			if (!this.storeList.length) {
 				uni.showToast({ title: '暂无可选门店', icon: 'none' })
 				return
@@ -327,9 +349,42 @@ export default {
 		navTo(url) {
 			this.$refs.leftDrawer.close()
 			if (url === '/pages/index/index') return
+			// 访客模式下限制部分页面
+			if (this.isGuest) {
+				const guestAllowed = ['/pages/index/forcast', '/pages/index/replenishment', '/pages/index/deliever_map', '/pages/my', '/pages/index/ai_assistant']
+				if (!guestAllowed.some(p => url.includes(p))) {
+					uni.showModal({
+						title: '访客模式',
+						content: '登录后可访问更多功能',
+						confirmText: '去登录',
+						cancelText: '继续浏览',
+						success: (res) => {
+							if (res.confirm) {
+								uni.reLaunch({ url: '/pages/login' })
+							}
+						}
+					})
+					return
+				}
+			}
 			uni.navigateTo({ url })
 		},
 		handleAction(name) {
+			// 访客模式下禁止操作
+			if (this.isGuest) {
+				uni.showModal({
+					title: '访客模式',
+					content: '登录后可使用' + name + '功能',
+					confirmText: '去登录',
+					cancelText: '继续浏览',
+					success: (res) => {
+						if (res.confirm) {
+							uni.reLaunch({ url: '/pages/login' })
+						}
+					}
+				})
+				return
+			}
 			uni.showModal({ title: '提示', content: '您点击了：' + name })
 		},
 
@@ -464,6 +519,15 @@ export default {
 			.nav-title-btn {
 				cursor: pointer;
 				.shop-name { margin-right: 8rpx; }
+			}
+			.guest-badge {
+				margin-left: 12rpx;
+				background: rgba(255,255,255,0.2);
+				border: 1rpx solid rgba(255,255,255,0.5);
+				border-radius: 8rpx;
+				padding: 4rpx 12rpx;
+				font-size: 22rpx;
+				color: #fff;
 			}
 		}
 	

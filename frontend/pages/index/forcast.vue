@@ -217,7 +217,7 @@
 <script>
 import AppNavBar from '../../components/app-nav-bar.vue'
 import AppTabBar from '../../components/app-tab-bar.vue'
-import { apiGet, getSelectedStore } from '../../utils/api.js'
+import { apiGet, getSelectedStore, isGuestMode } from '../../utils/api.js'
 
 export default {
 	components: { AppNavBar, AppTabBar },
@@ -228,6 +228,8 @@ export default {
 		const format = (d) => d.toISOString().slice(0, 10)
 
 		return {
+			// 访客模式状态
+			isGuest: false,
 			// 筛选条件
 			filters: {
 				dateRange: [format(today), format(end)],
@@ -367,6 +369,8 @@ export default {
 		}
 	},
 	onLoad() {
+		// 初始化访客模式状态
+		this.isGuest = isGuestMode()
 		// 默认使用首页当前选择的门店
 		const selected = getSelectedStore && getSelectedStore()
 		if (selected && selected.store_id) {
@@ -385,6 +389,21 @@ export default {
 			this.displayLimit = 20 // 重置显示限制
 		},
 		openStoreModal() {
+			// 访客模式下禁用门店选择
+			if (this.isGuest) {
+				uni.showModal({
+					title: '访客模式',
+					content: '登录后可选择门店查看详细数据',
+					confirmText: '去登录',
+					cancelText: '继续浏览',
+					success: (res) => {
+						if (res.confirm) {
+							uni.reLaunch({ url: '/pages/login' })
+						}
+					}
+				})
+				return
+			}
 			this.showStoreModal = true
 		},
 		closeStoreModal() {
@@ -624,6 +643,21 @@ export default {
             this.mixChartOpts.xAxis.interval = interval
         },
 		exportReport() {
+			// 访客模式下禁用导出
+			if (this.isGuest) {
+				uni.showModal({
+					title: '访客模式',
+					content: '登录后可导出报表',
+					confirmText: '去登录',
+					cancelText: '继续浏览',
+					success: (res) => {
+						if (res.confirm) {
+							uni.reLaunch({ url: '/pages/login' })
+						}
+					}
+				})
+				return
+			}
 			// 简化实现：提示导出成功，真实项目可在此构造 CSV/Excel 并调用后端导出
 			if (!this.filteredForecasts.length) {
 				return uni.showToast({ title: '当前无数据可导出', icon: 'none' })

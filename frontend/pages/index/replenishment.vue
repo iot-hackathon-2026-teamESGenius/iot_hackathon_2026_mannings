@@ -247,7 +247,7 @@
 <script>
 import AppNavBar from '../../components/app-nav-bar.vue'
 import AppTabBar from '../../components/app-tab-bar.vue'
-import { apiGet, apiPut, getUserInfo, getSelectedStore } from '../../utils/api.js'
+import { apiGet, apiPut, getUserInfo, getSelectedStore, isGuestMode } from '../../utils/api.js'
 import { canAccessPage } from '../../utils/permission.js'
 
 export default {
@@ -259,6 +259,8 @@ export default {
 		const format = (d) => d.toISOString().slice(0, 10)
 
 		return {
+			// 访客模式状态
+			isGuest: false,
 			// 筛选条件
 			filters: {
 				dateRange: [format(today), format(end)],
@@ -327,11 +329,17 @@ export default {
 		}
 	},
 	onLoad() {
-		const userInfo = getUserInfo()
-		if (!canAccessPage('/pages/index/replenishment', userInfo)) {
-			uni.showToast({ title: '无访问权限', icon: 'none' })
-			setTimeout(() => uni.switchTab({ url: '/pages/index/index' }), 800)
-			return
+		// 初始化访客模式状态
+		this.isGuest = isGuestMode()
+		
+		// 访客模式允许访问但限制操作
+		if (!this.isGuest) {
+			const userInfo = getUserInfo()
+			if (!canAccessPage('/pages/index/replenishment', userInfo)) {
+				uni.showToast({ title: '无访问权限', icon: 'none' })
+				setTimeout(() => uni.switchTab({ url: '/pages/index/index' }), 800)
+				return
+			}
 		}
 		// 默认使用首页当前选择的门店
 		const selected = getSelectedStore && getSelectedStore()
@@ -350,6 +358,21 @@ export default {
 			this.displayLimit = 20 // 重置显示限制
 		},
 		openStoreModal() {
+			// 访客模式下禁用门店选择
+			if (this.isGuest) {
+				uni.showModal({
+					title: '访客模式',
+					content: '登录后可选择门店查看详细数据',
+					confirmText: '去登录',
+					cancelText: '继续浏览',
+					success: (res) => {
+						if (res.confirm) {
+							uni.reLaunch({ url: '/pages/login' })
+						}
+					}
+				})
+				return
+			}
 			this.showStoreModal = true
 		},
 		closeStoreModal() {

@@ -39,6 +39,7 @@
 				<text>{{ errorMsg }}</text>
 			</view>
 			<button class="btn primary" :loading="loading" @click="onLogin">登 录</button>
+			<button class="btn skip" @click="onSkip">跳过登录（访客模式）</button>
 			
 			<view class="divider">
 				<view class="line"></view>
@@ -69,7 +70,7 @@
 </template>
 
 <script>
-import { apiPost, setToken, setUserInfo } from '../utils/api.js'
+import { apiPost, setToken, setUserInfo, setGuestMode } from '../utils/api.js'
 
 export default {
 	data() {
@@ -117,6 +118,14 @@ export default {
 			} finally {
 				this.loading = false
 			}
+		},
+		onSkip() {
+			// 进入访客模式
+			setGuestMode(true)
+			uni.showToast({ title: '访客模式，部分功能受限', icon: 'none', duration: 2000 })
+			setTimeout(() => {
+				uni.reLaunch({ url: '/pages/index/index' })
+			}, 500)
 		}
 	}
 }
@@ -227,6 +236,17 @@ export default {
 			background: linear-gradient(135deg, #0066CC 0%, #0088dd 100%);
 			color: #fff;
 			box-shadow: 0 8rpx 24rpx rgba(0,102,204,0.3);
+		}
+		&.skip {
+			margin-top: 24rpx;
+			background: #f5f5f5;
+			color: #666;
+			border: 2rpx solid #ddd;
+			font-size: 28rpx;
+			letter-spacing: 2rpx;
+			&:active {
+				background: #eee;
+			}
 		}
 	}
 	

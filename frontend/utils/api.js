@@ -4,6 +4,7 @@ const API_BASE_URL = 'http://localhost:8000/api'
 const TOKEN_KEY = 'mannings_token'
 const USER_INFO_KEY = 'mannings_user_info'
 const SELECTED_STORE_KEY = 'mannings_selected_store'
+const GUEST_MODE_KEY = 'mannings_guest_mode'
 
 /** 读取本地 Token（登录后由 login 页面写入） */
 export function getToken() {
@@ -14,11 +15,36 @@ export function getToken() {
 export function setToken(token) {
   if (token) {
     uni.setStorageSync(TOKEN_KEY, token)
+    // 登录成功后退出访客模式
+    uni.removeStorageSync(GUEST_MODE_KEY)
   } else {
     uni.removeStorageSync(TOKEN_KEY)
     uni.removeStorageSync(USER_INFO_KEY)
     uni.removeStorageSync(SELECTED_STORE_KEY)
   }
+}
+
+/** 读取访客模式状态 */
+export function isGuestMode() {
+  return uni.getStorageSync(GUEST_MODE_KEY) === 'true'
+}
+
+/** 设置访客模式 */
+export function setGuestMode(isGuest) {
+  if (isGuest) {
+    uni.setStorageSync(GUEST_MODE_KEY, 'true')
+    // 访客模式清除登录信息
+    uni.removeStorageSync(TOKEN_KEY)
+    uni.removeStorageSync(USER_INFO_KEY)
+    uni.removeStorageSync(SELECTED_STORE_KEY)
+  } else {
+    uni.removeStorageSync(GUEST_MODE_KEY)
+  }
+}
+
+/** 检查是否已登录（非访客模式） */
+export function isLoggedIn() {
+  return !!getToken() && !isGuestMode()
 }
 
 /** 读取当前用户信息（含 permissions、store_ids），登录后写入；若仅有 Token 可配合 validate 恢复 */
