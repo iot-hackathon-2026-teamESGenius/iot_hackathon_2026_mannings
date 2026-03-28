@@ -1,133 +1,126 @@
-"""AWS Bedrock AI Service - 智能助手服务
+"""AI Service - 智能助手服务
 提供AI分析、决策建议、异常诊断等功能
-支持多种AI后端: AWS Bedrock, 本地模拟, 智能fallback
+支持多种AI后端: DeepSeek, AWS Bedrock, 智能fallback
 """
 import os
 import json
 import logging
-import base64
-import httpx
 import random
+import httpx
 from typing import Optional, Dict, Any, List
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
-# Bedrock API配置
-BEDROCK_API_KEY = os.getenv(
-    "BEDROCK_API_KEY",
-    "your_bedrock_api_key_here"
-)
+# DeepSeek API 配置 (优先使用)
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "")
+DEEPSEEK_BASE_URL = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
+DEEPSEEK_MODEL = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
 
-# AWS Bedrock Proxy Endpoint
-# 设置 USE_SMART_FALLBACK=true 使用智能本地模拟（演示用）
-BEDROCK_ENDPOINT = os.getenv(
-    "BEDROCK_ENDPOINT",
-    "https://bedrock-runtime.us-east-1.amazonaws.com"
-)
+# AWS Bedrock 配置 (备用)
+BEDROCK_REGION = os.getenv("BEDROCK_REGION", "ap-southeast-2")
+BEDROCK_MODEL = os.getenv("BEDROCK_MODEL", "anthropic.claude-sonnet-4-6-20261022-v1:0")
 
-# 是否使用智能模拟模式（当API不可用时自动启用）
+# 是否使用智能模拟模式（当所有API不可用时自动启用）
 USE_SMART_FALLBACK = os.getenv("USE_SMART_FALLBACK", "true").lower() == "true"
 
-# 默认模型
-DEFAULT_MODEL = "anthropic.claude-3-sonnet-20240229-v1:0"
 
-
-class BedrockService:
-    """AWS Bedrock AI服务"""
+class DeepSeekService:
+    """DeepSeek AI服务 - OpenAI 兼容格式"""
     
     def __init__(self):
-        self.api_key = BEDROCK_API_KEY
-        self.endpoint = BEDROCK_ENDPOINT
-        self.model_id = DEFAULT_MODEL
-        self._client = None
-        
-    def _get_headers(self) -> Dict[str, str]:
-        """获取API请求头"""
-        return {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {self.api_key}",
-            "X-Api-Key": self.api_key,
-        }
+        self.api_key = DEEPSEEK_API_KEY
+        self.base_url = DEEPSEEK_BASE_URL
+        self.model = DEEPSEEK_MODEL
+    
+    def is_available(self) -> bool:
+        """"检查 DeepSeek API 是否可用"""
+        return bool(self.api_key and self.api_key.startswith("sk-"))
     
     async def invoke_model(self, prompt: str, max_tokens: int = 1024) -> Optional[str]:
-        """
-        调用Bedrock模型
-        """
+        """调用 DeepSeek 模型"""
+        if not self.is_available():
+            return None
+            
         try:
-            # 构建Claude消息格式
+            url = f"{self.base_url}/v1/chat/completions"
+            headers = {
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json"
+            }
             payload = {
-                "anthropic_version": "bedrock-2023-05-31",
+                "model": self.model,
+                "messages": [{"role": "user", "content": prompt}],
                 "max_tokens": max_tokens,
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
-                ]
+                "temperature": 0.7
             }
             
-            url = f"{self.endpoint}/model/{self.model_id}/invoke"
-            
-            async with httpx.AsyncClient(timeout=30.0) as client:
-                response = await client.post(
-                    url,
-                    headers=self._get_headers(),
-                    json=payload
-                )
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                response = await client.post(url, headers=headers, json=payload)
                 
                 if response.status_code == 200:
                     result = response.json()
-                    # Claude响应格式
-                    if "content" in result and len(result["content"]) > 0:
-                        return result["content"][0].get("text", "")
-                    return str(result)
+                    if "choices" in result and len(result["choices"]) > 0:
+                        return result["choices"][0]["message"]["content"]
                 else:
-                    logger.warning(f"Bedrock API error: {response.status_code} - {response.text}")
-                    return None
+                    logger.warning(f"DeepSeek API error: {response.status_code} - {response.text}")
+                    
+        except Exception as e:
+            logger.error(f"DeepSeek invoke error: {e}")
+        
+        return None
+
+
+class BedrockService:
+    """AWS Bedrock AI服务 - 使用 boto3 SDK"""
+    
+    def __init__(self):
+        self.region = BEDROCK_REGION
+        self.model_id = BEDROCK_MODEL
+        self._client = None
+        
+    def _get_client(self):
+        """获取 boto3 Bedrock Runtime 客户端"""
+        if self._client is None:
+            try:
+                import boto3
+                self._client = boto3.client("bedrock-runtime", region_name=self.region)
+                logger.info(f"Bedrock client initialized for region: {self.region}")
+            except Exception as e:
+                logger.error(f"Failed to create Bedrock client: {e}")
+                self._client = None
+        return self._client
+    
+    async def invoke_model(self, prompt: str, max_tokens: int = 1024) -> Optional[str]:
+        """调用Bedrock模型 - 使用 boto3 converse API"""
+        try:
+            client = self._get_client()
+            if client is None:
+                return None
+            
+            response = client.converse(
+                modelId=self.model_id,
+                messages=[{"role": "user", "content": [{"text": prompt}]}]
+            )
+            
+            if "output" in response and "message" in response["output"]:
+                content = response["output"]["message"].get("content", [])
+                if content and len(content) > 0:
+                    return content[0].get("text", "")
+            return None
                     
         except Exception as e:
             logger.error(f"Bedrock invoke error: {e}")
             return None
-    
-    def invoke_model_sync(self, prompt: str, max_tokens: int = 1024) -> Optional[str]:
-        """同步调用Bedrock模型（用于非async环境）"""
-        try:
-            payload = {
-                "anthropic_version": "bedrock-2023-05-31",
-                "max_tokens": max_tokens,
-                "messages": [
-                    {"role": "user", "content": prompt}
-                ]
-            }
-            
-            url = f"{self.endpoint}/model/{self.model_id}/invoke"
-            
-            with httpx.Client(timeout=30.0) as client:
-                response = client.post(
-                    url,
-                    headers=self._get_headers(),
-                    json=payload
-                )
-                
-                if response.status_code == 200:
-                    result = response.json()
-                    if "content" in result and len(result["content"]) > 0:
-                        return result["content"][0].get("text", "")
-                    return str(result)
-                else:
-                    logger.warning(f"Bedrock sync error: {response.status_code}")
-                    return None
-                    
-        except Exception as e:
-            logger.error(f"Bedrock sync invoke error: {e}")
-            return None
 
 
 class AIAssistant:
-    """AI智能助手 - 提供业务分析和决策建议"""
+    """AI智能助手 - 提供业务分析和决策建议
+    优先级: DeepSeek > AWS Bedrock > 智能回退
+    """
     
     def __init__(self):
+        self.deepseek = DeepSeekService()
         self.bedrock = BedrockService()
         self.system_context = """你是万宁(Mannings)门店物流SLA优化系统的AI助手。
 你的职责是：
@@ -219,19 +212,34 @@ SLA数据：
         return self._smart_demand_prediction(demand_data)
     
     async def chat(self, message: str, context: Dict = None) -> str:
-        """通用对话"""
-        if not USE_SMART_FALLBACK:
-            context_str = ""
-            if context:
-                context_str = f"\n当前系统状态：\n{json.dumps(context, ensure_ascii=False, indent=2)}\n"
-            prompt = f"""{self.system_context}
+        """通用对话 - 优先使用 DeepSeek"""
+        context_str = ""
+        if context:
+            context_str = f"\n当前系统状态：\n{json.dumps(context, ensure_ascii=False, indent=2)}\n"
+        
+        prompt = f"""{self.system_context}
 {context_str}
 用户问题：{message}
 
 请提供专业、简洁的回答。"""
+        
+        # 1. 优先尝试 DeepSeek
+        if self.deepseek.is_available():
+            logger.info("使用 DeepSeek API")
+            result = await self.deepseek.invoke_model(prompt)
+            if result:
+                return result
+            logger.warning("DeepSeek 调用失败，尝试 Bedrock")
+        
+        # 2. 备用 Bedrock
+        if not USE_SMART_FALLBACK:
+            logger.info("使用 AWS Bedrock API")
             result = await self.bedrock.invoke_model(prompt)
             if result:
                 return result
+            logger.warning("Bedrock 调用失败，使用智能回退")
+        
+        # 3. 智能回退
         return self._smart_chat(message, context)
     
     # 智能回退方法 - 基于数据生成动态响应

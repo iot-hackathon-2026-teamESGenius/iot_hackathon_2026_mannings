@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 from src.api.services.bedrock_service import get_ai_assistant
+from src.api.services.rag_service import get_rag_agent
 
 
 # ==================== 请求/响应模型 ====================
@@ -25,6 +26,18 @@ class ChatResponse(BaseModel):
     """聊天响应"""
     success: bool
     response: str
+    timestamp: str
+
+class RAGChatRequest(BaseModel):
+    """RAG聊天请求"""
+    message: str
+    history: Optional[List[Dict[str, str]]] = None
+
+class RAGChatResponse(BaseModel):
+    """RAG聊天响应"""
+    success: bool
+    response: str
+    retrieved_data: List[str] = []
     timestamp: str
 
 class AnalysisRequest(BaseModel):
@@ -63,6 +76,176 @@ async def chat_with_ai(request: ChatRequest):
             response="AI服务暂时不可用，请稍后重试。",
             timestamp=datetime.now().isoformat()
         )
+
+
+# ==================== RAG智能问答接口 ====================
+
+@router.post("/rag/chat", response_model=RAGChatResponse)
+async def rag_chat(request: RAGChatRequest):
+    """
+    RAG智能问答 - 结合本地数据和AI进行分析
+    
+    工作流程:
+    1. 根据用户问题检索相关业务数据
+    2. 将数据作为上下文传给AI
+    3. 生成基于数据的专业回答
+    """
+    try:
+        rag_agent = get_rag_agent()
+        result = await rag_agent.chat(request.message, request.history)
+        
+        return RAGChatResponse(
+            success=True,
+            response=result.get("response", ""),
+            retrieved_data=result.get("context", {}).get("retrieved_data", []),
+            timestamp=datetime.now().isoformat()
+        )
+    except Exception as e:
+        logger.error(f"RAG chat error: {e}")
+        return RAGChatResponse(
+            success=False,
+            response="抱歉，数据分析服务暂时不可用。",
+            retrieved_data=[],
+            timestamp=datetime.now().isoformat()
+        )
+
+
+@router.get("/rag/capabilities")
+async def get_rag_capabilities():
+    """
+    获取RAG系统能力说明
+    """
+    return {
+        "success": True,
+        "capabilities": [
+            {
+                "name": "SLA分析",
+                "description": "查询和分析订单履约率",
+                "examples": ["当前SLA达成率是多少？", "哪些门店SLA有风险？"]
+            },
+            {
+                "name": "订单查询",
+                "description": "查询订单统计和趋势",
+                "examples": ["最近订单量趋势如何？", "今天有多少订单？"]
+            },
+            {
+                "name": "门店信息",
+                "description": "查询门店位置和状态",
+                "examples": ["铜锣湾店在哪里？", "共有多少家门店？"]
+            },
+            {
+                "name": "配送调度",
+                "description": "查询配送车辆和路线状态",
+                "examples": ["当前有几辆配送车在运行？", "V001的配送路线是什么？"]
+            },
+            {
+                "name": "库存查询",
+                "description": "查询库存和补货状态",
+                "examples": ["哪些商品缺货？", "需要补货的门店有哪些？"]
+            },
+            {
+                "name": "需求预测",
+                "description": "预测未来需求趋势",
+                "examples": ["未来7天预计订单量？", "周末订单会增加吗？"]
+            }
+        ],
+        "quick_questions": [
+            "当前系统运行状态如何？",
+            "今天的SLA达成率是多少？",
+            "最近订单趋势怎么样？",
+            "哪些门店需要补货？",
+            "当前配送调度情况"
+        ]
+    }
+
+
+# ==================== AI安全审计接口 ====================
+
+@router.get("/security/status")
+async def get_security_status():
+    """
+    获取AI数据安全状态
+    
+    返回数据脱敏和审计的当前状态
+    """
+    try:
+        rag_agent = get_rag_agent()
+        return {
+            "success": True,
+            **rag_agent.get_security_status()
+        }
+    except Exception as e:
+        logger.error(f"Get security status error: {e}")
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+
+@router.get("/security/audit")
+async def get_security_audit():
+    """
+    获取安全审计日志
+    
+    记录所有AI对数据的访问
+    """
+    try:
+        from src.api.services.data_sanitizer import get_data_sanitizer
+        sanitizer = get_data_sanitizer()
+        return {
+            "success": True,
+            **sanitizer.get_audit_summary()
+        }
+    except Exception as e:
+        logger.error(f"Get security audit error: {e}")
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+
+@router.get("/security/architecture")
+async def get_security_architecture():
+    """
+    获取AI数据安全架构说明
+    """
+    return {
+        "success": True,
+        "architecture": {
+            "name": "AI数据安全隔离架构",
+            "version": "1.0",
+            "layers": [
+                {
+                    "level": 1,
+                    "name": "AI智能助手",
+                    "description": "只能访问脱敏后的SafeReport",
+                    "access": "read_only"
+                },
+                {
+                    "level": 2,
+                    "name": "DataSanitizer数据净化层",
+                    "description": "执行数据脱敏、聚合和审计",
+                    "functions": ["门店ID匿名化", "坐标区域化", "金额范围化", "时间时段化"]
+                },
+                {
+                    "level": 3,
+                    "name": "企业原始数据",
+                    "description": "DFI/NDA保密数据",
+                    "access": "ai_blocked"
+                }
+            ],
+            "security_measures": [
+                "数据脱敏: 所有敏感字段在传递给AI前已处理",
+                "访问AI计: 每次数据访问都有审计日志",
+                "原始数据隔离: AI无法直接访问data_service"
+            ],
+            "compliance": [
+                "符合企业数据安全规范",
+                "符合NDA保密要求",
+                "符合AI安全最佳实践"
+            ]
+        }
+    }
 
 
 @router.post("/analyze/traffic")
@@ -135,12 +318,25 @@ async def analyze_sla():
                 return val.item()
             return val
         
+        # 从真实数据计算 SLA 指标
+        total_orders = to_native(sla.get("total_orders", 0))
+        completed_orders = to_native(sla.get("completed_orders", 0))
+        cancelled_orders = to_native(sla.get("cancelled_orders", 0))
+        
+        # 计算 SLA 率（与首页 KPI 一致）
+        sla_rate = (completed_orders / total_orders * 100) if total_orders > 0 else 0.0
+        
+        # 计算平均履约时间（小时）
+        stage_durations = sla.get("stage_durations", {})
+        total_fulfillment = stage_durations.get("total_fulfillment", {})
+        avg_fulfillment_hours = total_fulfillment.get("mean_min", 0) / 60 if total_fulfillment else 0.0
+        
         sla_dict = {
-            "total_orders": to_native(order_stats.get("total_orders", 0)),
-            "completed_orders": to_native(sla.get("completed_orders", 0)),
-            "cancelled_orders": to_native(sla.get("cancelled_orders", 0)),
-            "sla_rate": float(sla.get("sla_rate", 0)) if sla.get("sla_rate") else 0.0,
-            "avg_fulfillment_hours": float(sla.get("avg_fulfillment_hours", 0)) if sla.get("avg_fulfillment_hours") else 0.0,
+            "total_orders": total_orders,
+            "completed_orders": completed_orders,
+            "cancelled_orders": cancelled_orders,
+            "sla_rate": round(sla_rate, 2),
+            "avg_fulfillment_hours": round(avg_fulfillment_hours, 2),
             "timestamp": datetime.now().isoformat()
         }
         

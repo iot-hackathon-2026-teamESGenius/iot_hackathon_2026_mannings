@@ -325,3 +325,5 @@ downloads/
 docs/reports/*.md
 docs/reports/*.json
 !docs/reports/README.md
+# AWS Root Key - 绝对不能上传
+rootkey.csv

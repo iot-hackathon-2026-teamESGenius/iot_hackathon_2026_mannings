@@ -6,6 +6,13 @@
   },
   "pages": [
     {
+      "path": "pages/login",
+      "style": {
+        "navigationBarTitleText": "登录",
+        "navigationStyle": "custom"
+      }
+    },
+    {
       "path": "pages/index/index",
       "style": {
         "navigationBarTitleText": "首页",
@@ -34,12 +41,6 @@
       }
     },
     {
-      "path": "pages/login",
-      "style": {
-        "navigationBarTitleText": "登录"
-      }
-    },
-    {
       "path": "pages/index/deliever_map",
       "style": {
         "navigationBarTitleText": "配送地图",
@@ -57,6 +58,13 @@
       "path": "pages/index/demo",
       "style": {
         "navigationBarTitleText": "演示控制台",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/index/ai_assistant",
+      "style": {
+        "navigationBarTitleText": "AI智能助手",
         "navigationStyle": "custom"
       }
     }

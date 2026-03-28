@@ -89,6 +89,10 @@ export default {
 			this.user = null
 			uni.showToast({ title: '已退出', icon: 'none' })
 			this.loggingOut = false
+			// 跳转到登录页
+			setTimeout(() => {
+				uni.reLaunch({ url: '/pages/login' })
+			}, 500)
 		}
 	}
 }

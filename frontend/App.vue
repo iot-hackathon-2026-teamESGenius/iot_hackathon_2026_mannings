@@ -1,15 +1,117 @@
 <script>
-	export default {
-		onLaunch: function() {
-			console.log('App Launch')
+import { getToken, getUserInfo, setToken, setUserInfo, apiGet } from './utils/api.js'
+import { canAccessPage } from './utils/permission.js'
+
+export default {
+	onLaunch: function() {
+		console.log('App Launch')
+		this.checkLoginStatus()
+		this.setupRouteInterceptor()
+	},
+	onShow: function() {
+		console.log('App Show')
+	},
+	onHide: function() {
+		console.log('App Hide')
+	},
+	methods: {
+		// 检查登录状态
+		async checkLoginStatus() {
+			const token = getToken()
+			const userInfo = getUserInfo()
+			
+			if (token && userInfo) {
+				// 已登录，验证token有效性
+				try {
+					const res = await apiGet('/auth/validate')
+					if (res && res.valid) {
+						// token有效，跳转首页
+						setTimeout(() => {
+							uni.reLaunch({ url: '/pages/index/index' })
+						}, 100)
+						return
+					}
+				} catch (e) {
+					console.log('Token验证失败，清除登录状态')
+				}
+				// token无效，清除登录状态
+				setToken(null)
+				setUserInfo(null)
+			}
+			// 未登录，停留在登录页
 		},
-		onShow: function() {
-			console.log('App Show')
+		
+		// 设置路由拦截器
+		setupRouteInterceptor() {
+			const whiteList = ['/pages/login']
+			
+			// 拦截 navigateTo
+			const originalNavigateTo = uni.navigateTo
+			uni.navigateTo = (options) => {
+				if (this.checkAuth(options.url, whiteList)) {
+					return originalNavigateTo.call(uni, options)
+				}
+			}
+			
+			// 拦截 redirectTo
+			const originalRedirectTo = uni.redirectTo
+			uni.redirectTo = (options) => {
+				if (this.checkAuth(options.url, whiteList)) {
+					return originalRedirectTo.call(uni, options)
+				}
+			}
+			
+			// 拦截 reLaunch
+			const originalReLaunch = uni.reLaunch
+			uni.reLaunch = (options) => {
+				if (this.checkAuth(options.url, whiteList)) {
+					return originalReLaunch.call(uni, options)
+				}
+			}
+			
+			// 拦截 switchTab
+			const originalSwitchTab = uni.switchTab
+			uni.switchTab = (options) => {
+				if (this.checkAuth(options.url, whiteList)) {
+					return originalSwitchTab.call(uni, options)
+				}
+			}
 		},
-		onHide: function() {
-			console.log('App Hide')
+		
+		// 检查权限
+		checkAuth(url, whiteList) {
+			if (!url) return true
+			
+			// 提取路径（去除参数）
+			const path = url.split('?')[0]
+			
+			// 白名单放行
+			if (whiteList.some(w => path.includes(w))) {
+				return true
+			}
+			
+			// 检查登录状态
+			const token = getToken()
+			const userInfo = getUserInfo()
+			
+			if (!token || !userInfo) {
+				uni.showToast({ title: '请先登录', icon: 'none' })
+				setTimeout(() => {
+					uni.reLaunch({ url: '/pages/login' })
+				}, 500)
+				return false
+			}
+			
+			// 检查页面权限
+			if (!canAccessPage(path, userInfo)) {
+				uni.showToast({ title: '无权访问该页面', icon: 'none' })
+				return false
+			}
+			
+			return true
 		}
 	}
+}
 </script>
 
 <style>

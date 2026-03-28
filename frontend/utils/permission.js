@@ -13,6 +13,7 @@ const PAGE_PERMISSIONS = {
   '/pages/index/orders': ['view_orders'],
   '/pages/index/inventory': ['view_inventory'],
   '/pages/index/deliever_map': ['view_routes', 'view_vehicle_tracking'],
+  '/pages/index/ai_assistant': [], // AI助手页面对所有登录用户开放
   '/pages/my': [] // 我的页面不校验权限，仅需登录
 }
 

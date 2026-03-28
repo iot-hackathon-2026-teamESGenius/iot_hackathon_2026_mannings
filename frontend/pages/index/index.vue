@@ -70,10 +70,16 @@
 
 			<uni-section title="快捷入口" type="line" padding>
 				<view class="quick-entry">
+					<view class="entry-item ai-gradient shadow" @click="navTo('/pages/index/ai_assistant')">
+						<uni-icons type="chatbubble-filled" size="32" color="#fff"></uni-icons>
+						<text>AI 助手</text>
+					</view>
 					<view class="entry-item orange shadow" @click="navTo('/pages/index/orders')">
 						<uni-icons type="list" size="32" color="#fff"></uni-icons>
 						<text>订单管理</text>
 					</view>
+				</view>
+				<view class="quick-entry" style="margin-top: 20rpx;">
 					<view class="entry-item purple shadow" @click="navTo('/pages/index/demo')">
 						<uni-icons type="star-filled" size="32" color="#fff"></uni-icons>
 						<text>演示控制台</text>
@@ -565,6 +571,7 @@ export default {
 			&.green { background: linear-gradient(135deg, #2e7d32 0%, #43a047 100%); }
 			&.orange { background: linear-gradient(135deg, #FD7E14 0%, #FF9500 100%); }
 			&.purple { background: linear-gradient(135deg, #9C27B0 0%, #AB47BC 100%); }
+			&.ai-gradient { background: linear-gradient(135deg, #00C853 0%, #64DD17 100%); }
 			&.shadow { box-shadow: 0 8rpx 20rpx rgba(0,0,0,0.08); }
 			text { margin-top: 16rpx; font-size: 28rpx; font-weight: bold; }
 		}

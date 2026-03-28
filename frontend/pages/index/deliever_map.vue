@@ -856,29 +856,54 @@ export default {
 			const storeList = item.store_list || []
 			if (storeList.length === 0) return
 			
-			// 优先使用调度中保存的门店详情
-			let storeDetails = item.store_details || []
-			
-			// 如果没有门店详情，从 API 获取
-			if (storeDetails.length === 0) {
-				try {
-					const res = await apiGet('/planning/stores')
-					if (res && res.success && res.data) {
-						const allStores = res.data.stores || res.data
-						storeDetails = storeList.map(storeId => {
-							const found = allStores.find(s => s.store_id === storeId || s.store_code === storeId)
-							return found ? { 
-								store_code: found.store_id,
-								store_name: found.name,
-								lat: found.lat,
-								lng: found.lng
-							} : null
-						}).filter(s => s && s.lat && s.lng)
-					}
-				} catch (e) {
-					console.warn('获取门店详情失败', e)
+			// 获取所有门店数据（用于补全缺失的坐标）
+			let allStoresMap = new Map()
+			try {
+				const res = await apiGet('/planning/stores')
+				if (res && res.success && res.data) {
+					const allStores = res.data.stores || res.data
+					allStores.forEach(s => {
+						const id = s.store_id || s.store_code
+						allStoresMap.set(id, s)
+						allStoresMap.set(String(id), s)
+					})
 				}
+			} catch (e) {
+				console.warn('获取门店详情失败', e)
 			}
+			
+			// 获取调度中保存的门店详情
+			let savedDetails = item.store_details || []
+			let savedDetailsMap = new Map()
+			savedDetails.forEach(s => {
+				if (s && s.store_code) {
+					savedDetailsMap.set(s.store_code, s)
+					savedDetailsMap.set(String(s.store_code), s)
+				}
+			})
+			
+			// 按 storeList 顺序构建完整的门店详情（确保每个门店都有坐标）
+			let storeDetails = storeList.map(storeId => {
+				// 优先从保存的详情获取
+				let detail = savedDetailsMap.get(storeId) || savedDetailsMap.get(String(storeId))
+				
+				// 如果没有或缺少坐标，从 API 数据补全
+				if (!detail || !detail.lat || !detail.lng) {
+					const apiStore = allStoresMap.get(storeId) || allStoresMap.get(String(storeId))
+					if (apiStore) {
+						detail = {
+							store_code: apiStore.store_id || apiStore.store_code,
+							store_name: apiStore.name || apiStore.store_name || `门店 ${storeId}`,
+							lat: apiStore.lat,
+							lng: apiStore.lng
+						}
+					}
+				}
+				
+				return detail || { store_code: storeId, store_name: `门店 ${storeId}`, lat: null, lng: null }
+			})
+			
+			console.log(`门店标记: storeList=${storeList.length}, storeDetails=${storeDetails.length}, 有坐标=${storeDetails.filter(s => s.lat && s.lng).length}`)
 			
 			// 移除旧的门店标记（保留 DC 和车辆标记）
 			this.mapMarkers = this.mapMarkers.filter(m => 
@@ -1125,8 +1150,10 @@ export default {
 						// 查找司机信息
 						const driver = this.driverList.find(d => d.driver_id === this.newSchedule.driver_id)
 						
-						// 获取选中门店的详细信息
-						const selectedStores = this.availableStores.filter(s => store_list.includes(s.store_code))
+						// 获取选中门店的详细信息（确保类型匹配并保持顺序）
+						const selectedStores = store_list.map(storeId => {
+							return this.availableStores.find(s => String(s.store_code) === String(storeId))
+						}).filter(s => s != null)
 						
 						const payload = {
 							vehicle_id: vehicle_id,

@@ -53,6 +53,11 @@
 					<text class="module-title">路径规划</text>
 					<text class="module-desc">OR-Tools优化</text>
 				</view>
+				<view class="module-card ai-card" @click="navTo('/pages/index/ai_assistant')">
+					<uni-icons type="chat-filled" size="32" color="#fff"></uni-icons>
+					<text class="module-title">智能助手</text>
+					<text class="module-desc">RAG + Bedrock</text>
+				</view>
 				<view class="module-card" @click="showDriverModal">
 					<uni-icons type="person-filled" size="32" color="#00BCD4"></uni-icons>
 					<text class="module-title">派送员管理</text>
@@ -565,6 +570,14 @@ export default {
 	padding: 24rpx;
 	text-align: center;
 	box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+	
+	&.ai-card {
+		background: linear-gradient(135deg, #FF6B35, #F7931E);
+		
+		.module-title, .module-desc {
+			color: #fff;
+		}
+	}
 }
 
 .module-title {
