@@ -13,7 +13,10 @@ sys.path.insert(0, str(project_root))
 
 # 加载环境变量
 from dotenv import load_dotenv
+# 先加载 .env 文件（默认配置）
 load_dotenv(project_root / ".env")
+# 再加载 .env.secrets 文件（覆盖敏感配置），override=True确保覆盖.env中的值
+load_dotenv(project_root / ".env.secrets", override=True)
 
 from fastapi import FastAPI, HTTPException, Depends, Header
 from fastapi.middleware.cors import CORSMiddleware

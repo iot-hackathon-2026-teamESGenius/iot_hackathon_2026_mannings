@@ -472,15 +472,44 @@ export default {
 					await this.fetchMapData()
 					
 					// 恢复本地存储的路线（新添加的调度路线）
+					// 注意：优先使用API返回的真实路径，只有当API没有返回时才使用本地存储的路线
 					const localRoutes = this.loadLocalRoutes()
 					if (localRoutes.length > 0) {
 						for (const localRoute of localRoutes) {
 							const exists = this.cachedRoutes.some(r => r.vehicle_id === localRoute.vehicle_id)
 							if (!exists) {
+								// 检查本地路线是否是直线路径，如果是则尝试重新获取真实路径
+								if (localRoute.source === 'direct') {
+									console.log(`本地路线 ${localRoute.vehicle_id} 是直线路径，尝试重新获取真实路径`)
+									// 重新调用API获取真实路径
+									try {
+										const routePayload = {
+											vehicle_id: localRoute.vehicle_id,
+											store_ids: localRoute.store_ids || [],
+											optimize: true
+										}
+										const routeRes = await apiPost('/planning/routes/optimize', routePayload)
+										if (routeRes && routeRes.success && routeRes.data) {
+											this.cachedRoutes.push({
+												vehicle_id: localRoute.vehicle_id,
+												coordinates: routeRes.data.coordinates,
+												distance_meters: routeRes.data.distance_meters,
+												duration_seconds: routeRes.data.duration_seconds,
+												source: routeRes.data.source,
+												store_ids: routeRes.data.store_ids
+											})
+											console.log(`成功为 ${localRoute.vehicle_id} 获取真实路径`)
+											continue
+										}
+									} catch (e) {
+										console.warn(`重新获取路线失败: ${e}`)
+									}
+								}
+								// 如果无法重新获取，使用本地路线
 								this.cachedRoutes.push(localRoute)
 							}
 						}
-						console.log(`恢复了 ${localRoutes.length} 条本地路线`)
+						console.log(`处理了 ${localRoutes.length} 条本地路线`)
 					}
 					
 					// 同步获取一次实时位置以标注车辆
